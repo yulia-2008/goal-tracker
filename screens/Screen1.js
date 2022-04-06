@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput } from 'react-native';
 
 export default function Test({navigation}) {
   const [goalAreas, updateArea] = useState([
@@ -10,6 +10,7 @@ export default function Test({navigation}) {
     {name: "Finance",  key: 5, goals: []},
     {name: "Relaxation: Fun & Entertainment",  key: 6, goals: []}, 
   ])
+  const [buttonPressed, updateValue] = useState(false)
 
   return (
     <View style={styles.container}>
@@ -28,10 +29,21 @@ export default function Test({navigation}) {
       <View style={styles.buttonBox}>
         <Text>Tap to set a new goal </Text>
         <TouchableOpacity style={styles.plusIcon}
-                          // onPress={}
+                          onPress={()=>updateValue(true)}
         >
           <Text>+</Text>
-        </TouchableOpacity>    
+        </TouchableOpacity>  
+        {buttonPressed? 
+        <View style={styles.inputBox}>
+          <TextInput autoFocus={true} 
+                     placeholder="  goal...  " 
+                     required
+                     multiline={true}
+                     style={styles.inputField}
+                     /> 
+      </View>
+      : null
+      }  
       </View> 
     </View>
   );
@@ -74,6 +86,18 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'blue',
     alignItems: 'center'
+   },
+   inputField: {
+    width: "80%",
+    borderWidth: 2,
+    borderColor: 'grey',
+   },
+   inputBox:{
+    width: "100%",
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'red',
+    margin: 20
    }
 });
 
