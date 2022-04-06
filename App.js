@@ -18,20 +18,23 @@ export default function App() {
               headerTitle: "Screen 1",
               headerStyle: {                   
                   backgroundColor: "grey",
-                  height: 50             
+                  height: 70,          
               }            
             }}         
           /> 
           <Stack.Screen
             name="Screen2"
             component={Screen2}
-            options={{
-              headerTitle: "Screen 2",
-              headerStyle: {                   
-                  backgroundColor: "grey", 
-                  height: 50             
-              }            
-            }}         
+            options={ 
+              ({route}) =>({ 
+                  title: route.params.area.name,
+                    // area is a prop comes from Screen1.js onPress 
+                  headerStyle: {
+                      backgroundColor: "grey", 
+                      height: 70
+                  }
+              })
+          }       
           /> 
         </Stack.Navigator> 
       </NavigationContainer>     

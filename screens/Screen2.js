@@ -5,9 +5,7 @@ export default function Screen2({navigation, route}) {
   const goalArea = route.params.area 
   return (
     <View style={styles.container}>
-      <Text>Screen 2</Text>
-      <Text>{goalArea.name}</Text>
-        {console.log("screen 2", goalArea.name)}     
+      {console.log("screen 2", goalArea.name)}     
     </View>
   );
 }
@@ -17,7 +15,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffe',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
+    justifyContent: 'center'
+  }
 });
 
