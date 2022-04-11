@@ -4682,6 +4682,11 @@
     "react-freeze" "^1.0.0"
     "warn-once" "^0.1.0"
 
+"react-native-select-dropdown@^1.11.0":
+  "integrity" "sha512-F/HV+dcke4Wep5ZyRzaHk15QxDSeSJwbr0/bclQ08oHvcysTDuK1KqEAxn3Lmpz2tmmtTOFiPKvOv4BlvOyd7w=="
+  "resolved" "https://registry.npmjs.org/react-native-select-dropdown/-/react-native-select-dropdown-1.11.0.tgz"
+  "version" "1.11.0"
+
 "react-native-web@0.17.1":
   "integrity" "sha512-lUnn+2O8ynQ6/gJKylSxm7DLi2vHw6AujdDV1+LSa8Epe1bYFJNUcJTEhJf0jNYUFGOujzMtuG8Mkz3HdWTkag=="
   "resolved" "https://registry.npmjs.org/react-native-web/-/react-native-web-0.17.1.tgz"
