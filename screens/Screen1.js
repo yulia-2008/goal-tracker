@@ -1,27 +1,51 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, TextInput } from 'react-native';
 
 export default function Test({navigation}) {
-  const [goalAreas, updateArea] = useState([
-    {name: "Mind: Personal Development",  key: 1, goals: []},
-    {name: "Body: Health & Fitness", key:2, goals: []},
-    {name: "Career",  key: 3, goals: []},
-    {name: "Relationship: Friends & Fam",  key: 4, goals: []},
-    {name: "Finance",  key: 5, goals: []},
-    {name: "Relaxation: Fun & Entertainment",  key: 6, goals: []}, 
+  const [goalsData, updateGoals] = useState([
+    {areaName: "Mind: Personal Development",  key: 1, goals: []},
+    {areaName: "Body: Health & Fitness", key:2, goals: []},
+    {areaName: "Career",  key: 3, goals: []},
+    {areaName: "Relationship: Friends & Fam",  key: 4, goals: []},
+    {areaName: "Finance",  key: 5, goals: []},
+    {areaName: "Relaxation: Fun & Entertainment",  key: 6, goals: []}, 
   ])
   const [buttonPressed, updateValue] = useState(false)
+  useEffect(() => {getData()}, [])
+
+  useEffect(() => {
+    AsyncStorage.setItem("storedData", JSON.stringify(goalsData))
+    }, [goalsData]
+  )
+
+  let getData = async () =>  {
+    let keys = await AsyncStorage.getAllKeys()
+    if (keys.includes('storedData')){
+       await AsyncStorage.getItem('storedData')
+       .then(data => JSON.parse(data))
+       .then(data => {updateGoals(data), console.log("N", data)
+       })
+    }
+  }
+
+  const addGoal = (text) => {
+    let newGoals = [...goalsData]
+    let  foundArea = newGoals.find()
+    // WORKING HERE !
+    updateGoals(newGoalss) 
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.itemBox}>
         <FlatList 
-            data={goalAreas}
+            data={goalsData}
             numColumns={2}
             renderItem={({item}) =>
                 <TouchableOpacity style={styles.item}
-                                  onPress={() => {console.log("screen 1", item.name), navigation.navigate("Screen2", {area: item})}} >
-                    <Text>{item.name}</Text>               
+                                  onPress={() => {console.log("screen 1", item.areaName), navigation.navigate("Screen2", {goalArea: item})}} >
+                    <Text>{item.areaName}</Text>               
                 </TouchableOpacity>   
             }         
         /> 
@@ -34,16 +58,17 @@ export default function Test({navigation}) {
           <Text>+</Text>
         </TouchableOpacity>  
         {buttonPressed? 
-        <View style={styles.inputBox}>
-          <TextInput autoFocus={true} 
-                     placeholder="  goal...  " 
-                     required
-                     multiline={true}
-                     style={styles.inputField}
-                     /> 
-      </View>
-      : null
-      }  
+          <View style={styles.inputBox}>
+            <TextInput  autoFocus={true} 
+                        placeholder="  goal...  " 
+                        onChangeText={text=>addGoal(text)}
+                        required
+                        multiline={true}
+                        style={styles.inputField}
+                        /> 
+          </View>
+        : null
+        }  
       </View> 
     </View>
   );

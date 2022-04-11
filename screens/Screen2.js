@@ -2,10 +2,10 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 export default function Screen2({navigation, route}) {
-  const goalArea = route.params.area 
+  const goal = route.params.goalArea
   return (
     <View style={styles.container}>
-      {console.log("screen 2", goalArea.name)}     
+      {console.log("screen 2", goal.areaName)}     
     </View>
   );
 }

@@ -27,7 +27,7 @@ export default function App() {
             component={Screen2}
             options={ 
               ({route}) =>({ 
-                  title: route.params.area.name,
+                  title: route.params.goalArea.areaName,
                     // area is a prop comes from Screen1.js onPress 
                   headerStyle: {
                       backgroundColor: "grey", 
