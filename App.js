@@ -1,27 +1,39 @@
-import React from 'react';
+// import React from 'react';
+import React, {useContext} from 'react';
 import {Text, View} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import Screen1 from './screens/Screen1.js';
+import HomeScreen from './screens/HomeScreen.js';
 import Screen2 from './screens/Screen2.js';
+import AddScreen from './screens/AddScreen.js';
+import NewGoalContext from './components/NewGoalContext.js';
+
 
 export default function App() {
   const Stack = createStackNavigator();
-
-  return (     
+  const buttonContext = useContext(NewGoalContext);
+  
+  return (    
       <NavigationContainer> 
+        {console.log("in app",buttonContext.buttonClicked )}
         <Stack.Navigator>          
           <Stack.Screen
-            name="Test"
-            component={Screen1}
+            name="HomeScreen"
+            component={
+              buttonContext.buttonClicked ? AddScreen :
+              HomeScreen
+              
+              }      
             options={{
-              headerTitle: "Screen 1",
+              headerTitle: "HomeScreen",
               headerStyle: {                   
                   backgroundColor: "grey",
                   height: 70,          
               }            
-            }}         
+            }} 
+                  
           /> 
+         
           <Stack.Screen
             name="Screen2"
             component={Screen2}
@@ -37,6 +49,6 @@ export default function App() {
           }       
           /> 
         </Stack.Navigator> 
-      </NavigationContainer>     
+      </NavigationContainer> 
   );
 }
