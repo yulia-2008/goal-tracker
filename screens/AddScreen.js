@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 
-export default function AddScreen() {
+export default function AddScreen({navigation, route}) {
 
   const data = [
     "Mind: Personal Development",  
@@ -16,7 +16,7 @@ export default function AddScreen() {
   const [text, updateText] = useState("")
   
   return (  
-     <View style={styles.inputBox}>
+     <View style={styles.container}>
             <SelectDropdown data={data}
                             buttonStyle={styles.dropdown}
                             onSelect={(selectedItem, index) => {
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffe',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'flex-start'
   },
   dropdown:{
     backgroundColor:"grey",
@@ -65,13 +65,13 @@ const styles = StyleSheet.create({
       width: "80%",
       borderWidth: 2,
       borderColor: 'grey',
-     },
-     inputBox:{
-      width: "100%",
-      alignItems: 'center',
-      borderWidth: 2,
-      borderColor: 'red',
-      margin: 20
      }
+    //  inputBox:{
+    //   width: "100%",
+    //   alignItems: 'center',
+    //   borderWidth: 2,
+    //   borderColor: 'red',
+    //   margin: 20
+    //  }
 });
 

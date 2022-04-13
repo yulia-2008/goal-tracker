@@ -1,7 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList} from 'react-native';
-import NewGoalContext from '../components/NewGoalContext.js';
 
 export default function HomeScreen({navigation, route}) {
 
@@ -13,8 +12,6 @@ export default function HomeScreen({navigation, route}) {
     {areaName: "Finance",  key: 5, goals: []},
     {areaName: "Relaxation: Fun & Entertainment",  key: 6, goals: []}, 
   ])
-
-  const [buttonClicked, updateValue] = useState(false)
   useEffect(() => {getData()}, [])
 
   useEffect(() => {
@@ -47,30 +44,27 @@ export default function HomeScreen({navigation, route}) {
   // }
 
   return (
-    <NewGoalContext.Provider value={{buttonClicked: buttonClicked }}>
-          {/* Provider is passing a value to UserContext object for using it in Navigator (in login and Profile container) */}
-    <View style={styles.container}>
-      <View style={styles.itemBox}>
-        <FlatList 
-            data={goalsData}
-            numColumns={2}
-            renderItem={({item}) =>
-                <TouchableOpacity style={styles.item}
-                                  onPress={() => {navigation.navigate("Screen2", {goalArea: item})}} >
-                    <Text>{item.areaName}</Text>               
-                </TouchableOpacity>   
-            }         
-        /> 
-      </View> 
-      <View style={styles.buttonBox}>     
-        <TouchableOpacity style={styles.button}
-                          onPress={()=>updateValue(true)}>                                         
-          <Text>Add a new goal</Text>
-        </TouchableOpacity> 
-      </View> 
-    </View>
-  </NewGoalContext.Provider>
-  );
+      <View style={styles.container}>
+        <View style={styles.itemBox}>
+          <FlatList 
+              data={goalsData}
+              numColumns={2}
+              renderItem={({item}) =>
+                  <TouchableOpacity style={styles.item}
+                                    onPress={() => {navigation.navigate("Screen2", {goalArea: item})}} >
+                      <Text>{item.areaName}</Text>               
+                  </TouchableOpacity>   
+              }         
+          /> 
+        </View> 
+        <View style={styles.buttonBox}>     
+          <TouchableOpacity style={styles.button}
+                               onPress = {() => {navigation.navigate("AddScreen")}}>                         
+            <Text>Add a new goal</Text>
+          </TouchableOpacity> 
+        </View> 
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({
