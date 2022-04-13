@@ -8,7 +8,7 @@ import AddScreen from './screens/AddScreen.js';
 export default function App() {
   const Stack = createStackNavigator();
   
-  return ( <> 
+  return (
       <NavigationContainer> 
         <Stack.Navigator>          
           <Stack.Screen
@@ -49,6 +49,5 @@ export default function App() {
           /> 
         </Stack.Navigator> 
       </NavigationContainer> 
-      </>
   );
 }

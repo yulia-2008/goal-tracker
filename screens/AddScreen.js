@@ -1,10 +1,12 @@
-import React, {useState} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, 
+         TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
+import * as Calendar from 'expo-calendar';
 
 export default function AddScreen({navigation, route}) {
 
-  const data = [
+  const areaData = [
     "Mind: Personal Development",  
     "Body: Health & Fitness", 
     "Career",  
@@ -12,44 +14,86 @@ export default function AddScreen({navigation, route}) {
     "Finance",  
     "Relaxation: Fun & Entertainment"
   ]
+  const rangeData = [
+     "every day", " every other day", "every week", 
+     "every month", "2 times a week", "3 times a week", 
+     " 2 times a month", "every week-end"
+  ]
   const [area, updateArea] = useState(null)
   const [text, updateText] = useState("")
-  
-  return (  
-     <View style={styles.container}>
-            <SelectDropdown data = {data}
-                            defaultButtonText = "Select goal area"
-                            buttonStyle = {styles.button}
-                            dropdownStyle = {styles.dropdown}
-                            dropdownIconPosition = "left"
-                            onSelect={(selectedItem, index) => {
-                              console.log("selected", selectedItem, index),
-                              updateArea(selectedItem)
-                            }}
-                            buttonTextAfterSelection={(selectedItem, index) => {
-                              // text represented after item is selected
-                              // if data array is an array of objects then return selectedItem.property to render after item is selected
-                              return selectedItem
-                            }}
-                            rowTextForSelection={(item, index) => {
-                              // text represented for each item in dropdown
-                              // if data array is an array of objects then return item.property to represent item in dropdown
-                              return item
-                            }}
-                          />
-            <TextInput  autoFocus={true} 
-                        placeholder="  goal...  " 
+
+const calendarPermition=(() => {
+    (async () => {
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status === 'granted') {
+        const calendars = await Calendar.getCalendarsAsync(
+          Calendar.EntityTypes.EVENT
+        );
+        console.log("Callendar",{ calendars });
+      }
+    })();
+  });
+      // The above code checks if your app has the required permissions
+      // to access the user’s calendar,
+      // and requests permission if it does not have it.
+
+      async function getDefaultCalendarSource() {
+        const defaultCalendar = await Calendar.getDefaultCalendarAsync();
+        return defaultCalendar.source;
+      }
+      
+      async function createCalendar() {
+        console.log("kkk");
+        const defaultCalendarSource =
+        Platform.OS === 'ios'
+            ? await getDefaultCalendarSource()
+            : { isLocalAccount: true, name: 'Expo Calendar' };
+        const newCalendarID = await Calendar.createCalendarAsync({
+          title: 'Expo Calendar',
+          color: 'blue',
+          entityType: Calendar.EntityTypes.EVENT,
+          sourceId: defaultCalendarSource.id,
+          source: defaultCalendarSource,
+          name: 'internalCalendarName',
+          ownerAccount: 'personal',
+          accessLevel: Calendar.CalendarAccessLevel.OWNER,
+        });
+        console.log(`Your new calendar ID is: ${newCalendarID}`);
+        return newCalendarID;
+      }
+
+
+  return ( <>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>                         
+        <SelectDropdown data = {areaData}
+                        defaultButtonText = "Select goal area"
+                        buttonStyle = {styles.button}
+                        dropdownStyle = {styles.dropdown}
+                        dropdownIconPosition = "left"
+                        onSelect={(selectedItem) => {updateArea(selectedItem)}}
+                        buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
+                        />
+        <TextInput  autoFocus={true} 
+                    placeholder="new goal...  " 
                         // onChangeText={text=>updateText(text)}
                         // onEndEditing={()=> addGoal()}
-                        onEndEditing={text=> updateText(text)}
-                        required
-                        multiline={true}
-                        style={styles.button}
-                        /> 
-            <TouchableOpacity>
-              <Text style={styles.setButton}>Set Goal</Text>
-            </TouchableOpacity>            
-          </View>   
+                    onEndEditing={text=> updateText(text)}
+                    
+                    required
+                    multiline={true}
+                    style={styles.button}
+                    />          
+        <TouchableOpacity></TouchableOpacity> 
+        <TouchableOpacity style={styles.button} onPress={()=>{calendarPermition(), createCalendar()}}>
+            <Text>Choose a deadline.</Text>
+        </TouchableOpacity>                
+        <TouchableOpacity>
+            <Text style={styles.setButton}>Set Goal</Text>
+        </TouchableOpacity> 
+      </View>   
+    </TouchableWithoutFeedback> 
+    </>                  
   );
 }
 
@@ -66,7 +110,7 @@ const styles = StyleSheet.create({
     backgroundColor:"white",
     borderRadius:8,
     width:"80%",
-    height:45, 
+    height:55, 
     marginTop:30,
     padding: 10                             
     },
