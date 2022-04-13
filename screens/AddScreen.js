@@ -17,8 +17,11 @@ export default function AddScreen({navigation, route}) {
   
   return (  
      <View style={styles.container}>
-            <SelectDropdown data={data}
-                            buttonStyle={styles.dropdown}
+            <SelectDropdown data = {data}
+                            defaultButtonText = "Select goal area"
+                            buttonStyle = {styles.button}
+                            dropdownStyle = {styles.dropdown}
+                            dropdownIconPosition = "left"
                             onSelect={(selectedItem, index) => {
                               console.log("selected", selectedItem, index),
                               updateArea(selectedItem)
@@ -41,8 +44,11 @@ export default function AddScreen({navigation, route}) {
                         onEndEditing={text=> updateText(text)}
                         required
                         multiline={true}
-                        style={styles.inputField}
+                        style={styles.button}
                         /> 
+            <TouchableOpacity>
+              <Text style={styles.setButton}>Set Goal</Text>
+            </TouchableOpacity>            
           </View>   
   );
 }
@@ -54,24 +60,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start'
   },
-  dropdown:{
-    backgroundColor:"grey",
+  button:{
+    borderWidth: 2,
+    borderColor: 'grey',
+    backgroundColor:"white",
     borderRadius:8,
-    width:270,
+    width:"80%",
     height:45, 
-    margin:20,                             
+    marginTop:30,
+    padding: 10                             
     },
-    inputField: {
-      width: "80%",
-      borderWidth: 2,
-      borderColor: 'grey',
-     }
-    //  inputBox:{
-    //   width: "100%",
-    //   alignItems: 'center',
-    //   borderWidth: 2,
-    //   borderColor: 'red',
-    //   margin: 20
-    //  }
+  setButton:{
+    borderWidth: 2,
+    borderColor: 'grey',
+    backgroundColor:"yellow",
+    borderRadius:8,
+    marginTop:30,
+    padding: 10
+    },
+  dropdown:{
+    flex:1,
+    borderRadius:8,
+    height: 300
+    }
+  // inputField: {
+  //   width: "80%",
+  //   borderWidth: 2,
+  //   borderColor: 'grey',
+  //   backgroundColor:"white",
+  //   borderRadius:8,
+  //   height:45, 
+  // }
 });
 
