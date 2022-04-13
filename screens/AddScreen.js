@@ -2,7 +2,8 @@ import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, 
          TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
-import * as Calendar from 'expo-calendar';
+import DatePicker from '../components/DatePicker.js'
+// import * as Calendar from 'expo-calendar';
 
 export default function AddScreen({navigation, route}) {
 
@@ -21,47 +22,7 @@ export default function AddScreen({navigation, route}) {
   ]
   const [area, updateArea] = useState(null)
   const [text, updateText] = useState("")
-
-const calendarPermition=(() => {
-    (async () => {
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status === 'granted') {
-        const calendars = await Calendar.getCalendarsAsync(
-          Calendar.EntityTypes.EVENT
-        );
-        console.log("Callendar",{ calendars });
-      }
-    })();
-  });
-      // The above code checks if your app has the required permissions
-      // to access the user’s calendar,
-      // and requests permission if it does not have it.
-
-      async function getDefaultCalendarSource() {
-        const defaultCalendar = await Calendar.getDefaultCalendarAsync();
-        return defaultCalendar.source;
-      }
-      
-      async function createCalendar() {
-        console.log("kkk");
-        const defaultCalendarSource =
-        Platform.OS === 'ios'
-            ? await getDefaultCalendarSource()
-            : { isLocalAccount: true, name: 'Expo Calendar' };
-        const newCalendarID = await Calendar.createCalendarAsync({
-          title: 'Expo Calendar',
-          color: 'blue',
-          entityType: Calendar.EntityTypes.EVENT,
-          sourceId: defaultCalendarSource.id,
-          source: defaultCalendarSource,
-          name: 'internalCalendarName',
-          ownerAccount: 'personal',
-          accessLevel: Calendar.CalendarAccessLevel.OWNER,
-        });
-        console.log(`Your new calendar ID is: ${newCalendarID}`);
-        return newCalendarID;
-      }
-
+  const [datePickerOpened, openDatePicker] = useState("false")
 
   return ( <>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -84,10 +45,22 @@ const calendarPermition=(() => {
                     multiline={true}
                     style={styles.button}
                     />          
-        <TouchableOpacity></TouchableOpacity> 
-        <TouchableOpacity style={styles.button} onPress={()=>{calendarPermition(), createCalendar()}}>
-            <Text>Choose a deadline.</Text>
-        </TouchableOpacity>                
+        <TouchableOpacity></TouchableOpacity>  
+        <SelectDropdown data = {rangeData}
+                        defaultButtonText = "Time Range"
+                        buttonStyle = {styles.button}
+                        dropdownStyle = {styles.dropdown}
+                        dropdownIconPosition = "left"
+                        onSelect={(selectedItem) => {console.log("o", selectedItem)}}
+                        buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
+                        />
+        {datePickerOpened  ? 
+          <DatePicker/>
+          :             
+          <TouchableOpacity style={styles.button} onPress={()=>{openDatePicker(true)}}>         
+              <Text>Deadline.</Text>         
+          </TouchableOpacity>
+        }
         <TouchableOpacity>
             <Text style={styles.setButton}>Set Goal</Text>
         </TouchableOpacity> 
