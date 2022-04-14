@@ -24,10 +24,17 @@ export default function AddScreen({navigation, route}) {
   const [text, updateText] = useState("")
   const [datePickerOpened, openDatePicker] = useState("false")
 
+  useEffect(() => {openDatePicker(false)}, [])
+
   return ( <>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>                         
-        <SelectDropdown data = {areaData}
+        
+        {datePickerOpened  ? 
+          <DatePicker/>
+          : 
+          <> 
+          <SelectDropdown data = {areaData}
                         defaultButtonText = "Select goal area"
                         buttonStyle = {styles.button}
                         dropdownStyle = {styles.dropdown}
@@ -35,7 +42,8 @@ export default function AddScreen({navigation, route}) {
                         onSelect={(selectedItem) => {updateArea(selectedItem)}}
                         buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
                         />
-        <TextInput  autoFocus={true} 
+        <TextInput  
+                    // autoFocus={true} 
                     placeholder="new goal...  " 
                         // onChangeText={text=>updateText(text)}
                         // onEndEditing={()=> addGoal()}
@@ -54,16 +62,15 @@ export default function AddScreen({navigation, route}) {
                         onSelect={(selectedItem) => {console.log("o", selectedItem)}}
                         buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
                         />
-        {datePickerOpened  ? 
-          <DatePicker/>
-          :             
           <TouchableOpacity style={styles.button} onPress={()=>{openDatePicker(true)}}>         
               <Text>Deadline.</Text>         
           </TouchableOpacity>
-        }
+        
         <TouchableOpacity>
             <Text style={styles.setButton}>Set Goal</Text>
-        </TouchableOpacity> 
+        </TouchableOpacity>
+        </> 
+        }
       </View>   
     </TouchableWithoutFeedback> 
     </>                  
