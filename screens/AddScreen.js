@@ -22,19 +22,17 @@ export default function AddScreen({navigation, route}) {
   ]
   const [area, updateArea] = useState(null)
   const [text, updateText] = useState("")
-  const [datePickerOpened, openDatePicker] = useState("false")
+  const [datePicker, updateDatePicker] = useState("false")
 
-  useEffect(() => {openDatePicker(false)}, [])
+  useEffect(() => {updateDatePicker(false)}, [])
 
-  return ( <>
+  return ( 
+    <>
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>                         
-        
-        {datePickerOpened  ? 
-          <DatePicker/>
-          : 
-          <> 
-          <SelectDropdown data = {areaData}
+      
+       <View style={styles.container}>  
+      <View style = {styles.box1}>                       
+        <SelectDropdown data = {areaData}
                         defaultButtonText = "Select goal area"
                         buttonStyle = {styles.button}
                         dropdownStyle = {styles.dropdown}
@@ -62,18 +60,22 @@ export default function AddScreen({navigation, route}) {
                         onSelect={(selectedItem) => {console.log("o", selectedItem)}}
                         buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
                         />
-          <TouchableOpacity style={styles.button} onPress={()=>{openDatePicker(true)}}>         
-              <Text>Deadline.</Text>         
-          </TouchableOpacity>
-        
-        <TouchableOpacity>
-            <Text style={styles.setButton}>Set Goal</Text>
+        </View> 
+        <TouchableOpacity style={styles.box2} >         
+          <Text style={styles.button}
+                onPress={()=>{updateDatePicker(!datePicker)}}>
+            Deadline
+          </Text> 
+          { datePicker ? <DatePicker/> : null }
         </TouchableOpacity>
-        </> 
-        }
-      </View>   
+
+        
+        <TouchableOpacity style={styles.box3}>
+          <Text style={styles.setButton}>Set Goal</Text>
+        </TouchableOpacity> 
+       </View>    
     </TouchableWithoutFeedback> 
-    </>                  
+   </>                  
   );
 }
 
@@ -82,7 +84,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#ffe',
     alignItems: 'center',
+    justifyContent: 'center'
+  },
+  box1:{
+    flex:2,
+    width:'80%',
+    borderWidth:2,
+    borderColor:"red",
+  },
+  box2:{
+    flex:2,
+    width:'80%',
+    borderWidth:2,
+    borderColor:"blue",
     justifyContent: 'flex-start'
+  },
+  box3:{
+    flex:1,
+    borderWidth:2,
+    borderColor:"yellow",
+    justifyContent: 'flex-start',
   },
   button:{
     borderWidth: 2,
@@ -91,16 +112,16 @@ const styles = StyleSheet.create({
     borderRadius:8,
     width:"80%",
     height:55, 
-    marginTop:30,
-    padding: 10                             
+    marginTop:20,
+    padding: 5,
+    alignSelf: 'center'                            
     },
   setButton:{
     borderWidth: 2,
     borderColor: 'grey',
     backgroundColor:"yellow",
     borderRadius:8,
-    marginTop:30,
-    padding: 10
+    padding: 10 
     },
   dropdown:{
     flex:1,
