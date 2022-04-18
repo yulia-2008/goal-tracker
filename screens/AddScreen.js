@@ -21,59 +21,69 @@ export default function AddScreen({navigation, route}) {
      " 2 times a month", "every week-end"
   ]
   const [area, updateArea] = useState(null)
+  const [timeRange, updateTimeRange] = useState(null)
   const [text, updateText] = useState("")
   const [datePicker, updateDatePicker] = useState("false")
+  const [inputFieldInUse, updateInputFieldInUse] = useState("false")
 
   useEffect(() => {updateDatePicker(false)}, [])
 
   return ( 
     <>
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      
-       <View style={styles.container}>  
-      <View style = {styles.box1}>                       
-        <SelectDropdown data = {areaData}
-                        defaultButtonText = "Select goal area"
-                        buttonStyle = {styles.button}
-                        dropdownStyle = {styles.dropdown}
-                        dropdownIconPosition = "left"
-                        onSelect={(selectedItem) => {updateArea(selectedItem)}}
-                        buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
-                        />
-        <TextInput  
-                    // autoFocus={true} 
-                    placeholder="new goal...  " 
-                        // onChangeText={text=>updateText(text)}
-                        // onEndEditing={()=> addGoal()}
-                    onEndEditing={text=> updateText(text)}
-                    
-                    required
-                    multiline={true}
-                    style={styles.button}
-                    />          
-        <TouchableOpacity></TouchableOpacity>  
-        <SelectDropdown data = {rangeData}
-                        defaultButtonText = "Time Range"
-                        buttonStyle = {styles.button}
-                        dropdownStyle = {styles.dropdown}
-                        dropdownIconPosition = "left"
-                        onSelect={(selectedItem) => {console.log("o", selectedItem)}}
-                        buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
-                        />
-        </View> 
-        <TouchableOpacity style={styles.box2} >         
-          <Text style={styles.button}
-                onPress={()=>{updateDatePicker(!datePicker)}}>
-            Deadline
-          </Text> 
-          { datePicker ? <DatePicker/> : null }
-        </TouchableOpacity>
+    <TouchableWithoutFeedback  onPress={()=> {Keyboard.dismiss(), updateDatePicker(false)}} >
+      <View style={styles.container}>  
 
-        
-        <TouchableOpacity style={styles.box3}>
-          <Text style={styles.setButton}>Set Goal</Text>
-        </TouchableOpacity> 
-       </View>    
+        <View style = {styles.box1} 
+         onPress = {()=> {console.log("yyyyyy"), updateDatePicker(false)}}>                       
+          <SelectDropdown data = {areaData}
+                          defaultButtonText = "Select goal area"
+                          buttonStyle = {styles.button}
+                          dropdownStyle = {styles.dropdown}
+                          dropdownIconPosition = "left"
+                          onFocus={()=> updateDatePicker(false)}
+                          onSelect={(selectedItem) => updateArea(selectedItem)}
+                          buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
+                          />
+          <TextInput  
+                      // autoFocus={true} 
+                      placeholder="new goal...  " 
+                          // onChangeText={text=>updateText(text)}
+                          // onEndEditing={()=> addGoal()}
+                      onStartEditing = {()=>updateDatePicker(false)}
+                      onFocus = {()=> updateInputFieldInUse(true)}
+                      onEndEditing={text=> updateText(text)}
+                      
+                      required
+                      multiline={true}
+                      style={styles.button}
+                      />          
+          <TouchableOpacity></TouchableOpacity>  
+          <SelectDropdown data = {rangeData}
+                          defaultButtonText = "Time Range"
+                          buttonStyle = {styles.button}
+                          dropdownStyle = {styles.dropdown}
+                          dropdownIconPosition = "left"
+                          onFocus={()=> updateDatePicker(false)}
+                          onSelect={(selectedItem) => updateTimeRange(selectedItem)}
+                          buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
+                          />
+        </View> 
+        <View style={styles.box2}>
+          <TouchableOpacity>         
+            <Text style={styles.button}
+                  onPress={()=>{updateDatePicker(!datePicker)}}>
+                  Deadline
+            </Text>  
+          </TouchableOpacity>
+            { datePicker ? <DatePicker/> : null }
+        </View>
+
+        <View style={styles.box3}>
+          <TouchableOpacity>
+            <Text style={styles.setButton}>Set Goal</Text>
+          </TouchableOpacity> 
+        </View> 
+      </View>
     </TouchableWithoutFeedback> 
    </>                  
   );
