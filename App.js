@@ -39,7 +39,7 @@ export default function App() {
             options={ 
               ({route}) =>({ 
                   title: route.params.goalArea.areaName,
-                    // area is a prop comes from HomeScreen.js onPress 
+                    // goalArea is a prop comes from HomeScreen.js onPress 
                   headerStyle: {
                       backgroundColor: "grey", 
                       height: 70

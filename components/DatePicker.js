@@ -1,17 +1,17 @@
 import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 
-export default function DatePicker({navigation}) {
+export default function DatePicker(props) {
 
 //   useEffect(() => {}, [])
 
-  const months = [{id:1, month:"January"},{id:2, month:"February"}, {id:3, month:"Martch"},
+  const monthsArray = [{id:1, month:"January"},{id:2, month:"February"}, {id:3, month:"Martch"},
                  {id:4, month:"April"}, {id: 5, month: "May"}, {id:6, month: "June",},
                  {id:7, month:"July"}, {id:8, month:"August"},{id:9, month:"September"},
                  {id:10, month:"October"}, {id:11, month:"November"},{id:12, month: "December"}
   ]
 
-  const dates = () => {
+  const datesArray = () => {
     let array = [];
     for(var i = 1; i <= 31; i++){
         let newDate = {id: i, date: i}
@@ -20,7 +20,7 @@ export default function DatePicker({navigation}) {
     return array
   }
 
-  const years = () => {
+  const yearsArray = () => {
     let array = [];
     let year = new Date().getFullYear()
     for(var i = year; i <= year+10; i++){
@@ -30,35 +30,26 @@ export default function DatePicker({navigation}) {
     return array
   }
 
-  const [deadline, updateDeadline] = useState({date: null, month: null, year: null})
-  
-const setDate = (item) => {
-    let newDeadline = {...deadline, date: item}
-    updateDeadline(newDeadline)
-}
-const setMonth = (item) => {
-    let newDeadline = {...deadline, month: item}
-    updateDeadline(newDeadline)
-}
-const setYear = (item) => {
-    let newDeadline = {...deadline, year: item}
-    updateDeadline(newDeadline)
-}
+  const [ selectedDate, setDate] = useState(null)
+  const [ selectedMonth, setMonth] = useState(null)
+  const [ selectedYear, setYear] = useState(null)
+// need this constants for changing style when date/mo/year is selected
+
 
   return (
     <View style={styles.container}>
        <View style={styles.dateBox}>
             <FlatList 
-                data={dates()}
+                data={datesArray()}
                 numColumns={1}
                 renderItem={({item}) =>
                     <TouchableOpacity   
-                        style={ deadline.date === item.date? 
+                        style={ selectedDate === item.date? 
                                     [styles.item, {backgroundColor: "yellow"}]
                                     : styles.item
                         }
                         key={item.id}
-                        onPress={() => setDate(item.date)}>
+                        onPress={() => {setDate(item.date), props.dateHandler(item.date)}}>
                         <Text>{item.date}</Text>                   
                         {/* delete bar indicator  */}                      
                     </TouchableOpacity>   
@@ -68,16 +59,16 @@ const setYear = (item) => {
 
         <View style={styles.monthBox}>
             <FlatList 
-                data={months}
+                data={monthsArray}
                 numColumns={1}
                 renderItem={({item}) =>
                     <TouchableOpacity   
-                        style={ deadline.month === item.month? 
+                        style={ selectedMonth === item.month? 
                             [styles.item, {backgroundColor: "yellow"}]
                             : styles.item
                         }
                         key={item.id}
-                        onPress={() => {setMonth(item.month)}}>  
+                        onPress={() => {setMonth(item.month), props.monthHandler(item.month)}}>  
                         <Text>{item.month}</Text>               
                     </TouchableOpacity>   
                 }         
@@ -86,21 +77,20 @@ const setYear = (item) => {
       
         <View style={styles.yearBox}>
             <FlatList 
-                data={years()}
+                data={yearsArray()}
                 numColumns={1}
                 renderItem={({item}) =>
                     <TouchableOpacity   
-                        style={ deadline.year === item.year? 
+                        style={ selectedYear === item.year? 
                             [styles.item, {backgroundColor: "yellow"}]
                             : styles.item
                         }
                         key={item.id}
-                        onPress={() => {setYear(item.year)}}>      
+                        onPress={() => {setYear(item.year), props.yearHandler(item.year)}}>      
                         <Text>{item.year}</Text>                      
                     </TouchableOpacity>   
                 }         
             /> 
-            <Text>{console.log("k", deadline)}</Text>
         </View> 
     </View>
   );
@@ -110,33 +100,37 @@ const styles = StyleSheet.create({
   container: {
     flex:1,
     flexDirection: 'row',
-    width: "80%",
+    width: "100%",
     alignSelf: 'center',
     marginBottom: '6%',
     backgroundColor: 'white',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     borderWidth: 2,
     borderColor: "grey",
     borderRadius: 5
   },
   dateBox:{
-    padding:15,
+    padding:0,
     borderWidth: 2,
     borderColor: "grey",
+    width:"33%",
   },
   yearBox:{
-    padding: 15,
+    padding: 0,
     borderWidth: 2,
-    borderColor: "grey",  
+    borderColor: "grey", 
+    width:"33%",
   },
   monthBox:{
-    padding: 15,
+    padding: 0,
     borderWidth: 2,
-    borderColor: "grey",   
+    borderColor: "grey", 
+    width:"33%",
   },
   item:{
     backgroundColor: 'white',
+    width: "100%"
   }
 });
 
