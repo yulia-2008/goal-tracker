@@ -30,11 +30,22 @@ export default function AddScreen({navigation, route}) {
   const [datePicker, updateDatePicker] = useState(false)
   // const [inputFieldInUse, updateInputFieldInUse] = useState("false")
 
+  const newGoalObject = {
+    area: area, 
+    timeRange: timeRange, 
+    text: text, 
+    date: date, 
+    month: month, 
+    year: year
+  }
+
   useEffect(() => {updateDatePicker(false)}, [])
 
   const addGoal = () => {
-    { area === null || timeRange === null || text.trim() === "" ?
-      null : navigation.navigate("HomeScreen")
+    { area === null || timeRange === null || text.trim() === "" || 
+      date === null || month === null || year === null ?
+      null : 
+      navigation.navigate("HomeScreen", {newGoalObject})
     }
   }
 

@@ -12,18 +12,14 @@ export default function HomeScreen({navigation, route}) {
     {areaName: "Finance",  key: 5, goals: []},
     {areaName: "Relaxation: Fun & Entertainment",  key: 6, goals: []}, 
   ])
+  // const newGoal = route.params.newGoalObject
+
   useEffect(() => {getData()}, [])
 
   useEffect(() => {
     AsyncStorage.setItem("storedData", JSON.stringify(goalsData))
     }, [goalsData]
   )
-
-  // const areaNamesArray = () => {
-  // let array = []
-  // goalsData.map(item => array.push(item.areaName))
-  // return array
-  // }
 
   let getData = async () =>  {
     let keys = await AsyncStorage.getAllKeys()
@@ -45,6 +41,7 @@ export default function HomeScreen({navigation, route}) {
 
   return (
       <View style={styles.container}>
+        {console.log("j", route.params)}
         <View style={styles.itemBox}>
           <FlatList 
               data={goalsData}
@@ -52,7 +49,14 @@ export default function HomeScreen({navigation, route}) {
               renderItem={({item}) =>
                   <TouchableOpacity style={styles.item}
                                     onPress={() => {navigation.navigate("Screen2", {goalArea: item})}} >
-                      <Text>{item.areaName}</Text>               
+                      <Text>{item.areaName}</Text> 
+                      { route.params !=undefined &&
+                        route.params.newGoalObject &&
+                        route.params.newGoalObject.area === item.areaName ?  
+                          <Text style={styles.newGoal}> New Goal added </Text>
+                          :
+                          null
+                      }              
                   </TouchableOpacity>   
               }         
           /> 
@@ -108,6 +112,10 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: 'blue',
     alignItems: 'center'
+   },
+   newGoal:{
+    fontWeight: 'bold',
+    color: 'blue', 
    }
 });
 
