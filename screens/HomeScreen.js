@@ -21,6 +21,14 @@ export default function HomeScreen({navigation, route}) {
     }, [goalsData]
   )
 
+  let isNewGoal = () => {
+    let newGoal;
+    { route.params !=undefined && route.params.newGoalObject ? 
+        newGoal= route.params.newGoalObject : null    
+    }
+    return newGoal
+  }
+
   let getData = async () =>  {
     let keys = await AsyncStorage.getAllKeys()
     if (keys.includes('storedData')){
@@ -41,7 +49,7 @@ export default function HomeScreen({navigation, route}) {
 
   return (
       <View style={styles.container}>
-        {console.log("j", route.params)}
+        {/* {console.log("j", isNewGoal())} */}
         <View style={styles.itemBox}>
           <FlatList 
               data={goalsData}
@@ -50,13 +58,11 @@ export default function HomeScreen({navigation, route}) {
                   <TouchableOpacity style={styles.item}
                                     onPress={() => {navigation.navigate("Screen2", {goalArea: item})}} >
                       <Text>{item.areaName}</Text> 
-                      { route.params !=undefined &&
-                        route.params.newGoalObject &&
-                        route.params.newGoalObject.area === item.areaName ?  
-                          <Text style={styles.newGoal}> New Goal added </Text>
-                          :
-                          null
-                      }              
+                      { isNewGoal() && isNewGoal().area === item.areaName ?
+                        <Text style={styles.newGoal}> New Goal added </Text>
+                        :
+                        null
+                      }
                   </TouchableOpacity>   
               }         
           /> 
