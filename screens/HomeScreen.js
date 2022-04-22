@@ -21,12 +21,25 @@ export default function HomeScreen({navigation, route}) {
     }, [goalsData]
   )
 
-  let isNewGoal = () => {
+  const isNewGoal = () => {
+    // chek if a newGoal was added and update goalsData
     let newGoal;
-    { route.params !=undefined && route.params.newGoalObject ? 
-        newGoal= route.params.newGoalObject : null    
-    }
+    if (route.params !=undefined && route.params.newGoalObject) { 
+          newGoal = route.params.newGoalObject; 
+
+          let goals = [...goalsData]
+          let  foundArea = goals.find(item =>  item.areaName === newGoal.area)
+          foundArea.goals.push(newGoal)
+          updateGoals(goals)
+          console.log("d",goalsData)
+      }
+    else
+      null    
     return newGoal
+    // working here. Got error: Error: Maximum update depth exceeded. 
+    //This can happen when a component repeatedly calls setState inside
+    // componentWillUpdate or componentDidUpdate. 
+    //React limits the number of nested updates to prevent infinite loops.
   }
 
   let getData = async () =>  {
