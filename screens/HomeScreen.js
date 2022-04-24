@@ -5,12 +5,12 @@ import { StyleSheet, Text, View, TouchableOpacity, FlatList} from 'react-native'
 export default function HomeScreen({navigation, route}) {
 
   const [goalsData, updateGoals] = useState([
-    {areaName: "Mind: Personal Development",  key: 1, goals: []},
-    {areaName: "Body: Health & Fitness", key:2, goals: []},
-    {areaName: "Career",  key: 3, goals: []},
-    {areaName: "Relationship: Friends & Fam",  key: 4, goals: []},
-    {areaName: "Finance",  key: 5, goals: []},
-    {areaName: "Relaxation: Fun & Entertainment",  key: 6, goals: []}, 
+    {areaName: "Mind: Personal Development",  id: 1, goals: []},
+    {areaName: "Body: Health & Fitness", id:2, goals: []},
+    {areaName: "Career",  id: 3, goals: []},
+    {areaName: "Relationship: Friends & Fam",  id: 4, goals: []},
+    {areaName: "Finance",  id: 5, goals: []},
+    {areaName: "Relaxation: Fun & Entertainment",  id: 6, goals: []}, 
   ])
 
   
@@ -18,11 +18,9 @@ export default function HomeScreen({navigation, route}) {
 
   const isNewGoal = () => {
     let newGoal;
-    if (route.params !=undefined && route.params.newGoalObject) { 
-          newGoal = route.params.newGoalObject; 
-        }
-    else
-      null    
+    if (route.params !=undefined && route.params.newGoalAddedTo) { 
+          newGoal = route.params.newGoalAddedTo; 
+        }    
     return newGoal
   }
 
@@ -47,11 +45,11 @@ export default function HomeScreen({navigation, route}) {
                   <TouchableOpacity style={styles.item}
                                     onPress={() => {
                                       navigation.navigate("Screen2", {goalArea: item}), 
-                                      navigation.setParams({newGoalObject: null})
-                                          // need for clearing "New Goal added" on HomeScreen"
+                                      navigation.setParams({newGoalAddedTo: false})
+                                          // need for clearing "New Goal added" sign on HomeScreen"
                                       }} >
                       <Text>{item.areaName}</Text> 
-                      { isNewGoal() && isNewGoal().area === item.areaName ?
+                      { isNewGoal() && isNewGoal() === item.areaName ?
                         <Text style={styles.newGoal}> New Goal added </Text>
                         :
                         null
@@ -64,7 +62,7 @@ export default function HomeScreen({navigation, route}) {
           <TouchableOpacity style={styles.button}
                             onPress = {() => {
                               navigation.navigate("AddScreen", {goalsData: goalsData}),
-                              navigation.setParams({newGoalObject: null})
+                              navigation.setParams({newGoalAddedTo: false})
                                 // need for clearing "New Goal added" on HomeScreen"
                               }}>                         
             <Text>Add a new goal</Text>
@@ -78,14 +76,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 15,
-    backgroundColor: '#ffe',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 3,
     borderColor: 'red' 
   },
   item: {
-    backgroundColor: '#ffc',
+    backgroundColor: 'white',
     width: 170,                                      
     height: 90,
     margin: 10,
@@ -94,24 +92,24 @@ const styles = StyleSheet.create({
     borderColor: 'grey' 
   },
   button: {
-    // width: 27,                                      
-    // height: 22,
     backgroundColor: 'yellow',
-    alignItems: 'center',
     borderWidth: 2,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
     borderRadius:8,
-    borderColor: 'grey',
-    padding: 5
+    borderColor: 'rgb(104, 149, 197)',
+    padding: 10
   },
   itemBox:{
     flex:2,
-    width: "100%",
+    width: '100%',
     borderWidth: 2,
-    borderColor: 'green'
-   },
+    borderColor: 'green', 
+    alignItems: 'center'
+  }, 
   buttonBox: {
     flex:1,
-    width: "100%",
+    width: '100%',
     borderWidth: 3,
     borderColor: 'blue',
     alignItems: 'center'

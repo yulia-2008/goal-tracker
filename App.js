@@ -17,7 +17,7 @@ export default function App() {
             options={{
               headerTitle: "HomeScreen",
               headerStyle: {                   
-                  backgroundColor: "grey",
+                  backgroundColor: 'rgb(104, 149, 197)',
                   height: 70,          
               }            
             }}              
@@ -28,7 +28,7 @@ export default function App() {
             options={{
               headerTitle: "Add Goal",
               headerStyle: {                   
-                  backgroundColor: "grey",
+                  backgroundColor: 'rgb(104, 149, 197)',
                   height: 70,          
               }            
             }}              
@@ -41,7 +41,7 @@ export default function App() {
                   title: route.params.goalArea.areaName,
                     // goalArea is a prop comes from HomeScreen.js onPress 
                   headerStyle: {
-                      backgroundColor: "grey", 
+                      backgroundColor: 'rgb(104, 149, 197)', 
                       height: 70
                   }
               })

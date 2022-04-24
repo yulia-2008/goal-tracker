@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   container: {
     flex:1,
     flexDirection: 'row',
-    width: "100%",
+    width: '100%',
     alignSelf: 'center',
     marginBottom: '10%',
     marginTop: '3%',
@@ -115,23 +115,23 @@ const styles = StyleSheet.create({
     padding:0,
     borderWidth: 2,
     borderColor: "grey",
-    width:"33.3%"
+    width:'33.3%'
   },
   yearBox:{
     padding: 0,
     borderWidth: 2,
     borderColor: "grey", 
-    width:"33.3%",
+    width:'33.3%',
   },
   monthBox:{
     padding: 0,
     borderWidth: 2,
     borderColor: "grey", 
-    width:"33.3%",
+    width:'33.3%',
   },
   item:{
     backgroundColor: 'white',
-    width: "100%",
+    width: '100%',
     alignItems: "center"
   }
 });

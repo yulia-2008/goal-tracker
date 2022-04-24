@@ -18,9 +18,9 @@ export default function AddScreen({navigation, route}) {
     "Relaxation: Fun & Entertainment"
   ]
   const rangeData = [
-     "one time goal", "every day", " every other day", "every week", 
-     "every month", "2 times a week", "3 times a week", 
-     " 2 times a month", "every week-end"
+     "One time goal", "Every day", "Every other day", "Every week", 
+     "Every month", "2 times a week", "3 times a week", 
+     " 2 times a month", "Every week-end"
   ]
   const [area, updateArea] = useState(null)
   const [timeRange, updateTimeRange] = useState(null)
@@ -44,8 +44,7 @@ export default function AddScreen({navigation, route}) {
         null
         }
     else { 
-      let newGoalObject = {
-        area: area, 
+      let newGoalObject = { 
         timeRange: timeRange, 
         text: text, 
         date: date, 
@@ -53,11 +52,11 @@ export default function AddScreen({navigation, route}) {
         year: year
       }
       let goals = [...route.params.goalsData]
-      let  foundArea = goals.find(item =>  item.areaName === newGoalObject.area)
+      let  foundArea = goals.find(item =>  item.areaName === area)
       foundArea.goals.push(newGoalObject)
-      AsyncStorage.setItem("storedData", JSON.stringify(goals))
-          
-      navigation.navigate("HomeScreen", {newGoalObject})   
+
+      AsyncStorage.setItem("storedData", JSON.stringify(goals))  
+      navigation.navigate("HomeScreen", {newGoalAddedTo: area})   
     }  
   }
 
@@ -104,7 +103,7 @@ export default function AddScreen({navigation, route}) {
         <View style={styles.box2}>
           <TouchableOpacity onPress={()=>{updateDatePicker(!datePicker), Keyboard.dismiss()}}
                             style={styles.button}>         
-            <Text> 
+            <Text style={styles.textSize}> 
               { date === null || month === null || year === null ?
                 "Deadline" : 
                 "Deadline:" + " " + month  + " " + date  + ", " + year 
@@ -120,7 +119,7 @@ export default function AddScreen({navigation, route}) {
           <TouchableOpacity style={styles.setButton}
                             onPress={() => {addGoal()}}
                             >
-            <Text >Set Goal</Text>
+            <Text style={styles.textSize}>Set Goal</Text>
           </TouchableOpacity> 
         </View>
       </View>
@@ -132,7 +131,7 @@ export default function AddScreen({navigation, route}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffe',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth:4,
@@ -140,8 +139,8 @@ const styles = StyleSheet.create({
   },
   box1:{
     flex:2,
-    marginLeft: "10%",
-    marginRight: "10%",
+    marginLeft: '10%',
+    marginRight: '10%',
     borderWidth:2,
     borderColor:"red",
     justifyContent: 'space-around'
@@ -156,24 +155,27 @@ const styles = StyleSheet.create({
   },
   box3:{
     flex:1,
-    marginLeft: "10%",
-    marginRight: "10%",
+    marginLeft: '10%',
+    marginRight: '10%',
     borderWidth:2,
     borderColor:"yellow",
     justifyContent: 'flex-start',
   },
   button:{
     borderWidth: 2,
-    borderColor: 'grey',
-    backgroundColor:"white",
+    borderColor: 'rgb(104, 149, 197)',
+    backgroundColor: "white",
     borderRadius:8,
-    width:"100%",
+    width: '100%',
     height:55, 
-    padding: 15,                           
+    padding: 15, 
+    alignItems: 'center'                          
     },
   setButton:{
     borderWidth: 2,
-    borderColor: 'grey',
+    borderBottomWidth: 4,
+    borderRightWidth: 4, 
+    borderColor: 'rgb(104, 149, 197)',
     backgroundColor:"yellow",
     borderRadius:8,
     padding: 10
@@ -185,11 +187,15 @@ const styles = StyleSheet.create({
     },
   inputField:{
     borderWidth: 2,
-    borderColor: 'grey',
+    borderColor: 'rgb(104, 149, 197)',
     backgroundColor:"white",
     borderRadius:8,
     height:55, 
-    padding: 15 
+    padding: 15, 
+    fontSize: 20 
+  }, 
+  textSize: {
+    fontSize: 18
   }
 });
 
