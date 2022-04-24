@@ -35,14 +35,6 @@ export default function HomeScreen({navigation, route}) {
     }
   }
 
-  // const addGoal = () => {
-  //   let newGoals = [...goalsData]
-  //   let  foundArea = newGoals.find(item =>  item.areaName === selectedArea)
-  //   foundArea.goals = [ text ] 
-  //   updateGoals(newGoals) 
-  //   console.log("goalsData in addGoals", goalsData)
-  // }
-
   return (
       <View style={styles.container}>
         {console.log("Home", goalsData)} 

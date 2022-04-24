@@ -5,8 +5,7 @@ export default function Screen2({navigation, route}) {
   const goal = route.params.goalArea
   return (
     <View style={styles.container}>
-      {console.log("screen 2", route.params)} 
-      
+      {console.log("screen 2", goal)} 
     </View>
   );
 }
