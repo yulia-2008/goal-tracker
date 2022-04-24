@@ -4,6 +4,7 @@ import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView,
          TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 import DatePicker from '../components/DatePicker.js'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // import * as Calendar from 'expo-calendar';
 
 export default function AddScreen({navigation, route}) {
@@ -30,30 +31,41 @@ export default function AddScreen({navigation, route}) {
   const [datePicker, updateDatePicker] = useState(false)
   // const [inputFieldInUse, updateInputFieldInUse] = useState("false")
 
-  const newGoalObject = {
-    area: area, 
-    timeRange: timeRange, 
-    text: text, 
-    date: date, 
-    month: month, 
-    year: year
-  }
 
   useEffect(() => {updateDatePicker(false)}, [])
 
   const addGoal = () => {
-    { area === null || timeRange === null || text.trim() === "" || 
-      date === null || month === null || year === null ?
-      null : 
-      navigation.navigate("HomeScreen", {newGoalObject})
-    }
+          // chek if all input filled, 
+          // update data in AsyncStorage => HomeScreen updating as well,
+          // passing newGoalObject to HomeScreen so it can display "New goal was added" in a right container
+    if (area === null || timeRange === null || text.trim() === "" || 
+        date === null || month === null || year === null) { 
+
+        null
+        }
+    else { 
+      let newGoalObject = {
+        area: area, 
+        timeRange: timeRange, 
+        text: text, 
+        date: date, 
+        month: month, 
+        year: year
+      }
+      let goals = [...route.params.goalsData]
+      let  foundArea = goals.find(item =>  item.areaName === newGoalObject.area)
+      foundArea.goals.push(newGoalObject)
+      AsyncStorage.setItem("storedData", JSON.stringify(goals))
+          
+      navigation.navigate("HomeScreen", {newGoalObject})   
+    }  
   }
 
   return ( 
     <>
     <TouchableWithoutFeedback  onPress={()=> {Keyboard.dismiss(), updateDatePicker(false)}} >
       <View style={styles.container}> 
-      {console.log("in AddScreen", date, month, year)} 
+      {/* {console.log("in AddScreen", route.params.goalsData)}  */}
         <View style = {styles.box1} 
          onPress = {()=> {updateDatePicker(false)}}>                       
           <SelectDropdown data = {areaData}
