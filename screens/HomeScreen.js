@@ -12,6 +12,7 @@ export default function HomeScreen({navigation, route}) {
     {areaName: "Finance",  key: 5, goals: []},
     {areaName: "Relaxation: Fun & Entertainment",  key: 6, goals: []}, 
   ])
+
   
   useEffect(() => {getData()}, [])
 
@@ -37,14 +38,18 @@ export default function HomeScreen({navigation, route}) {
 
   return (
       <View style={styles.container}>
-        {console.log("Home", goalsData)} 
+        {console.log("Home", route.params)} 
         <View style={styles.itemBox}>
           <FlatList 
               data={goalsData}
               numColumns={2}
               renderItem={({item}) =>
                   <TouchableOpacity style={styles.item}
-                                    onPress={() => {navigation.navigate("Screen2", {goalArea: item})}} >
+                                    onPress={() => {
+                                      navigation.navigate("Screen2", {goalArea: item}), 
+                                      navigation.setParams({newGoalObject: null})
+                                          // need for clearing "New Goal added" on HomeScreen"
+                                      }} >
                       <Text>{item.areaName}</Text> 
                       { isNewGoal() && isNewGoal().area === item.areaName ?
                         <Text style={styles.newGoal}> New Goal added </Text>
@@ -57,8 +62,11 @@ export default function HomeScreen({navigation, route}) {
         </View> 
         <View style={styles.buttonBox}>     
           <TouchableOpacity style={styles.button}
-                            data = {goalsData}
-                            onPress = {() => {navigation.navigate("AddScreen", {goalsData: goalsData})}}>                         
+                            onPress = {() => {
+                              navigation.navigate("AddScreen", {goalsData: goalsData}),
+                              navigation.setParams({newGoalObject: null})
+                                // need for clearing "New Goal added" on HomeScreen"
+                              }}>                         
             <Text>Add a new goal</Text>
           </TouchableOpacity> 
         </View> 

@@ -102,9 +102,13 @@ export default function AddScreen({navigation, route}) {
         </View> 
         
         <View style={styles.box2}>
-          <TouchableOpacity onPress={()=>{updateDatePicker(!datePicker), Keyboard.dismiss()}}>         
-            <Text style={styles.button}>
-              Deadline
+          <TouchableOpacity onPress={()=>{updateDatePicker(!datePicker), Keyboard.dismiss()}}
+                            style={styles.button}>         
+            <Text> 
+              { date === null || month === null || year === null ?
+                "Deadline" : 
+                "Deadline:" + " " + month  + " " + date  + ", " + year 
+              }
             </Text>  
           </TouchableOpacity>
             { datePicker ? <DatePicker dateHandler = {updateDate}
