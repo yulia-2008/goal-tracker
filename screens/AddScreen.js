@@ -29,10 +29,19 @@ export default function AddScreen({navigation, route}) {
   const [ month, updateMonth] = useState(null)
   const [ year, updateYear] = useState(null)
   const [datePicker, updateDatePicker] = useState(false)
+  
   // const [inputFieldInUse, updateInputFieldInUse] = useState("false")
 
 
   useEffect(() => {updateDatePicker(false)}, [])
+
+  const allSelected = () => {
+    let selected = false
+    if (date && month && year) {
+       selected = true
+    }
+    return selected
+  }
 
   const addGoal = () => {
           // chek if all input filled, 
@@ -52,7 +61,7 @@ export default function AddScreen({navigation, route}) {
         year: year
       }
       let goals = [...route.params.goalsData]
-      let  foundArea = goals.find(item =>  item.areaName === area)
+      let  foundArea = goals.find(item =>  item.lifeArea === area)
       foundArea.goals.push(newGoalObject)
 
       AsyncStorage.setItem("storedData", JSON.stringify(goals))  
@@ -64,7 +73,9 @@ export default function AddScreen({navigation, route}) {
     <>
     <TouchableWithoutFeedback  onPress={()=> {Keyboard.dismiss(), updateDatePicker(false)}} >
       <View style={styles.container}> 
-      {/* {console.log("in AddScreen", route.params.goalsData)}  */}
+       {console.log("in AddScreen, datePickerrr", datePicker)} 
+       {console.log("in AddScreen, allSelected", allSelected())} 
+       
         <View style = {styles.box1} 
          onPress = {()=> {updateDatePicker(false)}}>                       
           <SelectDropdown data = {areaData}
@@ -110,10 +121,17 @@ export default function AddScreen({navigation, route}) {
               }
             </Text>  
           </TouchableOpacity>
-            { datePicker ? <DatePicker dateHandler = {updateDate}
-                                       monthHandler = {updateMonth}
-                                       yearHandler = {updateYear} />
-             : null }
+            { datePicker ?  <>
+                <DatePicker dateHandler = {updateDate}
+                            monthHandler = {updateMonth}
+                            yearHandler = {updateYear}
+                            date = {date}
+                            month = {month}
+                            year = {year}
+                            />
+                {allSelected() ? updateDatePicker(false) : null}</>
+                  // working here: after all selected DatePicker closes but never opned again, work on logic
+                : null }
         </View>
         <View style={styles.box3}>
           <TouchableOpacity style={styles.setButton}

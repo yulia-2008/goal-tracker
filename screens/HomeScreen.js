@@ -5,12 +5,12 @@ import { StyleSheet, Text, View, TouchableOpacity, FlatList} from 'react-native'
 export default function HomeScreen({navigation, route}) {
 
   const [goalsData, updateGoals] = useState([
-    {areaName: "Mind: Personal Development",  id: 1, goals: []},
-    {areaName: "Body: Health & Fitness", id:2, goals: []},
-    {areaName: "Career",  id: 3, goals: []},
-    {areaName: "Relationship: Friends & Fam",  id: 4, goals: []},
-    {areaName: "Finance",  id: 5, goals: []},
-    {areaName: "Relaxation: Fun & Entertainment",  id: 6, goals: []}, 
+    {lifeArea: "Mind: Personal Development",  id: 1, goals: []},
+    {lifeArea: "Body: Health & Fitness", id:2, goals: []},
+    {lifeArea: "Career",  id: 3, goals: []},
+    {lifeArea: "Relationship: Friends & Fam",  id: 4, goals: []},
+    {lifeArea: "Finance",  id: 5, goals: []},
+    {lifeArea: "Relaxation: Fun & Entertainment",  id: 6, goals: []}, 
   ])
 
   
@@ -36,20 +36,27 @@ export default function HomeScreen({navigation, route}) {
 
   return (
       <View style={styles.container}>
-        {console.log("Home", route.params)} 
+        {console.log("Home", route.params)}
+        {/* {AsyncStorage.removeItem('storedData') }  */}
         <View style={styles.itemBox}>
           <FlatList 
               data={goalsData}
               numColumns={2}
               renderItem={({item}) =>
-                  <TouchableOpacity style={styles.item}
-                                    onPress={() => {
-                                      navigation.navigate("Screen2", {goalArea: item}), 
-                                      navigation.setParams({newGoalAddedTo: false})
+                  <TouchableOpacity   key={item.id}
+                                      style={styles.item}
+                                      onPress={() => {
+                                        navigation.navigate("LifeArea", {areaObject: item}), 
+                                        navigation.setParams({newGoalAddedTo: false})
                                           // need for clearing "New Goal added" sign on HomeScreen"
                                       }} >
-                      <Text>{item.areaName}</Text> 
-                      { isNewGoal() && isNewGoal() === item.areaName ?
+                      <Text>{item.lifeArea}</Text>
+                      <Text>{item.goals.length} 
+                            {item.goals.length === 1 ?
+                              ' goal' : ' goals'
+                            }
+                      </Text> 
+                      { isNewGoal() && isNewGoal() === item.lifeArea ?
                         <Text style={styles.newGoal}> New Goal added </Text>
                         :
                         null

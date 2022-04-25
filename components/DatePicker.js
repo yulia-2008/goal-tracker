@@ -3,8 +3,6 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, FlatList } from '
 
 export default function DatePicker(props) {
 
-//   useEffect(() => {}, [])
-
   const monthsArray = [{id:1, month:"January"},{id:2, month:"February"}, {id:3, month:"Martch"},
                  {id:4, month:"April"}, {id: 5, month: "May"}, {id:6, month: "June",},
                  {id:7, month:"July"}, {id:8, month:"August"},{id:9, month:"September"},
@@ -38,18 +36,23 @@ export default function DatePicker(props) {
 
   return (
     <View style={styles.container}>
+         {/* {console.log("datePicker")}  */}
        <View style={styles.dateBox}>
             <FlatList 
                 data={datesArray()}
                 numColumns={1}
                 renderItem={({item}) =>
-                    <TouchableOpacity   
-                        style={ selectedDate === item.date? 
+                    <TouchableOpacity 
+                           // selected date turn yellow; if close and open datePicker selected date still yellow 
+                        style={ selectedDate === item.date || props.date === item.date ? 
                                     [styles.item, {backgroundColor: "yellow"}]
                                     : styles.item
                         }
                         key={item.id}
-                        onPress={() => {setDate(item.date), props.dateHandler(item.date)}}>
+                        onPress={() => {
+                            setDate(item.date), 
+                            props.dateHandler(item.date) 
+                        }}>
                         <Text>{item.date}</Text>                   
                         {/* delete bar indicator  */}                      
                     </TouchableOpacity>   
@@ -63,12 +66,15 @@ export default function DatePicker(props) {
                 numColumns={1}
                 renderItem={({item}) =>
                     <TouchableOpacity   
-                        style={ selectedMonth === item.month? 
+                        style={ selectedMonth === item.month || props.month === item.month ? 
                             [styles.item, {backgroundColor: "yellow"}]
                             : styles.item
                         }
                         key={item.id}
-                        onPress={() => {setMonth(item.month), props.monthHandler(item.month)}}>  
+                        onPress={() => {
+                            setMonth(item.month), 
+                            props.monthHandler(item.month)
+                        }}>  
                         <Text>{item.month}</Text>               
                     </TouchableOpacity>   
                 }         
@@ -81,12 +87,15 @@ export default function DatePicker(props) {
                 numColumns={1}
                 renderItem={({item}) =>
                     <TouchableOpacity   
-                        style={ selectedYear === item.year? 
+                        style={ selectedYear === item.year || props.year === item.year? 
                             [styles.item, {backgroundColor: "yellow"}]
                             : styles.item
                         }
                         key={item.id}
-                        onPress={() => {setYear(item.year), props.yearHandler(item.year)}}>      
+                        onPress={() => {
+                            setYear(item.year), 
+                            props.yearHandler(item.year)
+                        }}>      
                         <Text>{item.year}</Text>                      
                     </TouchableOpacity>   
                 }         

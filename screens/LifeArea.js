@@ -1,17 +1,21 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 
-export default function Screen2({navigation, route}) {
-  const goalsObject = route.params.goalArea
+export default function LifeArea({navigation, route}) {
+  const areaObject = route.params.areaObject
   return (
     <View style={styles.container}>
-      {console.log("screen 2", route.params)} 
-      <ScrollView horizontal={true}  
-                  persistentScrollbar= {false}> 
-          {route.params && goalsObject ?        
-          goalsObject.goals.map(item=> { 
-             return <TouchableOpacity 
-                                      // onPress={() => {openMemo(memo)} }                                     
+      {console.log("Area", route.params)} 
+      <ScrollView horizontal={false}  
+                  persistentScrollbar= {false}
+                  style={styles.scrollView}> 
+          {route.params && areaObject ?        
+          areaObject.goals.map(item=> { 
+             return <TouchableOpacity key={item.id}
+                                      onPress={() => {
+                                        navigation.navigate("Goal", {goalObject: item}), 
+                                        navigation.setParams({newGoalAddedTo: false})
+                                      }}                                     
                                       style={styles.item}> 
                                       <Text> Goal: {item.text} </Text> 
                                       <Text> Deadline: {item.month} - {item.date} - {item.year} </Text>
@@ -35,9 +39,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffe',
     alignItems: 'flex-start' 
   },
+  scrollView: {
+    width: '100%'
+  },
   item: {
     backgroundColor: 'white',                                     
     margin: 10,
+    width: '70%',
     height: 90,
     borderWidth: 3,
     borderRadius: 15, 
