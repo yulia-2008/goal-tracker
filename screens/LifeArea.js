@@ -11,7 +11,7 @@ export default function LifeArea({navigation, route}) {
                   persistentScrollbar= {false}
                   style={styles.scrollView}> 
           {areaObject.goals.length > 0  ?        
-              areaObject.goals.map(item=> { 
+              areaObject.goals.map(item => { 
                 return  <TouchableOpacity key={item.id}
                                           style={styles.item}
                                           onPress={() => {
@@ -20,7 +20,7 @@ export default function LifeArea({navigation, route}) {
                                                   // nedd to remove "New Goal Added" sign on HomeScreen.
                                           }}> 
                           <Text> Goal: {item.text} </Text> 
-                          <Text> Deadline: {item.month} - {item.date} - {item.year} </Text>
+                          <Text> Deadline: {item.month} / {item.date} / {item.year} </Text>
                           <Text> Pereodicity: {item.timeRange} </Text>                                        
                         </TouchableOpacity>
               })
@@ -34,6 +34,8 @@ export default function LifeArea({navigation, route}) {
                                     //  need to create another AddScreen which is not going to display
                                     //  Area goal in Select options, because it is in necesary area already
                                     // or do conditional rendering in Select/AddScreen
+                                    // added goalsData prop in HomeScreen, line 49, onPress !
+
                                       // navigation.navigate("AddScreen", {goalsData: goalsData}),
                                       // navigation.setParams({newGoalAddedTo: false})
                                         // need for removing "New Goal added" sign on HomeScreen"
