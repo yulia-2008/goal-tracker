@@ -34,25 +34,16 @@ export default function AddScreen({navigation, route}) {
 
 
   useEffect(() => {updateDatePicker(false)}, [])
-
-  const allSelected = () => {
-    let selected = false
-    if (date && month && year) {
-       selected = true
-    }
-    return selected
-  }
+  useEffect(() => {updateDatePicker(false)}, [date && month && year])
+    // when deadline is selected DatePicker will be automaticly closed
 
   const addGoal = () => {
-          // chek if all input filled, 
+          // chek if  input filled, 
           // update data in AsyncStorage => HomeScreen updating as well,
           // passing newGoalObject to HomeScreen so it can display "New goal was added" in a right container
-    if (area === null || timeRange === null || text.trim() === "" || 
-        date === null || month === null || year === null) { 
+    
+    if (area != null && timeRange != null && text.trim() != "" ) { 
 
-        null
-        }
-    else { 
       let newGoalObject = { 
         timeRange: timeRange, 
         text: text, 
@@ -65,17 +56,16 @@ export default function AddScreen({navigation, route}) {
       foundArea.goals.push(newGoalObject)
 
       AsyncStorage.setItem("storedData", JSON.stringify(goals))  
-      navigation.navigate("HomeScreen", {newGoalAddedTo: area})   
-    }  
+      navigation.navigate("HomeScreen", {newGoalAddedTo: area}) 
+
+    }
   }
 
   return ( 
     <>
     <TouchableWithoutFeedback  onPress={()=> {Keyboard.dismiss(), updateDatePicker(false)}} >
       <View style={styles.container}> 
-       {console.log("in AddScreen, datePickerrr", datePicker)} 
-       {console.log("in AddScreen, allSelected", allSelected())} 
-       
+       {console.log("AddScreen, datePicker", datePicker)}
         <View style = {styles.box1} 
          onPress = {()=> {updateDatePicker(false)}}>                       
           <SelectDropdown data = {areaData}
@@ -91,10 +81,6 @@ export default function AddScreen({navigation, route}) {
                       // autoFocus={false} 
                        placeholder="new goal...  " 
                       //  value={text}
-                          // onChangeText={text=>updateText(text)}
-                          // onEndEditing={()=> addGoal()}
-                      // onStartEditing = {()=>updateDatePicker(false)}
-                      //onFocus = {()=> updateInputFieldInUse(true)}
                       onPressIn={()=>{updateDatePicker(false)}}
                       onChangeText={enteredText=> updateText(enteredText)}                   
                       required
@@ -116,27 +102,26 @@ export default function AddScreen({navigation, route}) {
                             style={styles.button}>         
             <Text style={styles.textSize}> 
               { date === null || month === null || year === null ?
-                "Deadline" : 
-                "Deadline:" + " " + month  + " " + date  + ", " + year 
+                  "Deadline" 
+                  :
+                  "Deadline:" + " " + month  + " " + date  + " " + year 
               }
             </Text>  
           </TouchableOpacity>
-            { datePicker ?  <>
+            { datePicker ? 
                 <DatePicker dateHandler = {updateDate}
                             monthHandler = {updateMonth}
                             yearHandler = {updateYear}
                             date = {date}
                             month = {month}
                             year = {year}
-                            />
-                {allSelected() ? updateDatePicker(false) : null}</>
-                  // working here: after all selected DatePicker closes but never opned again, work on logic
-                : null }
+                            />            
+                : null
+            }
         </View>
         <View style={styles.box3}>
           <TouchableOpacity style={styles.setButton}
-                            onPress={() => {addGoal()}}
-                            >
+                            onPress={() => {addGoal()}}>
             <Text style={styles.textSize}>Set Goal</Text>
           </TouchableOpacity> 
         </View>

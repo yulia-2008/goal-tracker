@@ -3,30 +3,45 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-nati
 
 export default function LifeArea({navigation, route}) {
   const areaObject = route.params.areaObject
+  const goalsData = route.params.goalsData
   return (
     <View style={styles.container}>
-      {console.log("Area", route.params)} 
+      {console.log("Life Area", areaObject)}  
       <ScrollView horizontal={false}  
                   persistentScrollbar= {false}
                   style={styles.scrollView}> 
-          {route.params && areaObject ?        
-          areaObject.goals.map(item=> { 
-             return <TouchableOpacity key={item.id}
-                                      onPress={() => {
-                                        navigation.navigate("Goal", {goalObject: item}), 
-                                        navigation.setParams({newGoalAddedTo: false})
-                                      }}                                     
-                                      style={styles.item}> 
-                                      <Text> Goal: {item.text} </Text> 
-                                      <Text> Deadline: {item.month} - {item.date} - {item.year} </Text>
-                                      <Text> Pereodicity: {item.timeRange} </Text>
-                                      
-                    </TouchableOpacity>
-          })
-          :
-          <Text>No goals set</Text>
-        }
-      </ScrollView>
+          {areaObject.goals.length > 0  ?        
+              areaObject.goals.map(item=> { 
+                return  <TouchableOpacity key={item.id}
+                                          style={styles.item}
+                                          onPress={() => {
+                                            navigation.navigate("Goal", {goalObject: item}), 
+                                            navigation.setParams({newGoalAddedTo: false}) 
+                                                  // nedd to remove "New Goal Added" sign on HomeScreen.
+                                          }}> 
+                          <Text> Goal: {item.text} </Text> 
+                          <Text> Deadline: {item.month} - {item.date} - {item.year} </Text>
+                          <Text> Pereodicity: {item.timeRange} </Text>                                        
+                        </TouchableOpacity>
+              })
+              : 
+              <Text>No goals set</Text>     
+          }
+      </ScrollView> 
+      <View style={styles.buttonBox}>  
+            <TouchableOpacity style={styles.button}
+                                    onPress = {() => { console.log("LifeArea Add button")
+                                    //  need to create another AddScreen which is not going to display
+                                    //  Area goal in Select options, because it is in necesary area already
+                                    // or do conditional rendering in Select/AddScreen
+                                      // navigation.navigate("AddScreen", {goalsData: goalsData}),
+                                      // navigation.setParams({newGoalAddedTo: false})
+                                        // need for removing "New Goal added" sign on HomeScreen"
+                                      }}>                         
+              <Text>Add a new goal</Text>  
+            </TouchableOpacity> 
+       </View> 
+      
     </View>
   );
 }
@@ -34,22 +49,44 @@ export default function LifeArea({navigation, route}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: 15,
     borderWidth:3,
     borderColor: 'grey',
     backgroundColor: '#ffe',
-    alignItems: 'flex-start' 
+    alignItems: 'flex-start',
   },
   scrollView: {
-    width: '100%'
+   flex: 2,
+    width: '100%',
+    borderWidth: 3,
+    borderRadius: 15, 
+    borderColor: 'yellow' 
   },
   item: {
     backgroundColor: 'white',                                     
     margin: 10,
     width: '70%',
-    height: 90,
+    // height: 90,
     borderWidth: 3,
     borderRadius: 15, 
     borderColor: 'rgb(104, 149, 197)' 
   },
+  buttonBox: {
+    flex: 0.2,
+    width: '100%',
+    borderWidth: 3,
+    borderColor: 'blue',
+    alignItems: 'center'
+   },
+  button: {
+    
+    backgroundColor: 'yellow',
+    borderWidth: 2,
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+    borderRadius:8,
+    borderColor: 'rgb(104, 149, 197)',
+    padding: 10,
+  }
 });
 

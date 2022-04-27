@@ -46,7 +46,7 @@ export default function HomeScreen({navigation, route}) {
                   <TouchableOpacity   key={item.id}
                                       style={styles.item}
                                       onPress={() => {
-                                        navigation.navigate("LifeArea", {areaObject: item}), 
+                                        navigation.navigate("LifeArea", {areaObject: item}, {goalsData: goalsData}), 
                                         navigation.setParams({newGoalAddedTo: false})
                                           // need for clearing "New Goal added" sign on HomeScreen"
                                       }} >
@@ -70,7 +70,7 @@ export default function HomeScreen({navigation, route}) {
                             onPress = {() => {
                               navigation.navigate("AddScreen", {goalsData: goalsData}),
                               navigation.setParams({newGoalAddedTo: false})
-                                // need for clearing "New Goal added" on HomeScreen"
+                                // need for removing "New Goal added" sign on HomeScreen"
                               }}>                         
             <Text>Add a new goal</Text>
           </TouchableOpacity> 
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   }, 
   buttonBox: {
-    flex:1,
+    flex: 0.2,
     width: '100%',
     borderWidth: 3,
     borderColor: 'blue',
