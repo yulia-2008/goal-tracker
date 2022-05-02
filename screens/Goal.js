@@ -1,12 +1,22 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+
 
 export default function Goal({navigation, route}) {
 
     const goal = route.params.goalObject;
+    const currentDate = new Date()
+    const currentMonth = currentDate.getMonth()
+    const currentYear = currentDate.getFullYear()
+    const [displayedMonth, setMonth] = useState(currentMonth)
+    const [displayedYear, setYear] = useState(currentYear)
+
+    const monthArray = ['January', 'February', 'March', 'April',
+                        'May', 'June', 'July', 'August', 'September',
+                        'October', 'November', 'December']
 
     const weekDays = () => {
-        let days = new Array("Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"); 
+        let days = new Array("Mon", "Tu", "Wed", "Thur", "Fri", "Sat", "Sun"); 
         let daysWithKeys = []
         for (let i = 0; i < days.length; i++){
             daysWithKeys.push({id: i, day: days[i]})
@@ -14,34 +24,46 @@ export default function Goal({navigation, route}) {
         return daysWithKeys
     }
 
-    const years = () => {
-        let array = [];
-        for(var i = 2020; i <= 2050; i++){
-            array.push({id: i, year: i});
-        }
-        return array
-    }
+    const getDays = () => {
+        
+        let daysCount = new Date(displayedYear, displayedMonth, 0).getDate();  
+                // getDate() return 30 or 31 day, third parameter represents date (1-31),
+                // parameter 0 ->  last day of the previos month (will be 30 or 31)
+                // Months start with index 0, so the previous month is the needed month
+                
+        let firstDay = new Date(displayedYear, displayedMonth, 1).getDay()  
 
-    const months = () => {
-        let array = new Array('January', 'February', 'March', 'April',
-                                    'May', 'June', 'July', 'August', 'September',
-                                     'October', 'November', 'December'); 
-        let monthWithKeys = []
-        for (let i = 0; i < array.length; i++){
-            monthWithKeys.push({id: i+1, month: array[i]})
+        let daysArray = [];
+        for (let i = 1; i <= daysCount; i++) {
+            daysArray.push(i);
         }
-        return monthWithKeys
-    }
 
-    const dates = (year, month) => { 
-        let count = new Date(year, month, 0).getDate();
-        let array = [];
-        for(var i = 1; i <= count; i++){
-            array.push({id: i, date: i});
-        }
-        return array
-    }
+        switch (firstDay) {
+            case 0:
+                daysArray.unshift("-", "-", "-", "-", "-", "-");
+                break;
+            case 2:
+                daysArray.unshift("-");
+                break;
+            case 3:
+                daysArray.unshift("-", "-");
+                break;
+            case 4:
+                daysArray.unshift("-", "-", "-");
+                break;
+            case 5:
+                daysArray.unshift("-", "-", "-", "-");
+                break;
+            case 6:
+                daysArray.unshift("-", "-", "-", "-", "-");
 
+                // If the 1st day of the month starts not on Monday 
+                // push "-" to the begining of the daysArray 
+            }
+                 
+      return daysArray
+    }
+    
     return (
         <View style={styles.container}>  
             <Text>{goal.text}  </Text> 
@@ -50,51 +72,33 @@ export default function Goal({navigation, route}) {
             <View style={styles.calendarBox}>
                 <View style={styles.calendarHeader}>
                     { weekDays().map(item => {
-                        return  <TouchableOpacity style={styles.dayBox} key={item.id}>
+                        return  <TouchableOpacity style={styles.weekDayBox} key={item.id}>
                                     <Text>{item.day}</Text>
                                 </TouchableOpacity> 
                       })
                     }
-                </View>              
-                <ScrollView style={styles.yearBox}>
-                { years().map(yearObject => {
-                    return  <View style={styles.yearBox} key={yearObject.id}>
-                                <Text>{yearObject.year}</Text>
-                                    {months().map(monthObject => {
-                                        return  <ScrollView style={styles.monthsBox} key= {monthObject.id}>
-                                                    <Text>{monthObject.month}</Text>
-                                                    <FlatList 
-                                                        data={dates(yearObject.year, monthObject.id)}
-                                                        numColumns={7}
-                                                        renderItem={({item}) =>
-                                                            <TouchableOpacity  
-                                                                style={ styles.dates}
-                                                                key={item.id}
-                                                                onPress={() => {
-                                                                    console.log("date pressed")
-                                                                }}>
-                                                            <Text>{item.date}</Text>                                        
-                                                            </TouchableOpacity>   
-                                                        }/> 
-
-
-                                                    {/* {dates(yearObject.year, monthObject.id).map(dateObject => {
-                                                        return  <View style={styles.dates} key={dateObject.id}>
-                                                                    <Text>{dateObject.date}</Text>
-                                                                    
-                                                                </View>
-                                                    })
-                                                    }      */}
-                                                </ScrollView>
-                                    })
-                                    }
-                            </View> 
-                })
-                }
-            
-                </ScrollView>
-            </View>
-                                      
+                    
+                </View>  
+                <Text style={styles.month}>
+                    {monthArray[currentMonth] + " " +  currentYear}
+                </Text>
+                
+                <FlatList 
+                    contentContainerStyle = {styles.datesBox}
+                    data={getDays()}
+                    numColumns={7}
+                    renderItem={({item}) =>
+                        <TouchableOpacity  
+                            style={styles.date}
+                            key={getDays().indexOf(item)}
+                            onPress={() => {
+                                console.log("date pressed")
+                            }}>
+                        <Text>{item}</Text>                                        
+                        </TouchableOpacity>   
+                    }
+                /> 
+            </View>                           
         </View>
     );
 }
@@ -106,48 +110,49 @@ const styles = StyleSheet.create({
     padding: 10,
     borderColor: 'grey',
     backgroundColor: 'white',
-    alignItems: 'flex-start' 
   },
   calendarBox: {
     flex:1,
     width: '90%',
-    alignSelf: 'center',
     margin: '5%',
     backgroundColor: 'white',
-    alignItems: 'center',
-    // justifyContent: 'space-between',
+    
     borderWidth: 2,
     borderColor: "grey",
     borderRadius: 5
   },
   calendarHeader:{
-    flex: 0.1,
-    justifyContent: 'space-around',
+    justifyContent: 'space-around', // gorizontally
     width: '100%',
     flexDirection: 'row',
     borderWidth: 2,
     borderColor: "red",
     alignItems: 'stretch'
   },
-  dayBox:{
+  weekDayBox:{
+    width: '14%',
     borderWidth: 2,
     borderColor: "blue",
+    padding: '2%',
   },
-  yearBox: {
-    flex: 2,
+  month: {
+    padding: '1%',
+    alignSelf: 'center' 
+  },
+  datesBox: {
+   flex: 1,
     width: '100%',
-    borderWidth: 2,
-    borderColor: "yellow",
-  },
-  monthsBox: {
-    flex: 1,
-    width: '100%',
-    borderWidth: 2,
-    borderColor: "black",
-  },
-  dates: {
     borderWidth: 2,
     borderColor: "pink",
+    justifyContent: 'space-around', // vertically
+    alignItems: 'stretch'           // gorizontally
+  }, 
+  date: {
+    alignItems: 'center',   // gorizontally
+    padding: '4%',
+    margin: 1,
+    width: '14%',
+    borderWidth: 2,
+    borderColor: "grey",
   }
 });
-

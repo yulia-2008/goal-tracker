@@ -6,13 +6,13 @@ export default function LifeArea({navigation, route}) {
   const goalsData = route.params.goalsData
   return (
     <View style={styles.container}>
-      {console.log("Life Area", areaObject)}  
+      {/* {console.log("Life Area", areaObject)}   */}
       <ScrollView horizontal={false}  
                   persistentScrollbar= {false}
                   style={styles.scrollView}> 
           {areaObject.goals.length > 0  ?        
-              areaObject.goals.map(item => { 
-                return  <TouchableOpacity key={item.id}
+              areaObject.goals.map((item, index) => {  // goal store as array of strings, they don't have no key, no id.
+                return  <TouchableOpacity key={index}
                                           style={styles.item}
                                           onPress={() => {
                                             navigation.navigate("Goal", {goalObject: item}), 
