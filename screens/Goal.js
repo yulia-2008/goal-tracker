@@ -1,13 +1,27 @@
-import React, {useState} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert } from 'react-native';
 
 export default function Goal({navigation, route}) {
 
     const goal = route.params.goalObject;
-    const currentDate = new Date()
-    const currentMonth = currentDate.getMonth()
-    const [coordinate, setCoordinate] = useState([])
-    const ref = React.useRef(0);
+    
+    const [currentMontIndexInTheDataArray, setMonthIndex] = useState(null)
+    const [itemsHeight, setItemsHeight] = useState({})
+    const [button, setValue] = useState(false)
+    const [ref, setRef] = useState(0);
+    // useEffect(() =>  scrollToCurrentMont(
+    //     // animated: true,
+    //     // index: currentMonth,
+    //     // viewPosition: 0
+    // ), [ref])
+
+    // const scrollToCurrentMont = () => {
+    //     ref.scrollToIndex({animated: true,
+    //          index: currentMonth,
+    //          viewPosition: 0})
+    //     // console.log("kkk", ref)
+    // }
+
 
     const monthArray = [{id: 0, name:'January'}, {id: 1, name: 'February'},
                         {id: 2, name: 'March'}, {id: 3, name:'April'},
@@ -27,15 +41,15 @@ export default function Goal({navigation, route}) {
 
     const monthsYearsDatesArray = () => {
             // creates nested array [ {id:0, month: [janyary, 2022], dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
-        let array = []
+        let dataArray = []
         let count = 0;
         for (let i = 2022; i <= 2040; i ++){      
             monthArray.map(mo => {
-                array.push({id: count, month: [mo.name, i], dates: getDates(mo.id, i)})
+                dataArray.push({id: count, month: [mo.name, i], dates: getDates(mo.id, i)})
                 count += 1
             })
-        }                
-        return array
+        }              
+        return dataArray
     }
 
     const getDates = (month, year) => {
@@ -78,9 +92,33 @@ export default function Goal({navigation, route}) {
             }          
       return daysArrayWithKeys
     }
+
+    const currentMontIndex = () => {
+        /// sloving down initial calendar rendering
+           // finds in monthsYearsDatesArray an object that holds current month
+           //  and returns index of that object
+        const currentDate = new Date()
+        const currentYear = currentDate.getFullYear()
+        const currentMonth = currentDate.getMonth() 
+        let currentMo = monthsYearsDatesArray().find( 
+                obj => obj.month[0] === monthArray[currentMonth].name
+                && obj.month[1] === currentYear    
+        )       
+        return currentMo.id
+    }
+
+    const getOffset = () => {
+           // Object.key(). It returns the values of all properties in the object as an array. 
+           // You can then loop through the values array by using any of the array looping methods.
+        let sum = 0
+        Object.values(itemsHeight).forEach(val => sum+=val);     
+        return sum
+    }
     
     return (
         <View style={styles.container}>  
+        {/* {console.log("cu", currentMonth)}
+        {console.log("cu2", monthsYearsDatesArray()[4].month)} */}
             <Text>{goal.text}  </Text> 
             <Text> Deadline: {goal.month} / {goal.date} / {goal.year} </Text>
             <Text> Pereodicity: {goal.timeRange} </Text>
@@ -98,13 +136,28 @@ export default function Goal({navigation, route}) {
                     // creates Calendar List !! 
                     // FlatList can not be inside of ScrollView, 
                     // so I did not use FlatList to render dates
+                    //keyExtractor={item => item.id}
                     data = {monthsYearsDatesArray()}
-                    initialScrollIndex = {currentMonth}
-                    renderItem = {({item}) =>
-                        <View   key = {item.id}>
-                            <Text   // renders "month" - "year" 
+                    initialScrollIndex = {currentMontIndex()}
+                    
+                    ref={ref => setRef(ref)}
+                    // onScroll={()=>console.log("scroll", data.length)}
+                    // does not scroll back for the first time
+                    // initialScrollIndex disables the "scroll to top" optimization
+                    //  that keeps the first initialNumToRender (10 by default) items always rendered
+                    //  and immediately renders the items starting at this initial index
+                    renderItem = {({item}) => 
+                        <View   key = {item.id}
+                        onLayout={(event) => {
+                            //  use itemHeight to calculate offset (in getItemLayout)       
+                            let itemHeight = event.nativeEvent.layout.height
+                            setItemsHeight((prevState => ({ ...prevState, [item.id]: itemHeight })));
+                            //console.log('state:', itemsHeight);
+                          }}   
+                        >
+                            <Text   // renders "month" - "year"
                                     style={styles.month}>
-                                {item.month[0]} - {item.month[1]}
+                                {item.month[0]} - {item.month[1]} 
                             </Text> 
                             <View style = {styles.datesBox}>
                                  {item.dates.map(dateObj => 
@@ -112,7 +165,7 @@ export default function Goal({navigation, route}) {
                                                         key = {dateObj.id}
                                                         style={styles.date}
                                                         onPress={() => {
-                                                            console.log("date pressed")
+                                                            console.log("button presse")
                                                         }}>
                                         <Text style = {styles.text}> {dateObj.date} </Text>
                                     </TouchableOpacity>
@@ -120,8 +173,26 @@ export default function Goal({navigation, route}) {
                             </View>    
                         </View>  
                     }
-                />  
-            </View>                           
+                    getItemLayout={(data, index) => ({
+                        // need to use layout(itemHeight) and calculate offset
+                       length: 367,                              
+                        //offset: 367 * index,
+                        offset: getOffset(), // The distance (in pixels) of the current row from the top of the FlatList. 
+                        index, //The current row index.
+                      })}  
+
+                />
+                  
+            </View>        
+            <TouchableOpacity   style={styles.button}
+                                onPress={() => ref.scrollToIndex({
+                                    animated: true,
+                                    index: currentMontIndex(),
+                                    viewPosition: 0
+                                })}>
+                <Text style={styles.textSize}>Current month</Text>
+            </TouchableOpacity>
+                                      
         </View>
     );
 }
@@ -185,5 +256,19 @@ const styles = StyleSheet.create({
   text: {
     textAlign: 'center',
     textAlignVertical: 'center'
-  }
+  },
+  button:{
+    width: "40%",
+    borderWidth: 2,
+    borderBottomWidth: 4,
+    borderRightWidth: 4, 
+    borderColor: 'rgb(104, 149, 197)',
+    backgroundColor:"yellow",
+    borderRadius:8,
+    padding: 10,
+    alignSelf: 'center'
+    },
+    textSize: {
+        fontSize: 18
+      }
 });

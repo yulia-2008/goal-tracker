@@ -5,44 +5,17 @@ need to be done:
 - if not all fields are filled and Set Goal pressed - what should happen?
 - Add new Goal button text - make bigger
 - Home Screen and LifeArea has different "Add Button" position???? Flex parametr is the same.
-
-- date cell in Goal.js require key for each child.
-
-
-
+- in calendar: render current month and does not let scroll back; after first time scrolling down the list automaticly scrolls up
+!!! initialScrollIndex disables the "scroll to top" optimization that keeps the first initialNumToRender items always rendered and immediately renders the items starting at this initial index
+- change dedline conteiner for Modal Pop-up
 
 
 
 
+MAY BE NEED IT LATER: 
 
-const monthsYearsArray = () => {
-        // creates array of objects [ {id: 0, month: {id: 0, name: janyary},...]
-        let array = []
-        let count = 0;
-        for (let i = 2022; i <= 2040; i ++){
-            monthArray.map(mo => {
-                array.push({id: count, month: mo, year: i})
-                count += 1
-            })
-        }                 
-        return array    
-    }
-
-
-
-                <ScrollView >
-                    { monthsYearsArray().map(obj => {
-                        return  <View style={styles.month} key={obj.id}>
-                                    <Text>{obj.month.name} - {obj.year}</Text>
-                                    {getDates(obj.month.id, obj.year).map(date => {
-                                        return  <TouchableOpacity key={date}>
-                                                    <Text >
-                                                        {date}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                                
-                                    })}  
-                                </View>       
-                    })}
-                </ScrollView>
+FlatList
+onScroll={(event) => console.log("scroll:", event.nativeEvent)}
+                        //  nativeEvent is object, has "contentOffset" property {x:0, y: 12 }
+                        //  y value is the distance that the user has scrolled from the last position
 
