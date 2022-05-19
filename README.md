@@ -9,6 +9,8 @@ need to be done:
 !!! initialScrollIndex disables the "scroll to top" optimization that keeps the first initialNumToRender items always rendered and immediately renders the items starting at this initial index
 - change dedline conteiner for Modal Pop-up
 
+- currentMonthIndex - slowing down initial rendering of calendar, find another solution
+
 
 
 

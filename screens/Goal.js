@@ -1,13 +1,14 @@
 import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase } from 'react-native';
 
 export default function Goal({navigation, route}) {
 
     const goal = route.params.goalObject;
     
-    const [currentMontIndexInTheDataArray, setMonthIndex] = useState(null)
-    const [itemsHeight, setItemsHeight] = useState({})
-    const [button, setValue] = useState(false)
+    const [currentMonth, setCurrentMonth] = useState(null)
+    const [dateClicked, setValue] = useState(false)
+    // const [itemsHeight, setItemsHeight] = useState({})
+    // const [button, setValue] = useState(false)
     const [ref, setRef] = useState(0);
     // useEffect(() =>  scrollToCurrentMont(
     //     // animated: true,
@@ -15,11 +16,14 @@ export default function Goal({navigation, route}) {
     //     // viewPosition: 0
     // ), [ref])
 
+    useEffect(() =>  getMonth(), [])
+   
+
     // const scrollToCurrentMont = () => {
     //     ref.scrollToIndex({animated: true,
     //          index: currentMonth,
     //          viewPosition: 0})
-    //     // console.log("kkk", ref)
+    //     //  DOES NOT WORK !!
     // }
 
 
@@ -93,27 +97,33 @@ export default function Goal({navigation, route}) {
       return daysArrayWithKeys
     }
 
-    const currentMontIndex = () => {
-        /// sloving down initial calendar rendering
-           // finds in monthsYearsDatesArray an object that holds current month
-           //  and returns index of that object
+    // const currentMontIndex = () => {
+    //     /// slowing down initial calendar rendering
+    //        // finds in monthsYearsDatesArray an object that holds current month
+    //        //  and returns index of that object
+    //     const currentDate = new Date()
+    //     const currentYear = currentDate.getFullYear()
+    //     const currentMonth = currentDate.getMonth() 
+    //     let currentMo = monthsYearsDatesArray().find( 
+    //             obj => obj.month[0] === monthArray[currentMonth].name
+    //             && obj.month[1] === currentYear    
+    //     )     
+    //     return currentMo.id
+    // }
+
+    const getMonth = () => {
         const currentDate = new Date()
         const currentYear = currentDate.getFullYear()
         const currentMonth = currentDate.getMonth() 
         let currentMo = monthsYearsDatesArray().find( 
                 obj => obj.month[0] === monthArray[currentMonth].name
                 && obj.month[1] === currentYear    
-        )       
-        return currentMo.id
+        )  
+        // console.log("test",currentMo.id) 
+        setCurrentMonth(currentMo.id)       
     }
 
-    const getOffset = () => {
-           // Object.key(). It returns the values of all properties in the object as an array. 
-           // You can then loop through the values array by using any of the array looping methods.
-        let sum = 0
-        Object.values(itemsHeight).forEach(val => sum+=val);     
-        return sum
-    }
+    
     
     return (
         <View style={styles.container}>  
@@ -138,8 +148,8 @@ export default function Goal({navigation, route}) {
                     // so I did not use FlatList to render dates
                     //keyExtractor={item => item.id}
                     data = {monthsYearsDatesArray()}
-                    initialScrollIndex = {currentMontIndex()}
-                    
+                    // initialScrollIndex = {currentMontIndex()}
+                    // initialScrollIndex = {current}
                     ref={ref => setRef(ref)}
                     // onScroll={()=>console.log("scroll", data.length)}
                     // does not scroll back for the first time
@@ -148,12 +158,12 @@ export default function Goal({navigation, route}) {
                     //  and immediately renders the items starting at this initial index
                     renderItem = {({item}) => 
                         <View   key = {item.id}
-                        onLayout={(event) => {
+                        // onLayout={(event) => {
                             //  use itemHeight to calculate offset (in getItemLayout)       
-                            let itemHeight = event.nativeEvent.layout.height
-                            setItemsHeight((prevState => ({ ...prevState, [item.id]: itemHeight })));
+                            // let itemHeight = event.nativeEvent.layout.height
+                            // setItemsHeight((prevState => ({ ...prevState, [item.id]: itemHeight })));
                             //console.log('state:', itemsHeight);
-                          }}   
+                          // }}   
                         >
                             <Text   // renders "month" - "year"
                                     style={styles.month}>
@@ -165,21 +175,33 @@ export default function Goal({navigation, route}) {
                                                         key = {dateObj.id}
                                                         style={styles.date}
                                                         onPress={() => {
-                                                            console.log("button presse")
+                                                            setValue(!dateClicked)
                                                         }}>
                                         <Text style = {styles.text}> {dateObj.date} </Text>
                                     </TouchableOpacity>
                                 )} 
-                            </View>    
+                            </View>  
+                            <Modal 
+                                transparent = {true} 
+                                visible = {dateClicked}>
+                                <View style={styles.modal}>
+                                    <View style={styles.modalContent}>
+                                        <Text>Mark as accomplished?</Text>
+                                        <TouchableOpacity>
+                                            <Text>YES</Text></TouchableOpacity>
+                                        <TouchableOpacity>
+                                            <Text>CANCEL</Text></TouchableOpacity>
+                                    </View>
+                                </View>
+                            </Modal>  
                         </View>  
                     }
-                    getItemLayout={(data, index) => ({
-                        // need to use layout(itemHeight) and calculate offset
-                       length: 367,                              
-                        //offset: 367 * index,
-                        offset: getOffset(), // The distance (in pixels) of the current row from the top of the FlatList. 
-                        index, //The current row index.
-                      })}  
+                    // getItemLayout={(data, index) => ({
+                    //     // need to use layout(itemHeight) and calculate offset
+                    //     length: 367,                              
+                    //     offset: 367, // The distance (in pixels) of the current row from the top of the FlatList. 
+                    //     index, //The current row index.
+                    //   })}  
 
                 />
                   
@@ -187,7 +209,7 @@ export default function Goal({navigation, route}) {
             <TouchableOpacity   style={styles.button}
                                 onPress={() => ref.scrollToIndex({
                                     animated: true,
-                                    index: currentMontIndex(),
+                                    index: currentMonth,
                                     viewPosition: 0
                                 })}>
                 <Text style={styles.textSize}>Current month</Text>
@@ -270,5 +292,19 @@ const styles = StyleSheet.create({
     },
     textSize: {
         fontSize: 18
-      }
+    },
+    modal: {
+        flex:1,
+        backgroundColor: 'rgba(100, 100, 100, 0.1)', // 0.1 represents opacity
+        justifyContent:'center'       
+    },
+    modalContent:{
+        
+        backgroundColor: 'white',
+        alignSelf: 'center',
+        margin: 50,
+        padding: 40,
+
+    }
+    
 });
