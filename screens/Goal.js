@@ -1,15 +1,15 @@
-import React, {useState, useEffect} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase } from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
 
 export default function Goal({navigation, route}) {
 
     const goal = route.params.goalObject;
     
     const [currentMonth, setCurrentMonth] = useState(null)
-    const [dateClicked, setValue] = useState(false)
+    const [cellInfo, setValue] = useState({cellClicked: false, cellId: null})
+    const [coordinate, setCoordinate] = useState(null)
     // const [itemsHeight, setItemsHeight] = useState({})
-    // const [button, setValue] = useState(false)
-    const [ref, setRef] = useState(0);
+    const ref = useRef(0);
     // useEffect(() =>  scrollToCurrentMont(
     //     // animated: true,
     //     // index: currentMonth,
@@ -47,7 +47,7 @@ export default function Goal({navigation, route}) {
             // creates nested array [ {id:0, month: [janyary, 2022], dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
         let dataArray = []
         let count = 0;
-        for (let i = 2022; i <= 2040; i ++){      
+        for (let i = 2022; i <= 2030; i ++){      
             monthArray.map(mo => {
                 dataArray.push({id: count, month: [mo.name, i], dates: getDates(mo.id, i)})
                 count += 1
@@ -92,7 +92,7 @@ export default function Goal({navigation, route}) {
                 // push "" to the begining of the daysArray 
             }
             for(var i = 0; i <= daysArray.length-1; i++){
-                daysArrayWithKeys.push({id: i, date: daysArray[i]});
+                daysArrayWithKeys.push({id: i, date: daysArray[i], color: 'white'});
             }          
       return daysArrayWithKeys
     }
@@ -123,6 +123,12 @@ export default function Goal({navigation, route}) {
         setCurrentMonth(currentMo.id)       
     }
 
+    const getCellColor = (id) => {
+        let color = 'white' 
+
+        return color
+    }
+
     
     
     return (
@@ -142,77 +148,88 @@ export default function Goal({navigation, route}) {
                       })
                     }     
                 </View>       
-                <FlatList 
-                    // creates Calendar List !! 
-                    // FlatList can not be inside of ScrollView, 
-                    // so I did not use FlatList to render dates
-                    //keyExtractor={item => item.id}
-                    data = {monthsYearsDatesArray()}
-                    // initialScrollIndex = {currentMontIndex()}
-                    // initialScrollIndex = {current}
-                    ref={ref => setRef(ref)}
-                    // onScroll={()=>console.log("scroll", data.length)}
-                    // does not scroll back for the first time
-                    // initialScrollIndex disables the "scroll to top" optimization
-                    //  that keeps the first initialNumToRender (10 by default) items always rendered
-                    //  and immediately renders the items starting at this initial index
-                    renderItem = {({item}) => 
-                        <View   key = {item.id}
-                        // onLayout={(event) => {
-                            //  use itemHeight to calculate offset (in getItemLayout)       
-                            // let itemHeight = event.nativeEvent.layout.height
-                            // setItemsHeight((prevState => ({ ...prevState, [item.id]: itemHeight })));
-                            //console.log('state:', itemsHeight);
-                          // }}   
-                        >
-                            <Text   // renders "month" - "year"
-                                    style={styles.month}>
-                                {item.month[0]} - {item.month[1]} 
-                            </Text> 
-                            <View style = {styles.datesBox}>
-                                 {item.dates.map(dateObj => 
-                                    <TouchableOpacity   // render date cell
-                                                        key = {dateObj.id}
-                                                        style={styles.date}
-                                                        onPress={() => {
-                                                            setValue(!dateClicked)
-                                                        }}>
-                                        <Text style = {styles.text}> {dateObj.date} </Text>
-                                    </TouchableOpacity>
-                                )} 
-                            </View>  
+                <ScrollView ref={ref}>
+                    {monthsYearsDatesArray().map(item => {               
+                        return  <View   key = {item.id}                    
+                                        onLayout={(event) => {
+                                            const layout = event.nativeEvent.layout
+                                            item.id === currentMonth ?
+                                                setCoordinate(layout.y) : null 
+                                        }}  >
+                                    <Text   // renders "month" - "year"
+                                            style={styles.month}>
+                                        {item.month[0]} - {item.month[1]} 
+                                    </Text> 
+                                    <View style = {styles.datesBox}>
+                                        {item.dates.map(dateObj => 
+                                            typeof dateObj.date == 'number' ?
+                                                <TouchableOpacity   // render date cell
+                                                                    key = {dateObj.id} 
+                                                                    style={[styles.date, {backgroundColor: dateObj.color}]}
+                                                                    onPress={() => { console.log("test")
+                                                                        setValue(!true)     
+                                                                    }}>
+                                                    <Text style = {styles.text}>
+                                                        {dateObj.date}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                                : 
+                                                <TouchableOpacity   // render empty date cell
+                                                                    key = {dateObj.id} 
+                                                                    style={styles.emptyDate}>
+                                                    <Text style = {styles.text}>
+                                                        {dateObj.date}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                        )} 
+                                    </View> 
+                                </View>
+                    })}
+                    </ScrollView>
+
                             <Modal 
                                 transparent = {true} 
-                                visible = {dateClicked}>
+                                visible = {cellInfo.cellClicked}>
                                 <View style={styles.modal}>
                                     <View style={styles.modalContent}>
-                                        <Text>Mark as accomplished?</Text>
-                                        <TouchableOpacity>
-                                            <Text>YES</Text></TouchableOpacity>
-                                        <TouchableOpacity>
-                                            <Text>CANCEL</Text></TouchableOpacity>
+                                        <Text style={styles.buttonText}>Accomplished?</Text>
+                                        <View style={styles.row}>
+                                            <TouchableOpacity 
+                                                style={styles.button}                            
+                                                onPress = {()=> {
+                                                    setValue({...cellInfo, cellClicked: false})
+                                                    
+                                                 }}>
+                                                <Text style={styles.buttonText}>YES</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity 
+                                                style={styles.button}                                         
+                                                onPress = {()=> {
+                                                    setValue({...cellInfo, cellClicked: false})
+
+                                                }}>
+                                                <Text style={styles.buttonText}>NO</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity 
+                                                style={styles.button}                                         
+                                                onPress = {()=> {
+                                                    setValue({...cellInfo, cellClicked: false})
+
+                                                }}>
+                                                <Text style={styles.buttonText}>Cancel</Text>
+                                            </TouchableOpacity>
+                                        </View>   
                                     </View>
                                 </View>
                             </Modal>  
-                        </View>  
-                    }
-                    // getItemLayout={(data, index) => ({
-                    //     // need to use layout(itemHeight) and calculate offset
-                    //     length: 367,                              
-                    //     offset: 367, // The distance (in pixels) of the current row from the top of the FlatList. 
-                    //     index, //The current row index.
-                    //   })}  
-
-                />
+                         
+                   
                   
             </View>        
             <TouchableOpacity   style={styles.button}
-                                onPress={() => ref.scrollToIndex({
-                                    animated: true,
-                                    index: currentMonth,
-                                    viewPosition: 0
-                                })}>
-                <Text style={styles.textSize}>Current month</Text>
+                                onPress={() => ref.current.scrollTo({y: coordinate  })
+                                }> 
+                <Text style={styles.buttonText}>Current month</Text>
             </TouchableOpacity>
                                       
         </View>
@@ -275,6 +292,14 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "grey",
   },
+  emptyDate:{
+    alignItems: 'center',   // gorizontally
+    padding: 10,         
+    margin: 2,
+    marginTop: 8,
+    marginBottom: 8,
+    flexBasis: '13%'
+  },
   text: {
     textAlign: 'center',
     textAlignVertical: 'center'
@@ -290,8 +315,9 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center'
     },
-    textSize: {
-        fontSize: 18
+    buttonText: {
+        fontSize: 18,
+        alignSelf: 'center'
     },
     modal: {
         flex:1,
@@ -299,12 +325,17 @@ const styles = StyleSheet.create({
         justifyContent:'center'       
     },
     modalContent:{
-        
         backgroundColor: 'white',
         alignSelf: 'center',
         margin: 50,
         padding: 40,
-
+        borderRadius: 10
+    },
+    row: {
+        marginTop: 20,
+        padding: 10,
+        flexDirection: 'row', 
+        justifyContent: 'space-around'
     }
     
 });

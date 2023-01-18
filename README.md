@@ -9,7 +9,17 @@ need to be done:
 !!! initialScrollIndex disables the "scroll to top" optimization that keeps the first initialNumToRender items always rendered and immediately renders the items starting at this initial index
 - change dedline conteiner for Modal Pop-up
 
-- currentMonthIndex - slowing down initial rendering of calendar, find another solution
+- decided not to go with initialScrollIndex in FlatList.
+
+- Working on date pressed function, need to implement:
+    + accomplished or not accomplished dates stores in Async.
+    + getDates function should take info from Async
+    + style color changing after set goal as accomplished.
+
+ - Changes FlatList for ScrollView and .map method. Work but slow, need to descreese amount of years, may be 5 years range only. Current month button did not work, something with ref. 
+
+
+
 
 
 
@@ -21,3 +31,11 @@ onScroll={(event) => console.log("scroll:", event.nativeEvent)}
                         //  nativeEvent is object, has "contentOffset" property {x:0, y: 12 }
                         //  y value is the distance that the user has scrolled from the last position
 
+
+
+
+
+2023: get back to this app. Planning to finish and refactor.
+- delete areas
+- all goals will be on home streen
+- when open a goal -> calendar 
