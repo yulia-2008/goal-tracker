@@ -17,7 +17,7 @@ export default function HomeScreen({navigation, route}) {
     "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
     "Every week", "Every 2 weeks", "Every month", "2 times a month"
  ]
-  const [itemId, setItemId] = useState(null)
+  const [itemId, setItemId] = useState(null) // after clicking on item, state keeps it's id
   const [timeRange, updateTimeRange] = useState(null)
   const [text, updateText] = useState("")
   const [ date, updateDate] = useState(null)
@@ -25,18 +25,9 @@ export default function HomeScreen({navigation, route}) {
   const [ year, updateYear] = useState(null)
   const [datePicker, showDatePicker] = useState(false)
   const [modal, showModal] = useState(false)
-  // const [newGoal, setNewGoal] = useState(null)
-  
-   useEffect(() => {getData()}, [])
-   AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  
-
-  // const isNewGoal = () => {
-  //   let newGoal;
-  //   if (route.params !=undefined && route.params.newGoalAddedTo) { 
-  //         newGoal = route.params.newGoalAddedTo; 
-  //       }    
-  //   return newGoal
-  // }
+    
+  useEffect(() => {getData()}, [])
+  AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  
 
   let getData = async () =>  {
     let keys = await AsyncStorage.getAllKeys()
@@ -60,10 +51,10 @@ export default function HomeScreen({navigation, route}) {
         year: year
       }
       let goals = [...goalsData]
-      goals[itemId-1] = newGoalObject  // itemId-1 == goal's index in goalData array
+      goals[itemId-1] = newGoalObject  // state itemId-1 == goal's index in goalData array
       updateGoals(goals)
       AsyncStorage.setItem("storedData", JSON.stringify(goals)) 
-      showModal(!modal)
+      showModal(!modal)    // closing Modal
     }  
     }
 
@@ -71,91 +62,90 @@ export default function HomeScreen({navigation, route}) {
       <View style={styles.container}>
           {/* {AsyncStorage.removeItem('storedData') }    */}
         <View style={styles.itemBox}>
-          <FlatList 
+          <FlatList        // render containers with goals or empty conteiners
               data={goalsData}
               numColumns={2}
               renderItem={({item}) =>
-                  <TouchableOpacity   key={item.id}
-                                      style={styles.item}
-                                      onPress={() => {
-                                        item.goal ?
-                                        navigation.navigate("Goal", {goalObject: item})
-                                        :                                        
-                                        showModal(!modal), setItemId(item.id)
-                                                        
-                                      }} >
+                  <TouchableOpacity   
+                      key={item.id}
+                      style={styles.item}
+                      onPress={() => {
+                          item.goal ?
+                            navigation.navigate("Goal", {goalObject: item}):                                       
+                            showModal(!modal), setItemId(item.id)                
+                      }}
+                  >
                       {item.goal?  
-                      <Text>{item.goal}</Text>:
-                      <Text>Tap to add a new goal!</Text>               
-                      
+                        <Text>{item.goal}</Text>:
+                        <Text>Tap to add a new goal!</Text>               
                       }
                   </TouchableOpacity>   
               }         
           /> 
         </View> 
-        <Modal 
+        <Modal    // Creation of new Goal: 
+                  // TextInput -> type goal, 
+                  // SelectDropdown -> set time range for the goal
+                  // DatePicker -> set deadline for the goal
+                  // button: add/set goal
             visible = {modal}
             transparent = {true}>
                 <View style={styles.modal}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.closeIcon}
-                          onPress = {()=> {
-                          showModal(!modal) 
-                        }}>
-                        X</Text> 
-                        <TextInput  style={styles.inputField}
-                       autoFocus={true} 
-                       placeholder="new goal...  " 
-                        //  value={text}
-                      onPressIn={()=>{console.log("input")}}
-                      onChangeText={enteredText=> updateText(enteredText) }                   
-                      required
-                      multiline={false}                  
-                      />   
-
-                      <SelectDropdown data = {rangeData}
-                          defaultButtonText = "Time Range"
-                          buttonStyle = {styles.button}
-                          dropdownStyle = {styles.dropdown}
-                          dropdownIconPosition = "left"
-                          // onFocus={()=> {updateDatePicker(false)}}
-                          onSelect={(selectedItem) => updateTimeRange(selectedItem)}
-                          buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
-                      />  
-
-                      <TouchableOpacity onPress={()=>{showDatePicker(!datePicker), Keyboard.dismiss()}}
-                            style={styles.button}>         
-                          <Text> 
-                            { date === null || month === null || year === null ?
-                                "Deadline" 
-                                :
-                                "Deadline:" + " " + month  + " " + date  + " " + year 
-                            }
-                          </Text>  
+                        <Text 
+                            style={styles.closeIcon}
+                            onPress = {()=> showModal(!modal)}>
+                        X 
+                         {/* change X for closing icon */}
+                        </Text> 
+                        <TextInput  
+                            style={styles.inputField}
+                            autoFocus={true} 
+                            placeholder="new goal...  " 
+                            onPressIn={()=>{console.log("input")}}
+                            onChangeText = {enteredText => updateText(enteredText)}                   
+                            required
+                            multiline={false} />                 
+                        <SelectDropdown data = {rangeData}
+                            defaultButtonText = "Time Range"
+                            buttonStyle = {styles.button}
+                            dropdownStyle = {styles.dropdown}
+                            dropdownIconPosition = "left"
+                            // onFocus={()=> {updateDatePicker(false)}}
+                            onSelect = {(selectedItem) => updateTimeRange(selectedItem)}
+                            buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
+                        <TouchableOpacity 
+                            style = {styles.button}
+                            onPress = {()=>{
+                              showDatePicker(!datePicker), 
+                              Keyboard.dismiss()
+                            }}>                                   
+                            <Text> 
+                              { date === null || month === null || year === null ?
+                                  "Deadline" :
+                                  "Deadline:" + " " + month  + " " + date  + " " + year 
+                              }
+                            </Text>  
                         </TouchableOpacity>
                         { datePicker ? 
-                        <DatePicker dateHandler = {updateDate}
-                                    monthHandler = {updateMonth}
-                                    yearHandler = {updateYear}
-                                    date = {date}
-                                    month = {month}
-                                    year = {year}
-                                    />            
-                        : null
-                    }
+                            <DatePicker 
+                                dateHandler = {updateDate}
+                                monthHandler = {updateMonth}
+                                yearHandler = {updateYear}
+                                date = {date}
+                                month = {month}
+                                year = {year}
+                            /> : null        
+                        }
                     
-                    <TouchableOpacity style={styles.setButton}
-                                onPress={() => {addGoal()}}>
+                        <TouchableOpacity 
+                            style={styles.setButton}
+                            onPress={() => {addGoal()}}>
                                 <Text>Set Goal</Text>
-                    </TouchableOpacity> 
-
+                        </TouchableOpacity> 
                     </View>
                 </View> 
-                
-          
-       
         </Modal>
-        
       </View>
     );
 }

@@ -8,11 +8,11 @@ export default function DatePicker(props) {
                     {id:6, month: "June",}, {id:7, month:"July"}, {id:8, month:"August"},
                     {id:9, month:"September"}, {id:10, month:"October"},
                     {id:11, month:"November"},{id:12, month: "December"}
-  ]
+                     ]
 
   const datesArray = () => {
     let array = [{id: 0, date: "-"}];
-    for(var i = 1; i <= 31; i++){
+    for(let i = 1; i <= 31; i++){
         let newDate = {id: i, date: i}
         array.push(newDate);
     }
@@ -22,13 +22,13 @@ export default function DatePicker(props) {
   const yearsArray = () => {
     let array = [{id: 0, year: "-"}];
     let year = new Date().getFullYear()
-    for(var i = year; i <= year+10; i++){
+    for(let i = year; i <= year+10; i++){
         let newYear = {id: i, year: i}
         array.push(newYear);
     }
     return array
   }
-  const [ isDeadline, setIsDealine] = useState(false)
+  // const [ isDeadline, setIsDealine] = useState(false)
   const [ selectedDate, setDate] = useState(null)
   const [ selectedMonth, setMonth] = useState(null)
   const [ selectedYear, setYear] = useState(null)
@@ -37,7 +37,6 @@ export default function DatePicker(props) {
 
   return (
     <View style={styles.container}> 
-     {console.log("DatePicker")}
         <View style={styles.flexBox}>         
             <View style={styles.dateBox}>
                 <FlatList 
