@@ -1,28 +1,42 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList} from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, 
+         Keyboard, FlatList, Modal} from 'react-native';
+import SelectDropdown from 'react-native-select-dropdown';
+import DatePicker from '../components/DatePicker.js'
 
 export default function HomeScreen({navigation, route}) {
 
   const [goalsData, updateGoals] = useState([
-    {lifeArea: "Mind: Personal Development",  id: 1, goals: []},
-    {lifeArea: "Body: Health & Fitness", id:2, goals: []},
-    {lifeArea: "Career",  id: 3, goals: []},
-    {lifeArea: "Relationship: Friends & Fam",  id: 4, goals: []},
-    {lifeArea: "Finance",  id: 5, goals: []},
-    {lifeArea: "Relaxation: Fun & Entertainment",  id: 6, goals: []}, 
+    {goal: false, id: 1},
+    {goal: false, id: 2},
+    {goal: false, id: 3}
   ])
 
+  const rangeData = [
+    "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
+    "Every week", "Every 2 weeks", "Every month", "2 times a month"
+ ]
+  const [itemId, setItemId] = useState(null)
+  const [timeRange, updateTimeRange] = useState(null)
+  const [text, updateText] = useState("")
+  const [ date, updateDate] = useState(null)
+  const [ month, updateMonth] = useState(null)
+  const [ year, updateYear] = useState(null)
+  const [datePicker, showDatePicker] = useState(false)
+  const [modal, showModal] = useState(false)
+  // const [newGoal, setNewGoal] = useState(null)
   
-  useEffect(() => {getData()}, [])
+   useEffect(() => {getData()}, [])
+   AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  
 
-  const isNewGoal = () => {
-    let newGoal;
-    if (route.params !=undefined && route.params.newGoalAddedTo) { 
-          newGoal = route.params.newGoalAddedTo; 
-        }    
-    return newGoal
-  }
+  // const isNewGoal = () => {
+  //   let newGoal;
+  //   if (route.params !=undefined && route.params.newGoalAddedTo) { 
+  //         newGoal = route.params.newGoalAddedTo; 
+  //       }    
+  //   return newGoal
+  // }
 
   let getData = async () =>  {
     let keys = await AsyncStorage.getAllKeys()
@@ -34,10 +48,28 @@ export default function HomeScreen({navigation, route}) {
     }
   }
 
+  let addGoal = () => {
+    // chek if input is filled, create newGoalObject
+    if (timeRange != null && text.trim() != "" ) { 
+      let newGoalObject = { 
+        id: itemId,
+        timeRange: timeRange, 
+        goal: text, 
+        date: date, 
+        month: month, 
+        year: year
+      }
+      let goals = [...goalsData]
+      goals[itemId-1] = newGoalObject  // itemId-1 == goal's index in goalData array
+      updateGoals(goals)
+      AsyncStorage.setItem("storedData", JSON.stringify(goals)) 
+      showModal(!modal)
+    }  
+    }
+
   return (
       <View style={styles.container}>
-        {console.log("Home", route.params)}
-        {/* {AsyncStorage.removeItem('storedData') }  */}
+          {/* {AsyncStorage.removeItem('storedData') }    */}
         <View style={styles.itemBox}>
           <FlatList 
               data={goalsData}
@@ -46,35 +78,84 @@ export default function HomeScreen({navigation, route}) {
                   <TouchableOpacity   key={item.id}
                                       style={styles.item}
                                       onPress={() => {
-                                        navigation.navigate("LifeArea", {areaObject: item}, {goalsData: goalsData}), 
-                                        navigation.setParams({newGoalAddedTo: false})
-                                          // need for clearing "New Goal added" sign on HomeScreen"
+                                        item.goal ?
+                                        navigation.navigate("Goal", {goalObject: item})
+                                        :                                        
+                                        showModal(!modal), setItemId(item.id)
+                                                        
                                       }} >
-                      <Text>{item.lifeArea}</Text>
-                      <Text>{item.goals.length} 
-                            {item.goals.length === 1 ?
-                              ' goal' : ' goals'
-                            }
-                      </Text> 
-                      { isNewGoal() && isNewGoal() === item.lifeArea ?
-                        <Text style={styles.newGoal}> New Goal added </Text>
-                        :
-                        null
+                      {item.goal?  
+                      <Text>{item.goal}</Text>:
+                      <Text>Tap to add a new goal!</Text>               
+                      
                       }
                   </TouchableOpacity>   
               }         
           /> 
         </View> 
-        <View style={styles.buttonBox}>     
-          <TouchableOpacity style={styles.button}
-                            onPress = {() => {
-                              navigation.navigate("AddScreen", {goalsData: goalsData}),
-                              navigation.setParams({newGoalAddedTo: false})
-                                // need for removing "New Goal added" sign on HomeScreen"
-                              }}>                         
-            <Text>Add a new goal</Text>
-          </TouchableOpacity> 
-        </View> 
+        <Modal 
+            visible = {modal}
+            transparent = {true}>
+                <View style={styles.modal}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.closeIcon}
+                          onPress = {()=> {
+                          showModal(!modal) 
+                        }}>
+                        X</Text> 
+                        <TextInput  style={styles.inputField}
+                       autoFocus={true} 
+                       placeholder="new goal...  " 
+                        //  value={text}
+                      onPressIn={()=>{console.log("input")}}
+                      onChangeText={enteredText=> updateText(enteredText) }                   
+                      required
+                      multiline={false}                  
+                      />   
+
+                      <SelectDropdown data = {rangeData}
+                          defaultButtonText = "Time Range"
+                          buttonStyle = {styles.button}
+                          dropdownStyle = {styles.dropdown}
+                          dropdownIconPosition = "left"
+                          // onFocus={()=> {updateDatePicker(false)}}
+                          onSelect={(selectedItem) => updateTimeRange(selectedItem)}
+                          buttonTextAfterSelection={(selectedItem) => {return selectedItem}}
+                      />  
+
+                      <TouchableOpacity onPress={()=>{showDatePicker(!datePicker), Keyboard.dismiss()}}
+                            style={styles.button}>         
+                          <Text> 
+                            { date === null || month === null || year === null ?
+                                "Deadline" 
+                                :
+                                "Deadline:" + " " + month  + " " + date  + " " + year 
+                            }
+                          </Text>  
+                        </TouchableOpacity>
+                        { datePicker ? 
+                        <DatePicker dateHandler = {updateDate}
+                                    monthHandler = {updateMonth}
+                                    yearHandler = {updateYear}
+                                    date = {date}
+                                    month = {month}
+                                    year = {year}
+                                    />            
+                        : null
+                    }
+                    
+                    <TouchableOpacity style={styles.setButton}
+                                onPress={() => {addGoal()}}>
+                                <Text>Set Goal</Text>
+                    </TouchableOpacity> 
+
+                    </View>
+                </View> 
+                
+          
+       
+        </Modal>
+        
       </View>
     );
 }
@@ -98,15 +179,15 @@ const styles = StyleSheet.create({
     borderRadius: 15, 
     borderColor: 'grey' 
   },
-  button: {
-    backgroundColor: 'yellow',
+  setButton:{
     borderWidth: 2,
     borderBottomWidth: 4,
-    borderRightWidth: 4,
-    borderRadius:8,
+    borderRightWidth: 4, 
     borderColor: 'rgb(104, 149, 197)',
+    backgroundColor:"yellow",
+    borderRadius:8,
     padding: 10
-  },
+    },
   itemBox:{
     flex:2,
     width: '100%',
@@ -124,6 +205,50 @@ const styles = StyleSheet.create({
    newGoal:{
     fontWeight: 'bold',
     color: 'blue', 
-   }
+   },
+   modal: {
+    flex:1,
+    backgroundColor: 'rgba(100, 100, 100, 0.1)', // 0.1 represents opacity
+    justifyContent: 'center',
+    borderWidth: 15,
+    borderColor: 'yellow',     
+  },
+  modalContent:{
+    backgroundColor: 'white',
+    height: 500,
+    // alignSelf: 'center',
+    margin: '10%',
+    padding: '1%',
+    borderWidth: 1,
+    borderRadius: 10,
+    borderColor: 'grey'
+  }, 
+  closeIcon: {
+    alignSelf: 'flex-end'
+  },
+  button:{
+    borderWidth: 2,
+    borderColor: 'rgb(104, 149, 197)',
+    backgroundColor: "white",
+    borderRadius:8,
+    width: '100%',
+    height:55, 
+    padding: 15, 
+    alignItems: 'center'                          
+    },
+    dropdown:{
+      flex:1,
+      borderRadius:8,
+      height: 500
+    },
+      inputField:{
+        borderWidth: 2,
+        borderColor: 'rgb(104, 149, 197)',
+        backgroundColor:"white",
+        borderRadius:8,
+        height:55, 
+        padding: 15, 
+        fontSize: 20 
+      }, 
 });
 
