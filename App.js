@@ -14,7 +14,7 @@ export default function App() {
             name="HomeScreen"
             component={ HomeScreen }      
             options={{
-                headerTitle: "HomeScreen",
+                headerTitle: "Your Goals",
                 headerStyle: {                   
                     backgroundColor: 'rgb(104, 149, 197)',
                     height: 70,          
@@ -26,7 +26,7 @@ export default function App() {
             component={Goal}
             options={ 
               ({route}) =>({ 
-                  title: route.params.goalObject.goal,
+                  title: route.params.goalObject.goal.text,
                     // goalObject is a prop comes from HomeScreen.js onPress 
                   headerStyle: {
                       backgroundColor: 'rgb(104, 149, 197)', 

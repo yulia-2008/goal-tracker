@@ -3,29 +3,17 @@ import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, TouchableWit
 
 export default function Goal({navigation, route}) {
 
-    const goal = route.params.goalObject;
+    const goal = route.params.goalObject.goal;
     
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellInfo, setValue] = useState({cellClicked: false, cellId: null})
     const [coordinate, setCoordinate] = useState(null)
-    // const [itemsHeight, setItemsHeight] = useState({})
+
     const ref = useRef(0);
-    // useEffect(() =>  scrollToCurrentMont(
-    //     // animated: true,
-    //     // index: currentMonth,
-    //     // viewPosition: 0
-    // ), [ref])
 
     useEffect(() =>  getMonth(), [])
-   
 
-    // const scrollToCurrentMont = () => {
-    //     ref.scrollToIndex({animated: true,
-    //          index: currentMonth,
-    //          viewPosition: 0})
-    //     //  DOES NOT WORK !!
-    // }
-
+    // useEffect(() => ref.current.scrollTo({y: coordinate  })) work
 
     const monthArray = [{id: 0, name:'January'}, {id: 1, name: 'February'},
                         {id: 2, name: 'March'}, {id: 3, name:'April'},
@@ -35,6 +23,7 @@ export default function Goal({navigation, route}) {
                         {id: 10, name: 'November'}, {id: 11, name:'December'}]
 
     const weekDays = () => {
+    // generates week days -> array of objects [{id: 0, day: 'Monday'}, ...]    
         let days = new Array("Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"); 
         let daysWithKeys = []
         for (let i = 0; i < days.length; i++){
@@ -44,7 +33,7 @@ export default function Goal({navigation, route}) {
     }
 
     const monthsYearsDatesArray = () => {
-            // creates nested array [ {id:0, month: [janyary, 2022], dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
+    // creates nested array [ {id:0, month: [janyary, 2022], dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
         let dataArray = []
         let count = 0;
         for (let i = 2022; i <= 2030; i ++){      
@@ -135,7 +124,7 @@ export default function Goal({navigation, route}) {
         <View style={styles.container}>  
         {/* {console.log("cu", currentMonth)}
         {console.log("cu2", monthsYearsDatesArray()[4].month)} */}
-            <Text>Goal: {goal.goal}  </Text> 
+            <Text>Goal: {goal.text}  </Text> 
             <Text> Deadline: {goal.month} / {goal.date} / {goal.year} </Text>
             <Text> Pereodicity: {goal.timeRange} </Text>
 
@@ -154,7 +143,8 @@ export default function Goal({navigation, route}) {
                                         onLayout={(event) => {
                                             const layout = event.nativeEvent.layout
                                             item.id === currentMonth ?
-                                                setCoordinate(layout.y) : null 
+                                                // setCoordinate(layout.y) : null  -> old solution with button <CUREENT MONTH>
+                                                ref.current.scrollTo({y: layout.y }) : null 
                                         }}  >
                                     <Text   // renders "month" - "year"
                                             style={styles.month}>
@@ -186,7 +176,7 @@ export default function Goal({navigation, route}) {
                                 </View>
                     })}
                     </ScrollView>
-
+                    
                             <Modal 
                                 transparent = {true} 
                                 visible = {cellInfo.cellClicked}>
@@ -226,104 +216,104 @@ export default function Goal({navigation, route}) {
                    
                   
             </View>        
-            <TouchableOpacity   style={styles.button}
+            {/* <TouchableOpacity   style={styles.button}
                                 onPress={() => ref.current.scrollTo({y: coordinate  })
                                 }> 
                 <Text style={styles.buttonText}>Current month</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
                                       
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    borderWidth:3,
-    padding: 10,
-    borderColor: 'grey',
-    backgroundColor: 'white',
-  },
-  calendarBox: {
-    flex:1,
-    width: '90%',
-    margin: '5%',
-    backgroundColor: 'white',
-    borderWidth: 2,
-    borderColor: "grey",
-    borderRadius: 5
-  },
-  calendarHeader:{
-    justifyContent: 'space-around', // gorizontally
-    width: '100%',
-    flexDirection: 'row',
-    borderWidth: 2,
-    borderColor: "red",
-    alignItems: 'stretch'
-  },
-  weekDayBox:{
-    width: '14%',
-    borderWidth: 2,
-    borderColor: "blue",
-    padding: '2%',
-    alignItems: 'center'
-  },
-  month: {
-    width: '100%',
-    padding: '4%',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    borderWidth: 2,
-    borderColor: "blue",
-  },
-  datesBox: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    borderWidth: 2,
-    borderColor: "pink",
-  }, 
-  date: {
-    alignItems: 'center',   // gorizontally
-    padding: 10,         
-    margin: 2,
-    marginTop: 8,
-    marginBottom: 8,
-    flexBasis: '13%',    // flexBasis for child,  flexWrap for parent  => grid!!!
-    borderWidth: 2,
-    borderColor: "grey",
-  },
-  emptyDate:{
-    alignItems: 'center',   // gorizontally
-    padding: 10,         
-    margin: 2,
-    marginTop: 8,
-    marginBottom: 8,
-    flexBasis: '13%'
-  },
-  text: {
-    textAlign: 'center',
-    textAlignVertical: 'center'
-  },
-  button:{
-    width: "40%",
-    borderWidth: 2,
-    borderBottomWidth: 4,
-    borderRightWidth: 4, 
-    borderColor: 'rgb(104, 149, 197)',
-    backgroundColor:"yellow",
-    borderRadius:8,
-    padding: 10,
-    alignSelf: 'center'
+    container: {
+        flex: 1,
+        borderWidth:3,
+        padding: 10,
+        borderColor: 'grey',
+        backgroundColor: 'white',
     },
+    calendarBox: {
+        flex:1,
+        width: '90%',
+        margin: '5%',
+        backgroundColor: 'white',
+        borderWidth: 2,
+        borderColor: "grey",
+        borderRadius: 5
+    },
+    calendarHeader:{
+        justifyContent: 'space-around', // gorizontally
+        width: '100%',
+        flexDirection: 'row',
+        borderWidth: 2,
+        borderColor: "red",
+        alignItems: 'stretch'
+    },
+    weekDayBox:{
+        width: '14%',
+        borderWidth: 2,
+        borderColor: "blue",
+        padding: '2%',
+        alignItems: 'center'
+    },
+    month: {
+        width: '100%',
+        padding: '4%',
+        textAlign: 'center',
+        fontWeight: 'bold',
+        borderWidth: 2,
+        borderColor: "blue",
+    },
+    datesBox: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        borderWidth: 2,
+        borderColor: "pink",
+    }, 
+    date: {
+        alignItems: 'center',   // gorizontally
+        padding: 10,         
+        margin: 2,
+        marginTop: 8,
+        marginBottom: 8,
+        flexBasis: '13%',    // flexBasis for child,  flexWrap for parent  => grid!!!
+        borderWidth: 2,
+        borderColor: "grey",
+    },
+    emptyDate:{
+        alignItems: 'center',   // gorizontally
+        padding: 10,         
+        margin: 2,
+        marginTop: 8,
+        marginBottom: 8,
+        flexBasis: '13%'
+    },
+    text: {
+        textAlign: 'center',
+        textAlignVertical: 'center'
+    },
+    button:{
+        width: "40%",
+        borderWidth: 2,
+        borderBottomWidth: 4,
+        borderRightWidth: 4, 
+        borderColor: 'rgb(104, 149, 197)',
+        backgroundColor:"yellow",
+        borderRadius:8,
+        padding: 10,
+        alignSelf: 'center'
+        },
     buttonText: {
         fontSize: 18,
         alignSelf: 'center'
     },
     modal: {
-        flex:1,
-        backgroundColor: 'rgba(100, 100, 100, 0.1)', // 0.1 represents opacity
-        justifyContent:'center'       
-    },
+            flex:1,
+            backgroundColor: 'rgba(100, 100, 100, 0.1)', // 0.1 represents opacity
+            justifyContent:'center'       
+        },
     modalContent:{
         backgroundColor: 'white',
         alignSelf: 'center',

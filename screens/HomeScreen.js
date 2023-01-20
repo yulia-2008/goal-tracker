@@ -8,9 +8,18 @@ import DatePicker from '../components/DatePicker.js'
 export default function HomeScreen({navigation, route}) {
 
   const [goalsData, updateGoals] = useState([
-    {goal: false, id: 1},
-    {goal: false, id: 2},
-    {goal: false, id: 3}
+    {goal: false, id: 1, color: 'rgb(255, 204, 204)'},
+    {goal: false, id: 2, color: 'rgb(255, 255, 204)'},
+    {goal: false, id: 3, color: 'rgb(204, 255, 204)'},
+    {goal: false, id: 4, color: 'rgb(204, 255, 255)'},
+    {goal: false, id: 5, color: 'rgb(255, 204, 229)'},
+    {goal: false, id: 6, color: 'rgb(229, 255, 204)'},
+    {goal: false, id: 7, color: 'rgb(224, 224, 224)'},
+    {goal: false, id: 8, color: 'rgb(229, 204, 255)'},
+    {goal: false, id: 9, color: 'rgb(172, 252, 252)'},
+    {goal: false, id: 10, color: 'rgb(255, 160, 122)'},
+    {goal: false, id: 11, color: 'rgb(238, 232, 170)'},
+    {goal: false, id: 12, color: 'rgb(216, 191, 216)'}
   ])
 
   const rangeData = [
@@ -42,16 +51,16 @@ export default function HomeScreen({navigation, route}) {
   let addGoal = () => {
     // chek if input is filled, create newGoalObject
     if (timeRange != null && text.trim() != "" ) { 
-      let newGoalObject = { 
-        id: itemId,
-        timeRange: timeRange, 
-        goal: text, 
+      let newGoal = { 
+        // id: itemId,
+        text: text,
+        timeRange: timeRange,        
         date: date, 
         month: month, 
         year: year
       }
       let goals = [...goalsData]
-      goals[itemId-1] = newGoalObject  // state itemId-1 == goal's index in goalData array
+      goals[itemId-1].goal = newGoal  // state itemId-1 == goal's index in goalData array
       updateGoals(goals)
       AsyncStorage.setItem("storedData", JSON.stringify(goals)) 
       showModal(!modal)    // closing Modal
@@ -68,7 +77,9 @@ export default function HomeScreen({navigation, route}) {
               renderItem={({item}) =>
                   <TouchableOpacity   
                       key={item.id}
-                      style={styles.item}
+                      style={ item.goal? [styles.item, {backgroundColor: item.color}]:
+                                         [styles.item, {backgroundColor: 'rgb(224, 224, 224)'}]
+                      }
                       onPress={() => {
                           item.goal ?
                             navigation.navigate("Goal", {goalObject: item}):                                       
@@ -76,9 +87,10 @@ export default function HomeScreen({navigation, route}) {
                       }}
                   >
                       {item.goal?  
-                        <Text>{item.goal}</Text>:
-                        <Text>Tap to add a new goal!</Text>               
-                      }
+                        <Text style={{color: 'black'}}>{item.goal.text}</Text>:
+                        <Text style={{color: 'rgb(160, 160, 160)'}}>Add a new goal!</Text>               
+                      }  
+                      {console.log(item.goal)}
                   </TouchableOpacity>   
               }         
           /> 
@@ -105,7 +117,8 @@ export default function HomeScreen({navigation, route}) {
                             onPressIn={()=>{console.log("input")}}
                             onChangeText = {enteredText => updateText(enteredText)}                   
                             required
-                            multiline={false} />                 
+                            multiline={false} /> 
+                                     
                         <SelectDropdown data = {rangeData}
                             defaultButtonText = "Time Range"
                             buttonStyle = {styles.button}
@@ -162,12 +175,15 @@ const styles = StyleSheet.create({
   },
   item: {
     backgroundColor: 'white',
-    width: 170,                                      
-    height: 90,
+    width: 150,                                      
+    height: 100,
     margin: 10,
-    borderWidth: 3,
-    borderRadius: 15, 
-    borderColor: 'grey' 
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 20, 
+    borderColor: 'grey',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   setButton:{
     borderWidth: 2,
@@ -192,16 +208,14 @@ const styles = StyleSheet.create({
     borderColor: 'blue',
     alignItems: 'center'
    },
-   newGoal:{
+  newGoal:{
     fontWeight: 'bold',
     color: 'blue', 
    },
-   modal: {
+  modal: {
     flex:1,
     backgroundColor: 'rgba(100, 100, 100, 0.1)', // 0.1 represents opacity
     justifyContent: 'center',
-    borderWidth: 15,
-    borderColor: 'yellow',     
   },
   modalContent:{
     backgroundColor: 'white',
@@ -210,8 +224,9 @@ const styles = StyleSheet.create({
     margin: '10%',
     padding: '1%',
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 15,
     borderColor: 'grey'
+   
   }, 
   closeIcon: {
     alignSelf: 'flex-end'
@@ -226,19 +241,19 @@ const styles = StyleSheet.create({
     padding: 15, 
     alignItems: 'center'                          
     },
-    dropdown:{
-      flex:1,
-      borderRadius:8,
-      height: 500
-    },
-      inputField:{
-        borderWidth: 2,
-        borderColor: 'rgb(104, 149, 197)',
-        backgroundColor:"white",
-        borderRadius:8,
-        height:55, 
-        padding: 15, 
-        fontSize: 20 
-      }, 
+  dropdown:{
+    flex:1,
+    borderRadius:8,
+    height: 500
+  },
+  inputField:{
+    borderWidth: 1,
+    borderColor: 'grey',
+    backgroundColor:"white",
+    borderRadius:8,
+    height:55, 
+    padding: 15, 
+    fontSize: 20 
+  }
 });
 
