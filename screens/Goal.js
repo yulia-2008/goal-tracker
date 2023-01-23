@@ -125,7 +125,7 @@ export default function Goal({navigation, route}) {
         {/* {console.log("cu", currentMonth)}
         {console.log("cu2", monthsYearsDatesArray()[4].month)} */}
             <Text>Goal: {goal.text}  </Text> 
-            <Text> Deadline: {goal.month} / {goal.date} / {goal.year} </Text>
+            <Text> Deadline: {goal.deadline.month} / {goal.deadline.date} / {goal.deadline.year} </Text>
             <Text> Pereodicity: {goal.timeRange} </Text>
 
             <View style={styles.calendarBox}>

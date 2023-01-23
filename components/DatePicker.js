@@ -51,8 +51,8 @@ export default function DatePicker(props) {
                             }
                             key={item.id}
                             onPress={() => {
-                                setDate(item.date), 
-                                props.dateHandler(item.date)
+                                setDate(item.date) 
+                                // props.dateHandler(item.date)
                             }}>
                         <Text>{item.date}</Text>                   
                             {/* delete bar indicator  */}                      
@@ -72,8 +72,8 @@ export default function DatePicker(props) {
                             }
                             key={item.id}
                             onPress={() => {
-                                setMonth(item.month), 
-                                props.monthHandler(item.month)
+                                setMonth(item.month) 
+                                // props.monthHandler(item.month)
                             }}>  
                             <Text>{item.month}</Text>               
                         </TouchableOpacity>   
@@ -93,8 +93,8 @@ export default function DatePicker(props) {
                             }
                             key={item.id}
                             onPress={() => {
-                                setYear(item.year), 
-                                props.yearHandler(item.year)
+                                setYear(item.year) 
+                                // props.yearHandler(item.year)
                             }}>      
                             <Text>{item.year}</Text>                      
                         </TouchableOpacity>   
@@ -102,6 +102,15 @@ export default function DatePicker(props) {
                 /> 
             </View> 
         </View>
+        <TouchableOpacity 
+            //style={styles.setButton}
+            onPress={() => props.deadlineHandler({
+              date: selectedDate, 
+              month: selectedMonth, 
+              year: selectedYear
+            })}>
+              <Text style={{fontSize: 18}}>Set Deadline</Text>
+        </TouchableOpacity> 
     </View>
   );
 }
@@ -111,7 +120,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 2,
     borderColor: "yellow",
-    borderRadius: 5
+    borderRadius: 5, 
   } , 
   flexBox: {
     flex:1,
