@@ -67,6 +67,9 @@ export default function HomeScreen({navigation, route}) {
       updateGoals(goals)
       AsyncStorage.setItem("storedData", JSON.stringify(goals)) 
       showModal(!modal)    // closing Modal
+      updateText("")      // clearing data in form
+      updateDeadline({})
+      updateTimeRange(null)
     }  
     }
 
@@ -74,6 +77,7 @@ export default function HomeScreen({navigation, route}) {
       <View style={styles.container}>
           {/* {AsyncStorage.removeItem('storedData') }    */}
         <View style={styles.itemBox}>
+          {console.log('d', datePicker)}
           <FlatList        // render containers with goals or empty conteiners
               data={goalsData}
               numColumns={2}
@@ -119,7 +123,11 @@ export default function HomeScreen({navigation, route}) {
                         <>
                         <Text 
                             style={styles.closeIcon}
-                            onPress = {()=> showModal(!modal)}>
+                            onPress = {()=> { 
+                                showModal(!modal), 
+                                updateTimeRange(null), 
+                                setDeadline({})
+                            }}>
                           X {/*closing icon */}                       
                         </Text>
                         <TextInput  
@@ -149,7 +157,6 @@ export default function HomeScreen({navigation, route}) {
                                     "Deadline:" + " " + deadline.month  + " " + deadline.date  + " " + deadline.year 
                                     : "Deadline" 
                                   }
-                              {console.log(deadline)}
                             </Text>  
                         </TouchableOpacity>
                         <TouchableOpacity 
