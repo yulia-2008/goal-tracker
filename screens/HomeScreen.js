@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, 
-         Keyboard, FlatList, Modal} from 'react-native';
+         Keyboard, FlatList, Modal, Image} from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 
 export default function HomeScreen({navigation, route}) {
@@ -242,11 +242,15 @@ export default function HomeScreen({navigation, route}) {
                               </View> 
                           </View> 
                         </View>
-                        <TouchableOpacity 
+                        {/* <TouchableOpacity 
                             style={styles.setButton}
                             onPress={() => {addGoal()}}>
                                 <Text style={{fontSize: 18}}>Add goal</Text>
-                        </TouchableOpacity> 
+                        </TouchableOpacity>  */}
+                        <Image style={styles.icon}
+                               source = {require('./check_icon.png')}
+                               onPress={() => {addGoal()}}/>
+                        {/* image should be in the same folder, no need to import file at the top */}
                     </View>
                 </View> 
         </Modal>
@@ -396,6 +400,15 @@ const styles = StyleSheet.create({
   },
   text: {
      alignSelf: 'center' 
-  }
+  },
+  icon: {
+    width: 70,                                      
+    height: 70,
+    borderWidth: 1,
+    borderRadius: 10, 
+    borderColor: 'silver',
+    alignSelf: 'center',
+    marginTop:10   
+}
 });
 
