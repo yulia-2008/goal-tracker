@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, 
          Keyboard, FlatList, Modal} from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
-// import DatePicker from '../components/DatePicker.js'
 
 export default function HomeScreen({navigation, route}) {
 
@@ -119,8 +118,7 @@ export default function HomeScreen({navigation, route}) {
                           item.goal ?
                             navigation.navigate("Goal", {goalObject: item}):                                       
                             showModal(!modal), setItemId(item.id)                
-                      }}
-                  >
+                      }}>
                       {item.goal?  
                         <Text style={{color: 'black'}}>{item.goal.text}</Text>:
                         <Text style={{color: 'rgb(160, 160, 160)'}}>New Goal</Text>               
