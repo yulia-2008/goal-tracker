@@ -42,7 +42,9 @@ export default function HomeScreen({navigation, route}) {
   // const [deadline, setDeadline] = useState({}) // value is undefined
   // const [datePicker, showDatePicker] = useState(false)
   const [modal, showModal] = useState(false)
-  const [errorMessage, showErrorMessage] = useState("")
+  // const [inputPlaceHolder, updatePlaceHolder] = useState("")
+  // const [errorMessage, showErrorMessage] = useState("")
+  // const [buttonText, updateButtonText] = useState(" Time Range")
     
   useEffect(() => {getData()}, [])
   AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  
@@ -74,12 +76,14 @@ export default function HomeScreen({navigation, route}) {
       updateDate(null)
       updateMonth(null)
       updateYear(null)
-      updateTimeRange(null)
-    }else if(timeRange == null){
-      showErrorMessage('chose timerange')
-    }else if(text.trim()== ""){
-      showErrorMessage('enter your goal')
+      // updateButtonText('Time Range')
     }
+    // else if(timeRange == null){
+    //   updateButtonText('Chose Timerange')
+    // }
+    // else if(text.trim()== ""){
+    //   updatePlaceHolder('enter your goal')
+    // }
     
     
     }
@@ -142,44 +146,40 @@ export default function HomeScreen({navigation, route}) {
             transparent = {true}>
                 <View style={styles.modal}>
                     <View style={styles.modalContent}> 
-                      <View style = {{height:40}}>
-                        <View style={styles.flexBoxErrorMessage}> 
-                          <View style={{width: '90%'}}>
+                      {/* <View style = {{height:50}}> */}
+                        {/* <View style={styles.flexBoxErrorMessage}> 
+                          <View style={{width: '80%', justifyContent: 'center', paddingLeft: 10}}>
                               <Text style={{color: 'red'}}>{errorMessage}</Text>
-                          </View> 
-                          <View style={{width: '10%'}}>       
-                            <Text 
-                                style={styles.closeIcon}
-                                onPress = {()=> { 
-                                    showModal(!modal), 
-                                    updateTimeRange(null),
-                                    showErrorMessage('')
+                          </View>                           */}
+                          <TouchableOpacity  style={{ alignSelf: 'flex-end'}}
+                                onPress={() => { 
+                                  showModal(!modal), 
+                                  updateTimeRange(null)
                                 }}>
-                              X {/*closing icon */}                       
-                            </Text>
-                          </View>   
-                        </View> 
-                        </View> 
+                            <Image style={[styles.icon, {width: 40, height: 40}]}
+                               source = {require('./close_icon.png')}/>
+                          </TouchableOpacity>
+                        {/* </View>  */}
+                      {/* </View>  */}
                         <TextInput  
                             style={styles.inputField}
                             autoFocus={true} 
-                            placeholder={text} 
+                            placeholder='Enter your goal' 
                             onPressIn={()=>{console.log("input")}}
                             onChangeText = {enteredText => {
                               updateText(enteredText)
-                              showErrorMessage("")
                             }}                   
                             required
                             multiline={false} />                                     
                         <SelectDropdown data = {rangeData}
-                            defaultButtonText = "Time Range"
+                            defaultButtonText = "Chose Timerange"
                             buttonStyle = {styles.button}
                             dropdownStyle = {styles.dropdown}
                             dropdownIconPosition = "left"
                             // onFocus={()=> {updateDatePicker(false)}}
                             onSelect = {(selectedItem) => {
                               updateTimeRange(selectedItem)
-                              showErrorMessage("")
+                              //showTimeErrorMessage("")
                             }}
                             buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
 
@@ -242,15 +242,12 @@ export default function HomeScreen({navigation, route}) {
                               </View> 
                           </View> 
                         </View>
-                        {/* <TouchableOpacity 
-                            style={styles.setButton}
-                            onPress={() => {addGoal()}}>
-                                <Text style={{fontSize: 18}}>Add goal</Text>
-                        </TouchableOpacity>  */}
-                        <Image style={styles.icon}
-                               source = {require('./check_icon.png')}
-                               onPress={() => {addGoal()}}/>
-                        {/* image should be in the same folder, no need to import file at the top */}
+                        <TouchableOpacity  onPress={() => {addGoal()}} >
+                            <Image style={styles.icon}
+                               source = {require('./ok_icon.png')}
+                              /> 
+                              {/* image should be in the same folder, no need to import file at the top */}
+                        </TouchableOpacity>
                     </View>
                 </View> 
         </Modal>
@@ -309,9 +306,9 @@ const styles = StyleSheet.create({
   },
   modalContent:{
     backgroundColor: 'white',
-    // height: 500,
     margin: '10%',
     padding: '5%',
+    paddingTop: '1%',
     borderWidth: 1,
     borderRadius: 15,
     borderColor: 'grey'
@@ -348,15 +345,16 @@ const styles = StyleSheet.create({
     backgroundColor:"white",
     borderRadius:8,
     height:55, 
-    padding: 15, 
+    padding: 10, 
     fontSize: 20 
   },
   flexBoxErrorMessage:{
     flex:1,
     flexDirection: 'row',
     width: '100%',
-    //alignItems: 'flex-end',
-  },
+    height: 50,
+    paddingBottom: '3%',
+     },
   
   datePickerContainer:{
   height: 100
@@ -405,10 +403,11 @@ const styles = StyleSheet.create({
     width: 70,                                      
     height: 70,
     borderWidth: 1,
-    borderRadius: 10, 
+    borderRadius: 50, 
     borderColor: 'silver',
     alignSelf: 'center',
-    marginTop:10   
+    marginTop:10,
+      
 }
 });
 
