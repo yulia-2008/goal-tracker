@@ -42,9 +42,7 @@ export default function HomeScreen({navigation, route}) {
   // const [deadline, setDeadline] = useState({}) // value is undefined
   // const [datePicker, showDatePicker] = useState(false)
   const [modal, showModal] = useState(false)
-  // const [inputPlaceHolder, updatePlaceHolder] = useState("")
-  // const [errorMessage, showErrorMessage] = useState("")
-  // const [buttonText, updateButtonText] = useState(" Time Range")
+  const [buttonText, updateButtonText] = useState("Time Range")
     
   useEffect(() => {getData()}, [])
   AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  
@@ -72,21 +70,16 @@ export default function HomeScreen({navigation, route}) {
       updateGoals(goals)
       AsyncStorage.setItem("storedData", JSON.stringify(goals)) 
       showModal(!modal)    // closing Modal
-      updateText("")      // clearing enterd data 
+      updateText("")      // clearing entered data 
       updateDate(null)
       updateMonth(null)
       updateYear(null)
-      // updateButtonText('Time Range')
+      updateTimeRange(null)
     }
-    // else if(timeRange == null){
-    //   updateButtonText('Chose Timerange')
-    // }
-    // else if(text.trim()== ""){
-    //   updatePlaceHolder('enter your goal')
-    // }
-    
-    
-    }
+    else if(timeRange == null){
+      updateButtonText('Select time range !!')
+    }    
+  }
 
   const datesArray = () => {
     // generates dates for goal deadline container
@@ -146,21 +139,15 @@ export default function HomeScreen({navigation, route}) {
             transparent = {true}>
                 <View style={styles.modal}>
                     <View style={styles.modalContent}> 
-                      {/* <View style = {{height:50}}> */}
-                        {/* <View style={styles.flexBoxErrorMessage}> 
-                          <View style={{width: '80%', justifyContent: 'center', paddingLeft: 10}}>
-                              <Text style={{color: 'red'}}>{errorMessage}</Text>
-                          </View>                           */}
                           <TouchableOpacity  style={{ alignSelf: 'flex-end'}}
                                 onPress={() => { 
                                   showModal(!modal), 
                                   updateTimeRange(null)
+                                  updateButtonText("Time Range")
                                 }}>
                             <Image style={[styles.icon, {width: 40, height: 40}]}
                                source = {require('./close_icon.png')}/>
                           </TouchableOpacity>
-                        {/* </View>  */}
-                      {/* </View>  */}
                         <TextInput  
                             style={styles.inputField}
                             autoFocus={true} 
@@ -172,14 +159,14 @@ export default function HomeScreen({navigation, route}) {
                             required
                             multiline={false} />                                     
                         <SelectDropdown data = {rangeData}
-                            defaultButtonText = "Chose Timerange"
+                            defaultButtonText = {buttonText}
                             buttonStyle = {styles.button}
                             dropdownStyle = {styles.dropdown}
                             dropdownIconPosition = "left"
                             // onFocus={()=> {updateDatePicker(false)}}
                             onSelect = {(selectedItem) => {
                               updateTimeRange(selectedItem)
-                              //showTimeErrorMessage("")
+                              updateButtonText('Time Range')
                             }}
                             buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
 
@@ -243,10 +230,11 @@ export default function HomeScreen({navigation, route}) {
                           </View> 
                         </View>
                         <TouchableOpacity  onPress={() => {addGoal()}} >
-                            <Image style={styles.icon}
-                               source = {require('./ok_icon.png')}
-                              /> 
-                              {/* image should be in the same folder, no need to import file at the top */}
+                            <Image 
+                                style={styles.icon}
+                                source = {require('./ok_icon.png')}
+                            /> 
+                            {/* image should be in the same folder, no need to import file at the top */}
                         </TouchableOpacity>
                     </View>
                 </View> 
@@ -277,17 +265,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  setButton:{
-    alignItems: 'center',
-    borderWidth: 1,
-    borderBottomWidth: 4,
-    borderRightWidth: 4, 
-    borderColor: 'grey',
-    //backgroundColor: 'rgb(153, 204, 255)',
-    borderRadius:8,
-    padding: 15,
-    marginTop: '7%'
-    },
+  // setButton:{
+  //   alignItems: 'center',
+  //   borderWidth: 1,
+  //   borderBottomWidth: 4,
+  //   borderRightWidth: 4, 
+  //   borderColor: 'grey',
+  //   backgroundColor: 'rgb(153, 204, 255)',
+  //   borderRadius:8,
+  //   padding: 15,
+  //   marginTop: '7%'
+  //   },
   itemBox:{
     flex:2,
     width: '100%',
@@ -331,7 +319,7 @@ const styles = StyleSheet.create({
     height:55, 
     padding: 15, 
     marginTop: 15,
-    alignItems: 'center',                        
+    alignItems: 'center'                      
   },
   dropdown:{
     flex:1,
