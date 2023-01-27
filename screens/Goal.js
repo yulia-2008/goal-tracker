@@ -36,7 +36,7 @@ export default function Goal({navigation, route}) {
     // creates nested array [ {id:0, month: [janyary, 2022], dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
         let dataArray = []
         let count = 0;
-        for (let i = 2022; i <= 2030; i ++){      
+        for (let i = 2022; i <= 2024; i ++){      
             monthArray.map(mo => {
                 dataArray.push({id: count, month: [mo.name, i], dates: getDates(mo.id, i)})
                 count += 1

@@ -265,17 +265,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
-  // setButton:{
-  //   alignItems: 'center',
-  //   borderWidth: 1,
-  //   borderBottomWidth: 4,
-  //   borderRightWidth: 4, 
-  //   borderColor: 'grey',
-  //   backgroundColor: 'rgb(153, 204, 255)',
-  //   borderRadius:8,
-  //   padding: 15,
-  //   marginTop: '7%'
-  //   },
   itemBox:{
     flex:2,
     width: '100%',
@@ -324,7 +313,6 @@ const styles = StyleSheet.create({
   dropdown:{
     flex:1,
     borderRadius:8,
-    // height: '100%'
     alignSelf: 'flex-start'
   },
   inputField:{
@@ -342,10 +330,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 50,
     paddingBottom: '3%',
-     },
-  
+  },
   datePickerContainer:{
-  height: 100
+    height: 100
   },
   flexBox: {
     flex:1,
@@ -363,20 +350,14 @@ const styles = StyleSheet.create({
   
   dateBox:{
     padding:0,
-    // borderWidth: 1,
-    // borderColor: "grey",
     width:'20%'
   },
   yearBox:{
     padding: 0,
-    // borderWidth: 2,
-    // borderColor: "grey", 
     width:'20%',
   },
   monthBox:{
     padding: 0,
-    // borderWidth: 2,
-    // borderColor: "grey", 
     width:'60%',
   },
   itemCell:{
@@ -394,8 +375,7 @@ const styles = StyleSheet.create({
     borderRadius: 50, 
     borderColor: 'silver',
     alignSelf: 'center',
-    marginTop:10,
-      
+    marginTop:10,  
 }
 });
 
