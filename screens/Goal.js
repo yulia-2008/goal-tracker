@@ -15,12 +15,14 @@ export default function Goal({navigation, route}) {
 
     // useEffect(() => ref.current.scrollTo({y: coordinate  })) work
 
-    const monthArray = [{id: 0, name:'January'}, {id: 1, name: 'February'},
-                        {id: 2, name: 'March'}, {id: 3, name:'April'},
-                        {id: 4, name: 'May'}, {id: 5, name:'June'},
-                        {id: 6, name: 'July'}, {id: 7, name: 'August'},
-                        {id: 8, name: 'September'}, {id: 9, name: 'October'},
-                        {id: 10, name: 'November'}, {id: 11, name:'December'}]
+    // const monthArray = [{id: 0, name:'January'}, {id: 1, name: 'February'},
+    //                     {id: 2, name: 'March'}, {id: 3, name:'April'},
+    //                     {id: 4, name: 'May'}, {id: 5, name:'June'},
+    //                     {id: 6, name: 'July'}, {id: 7, name: 'August'},
+    //                     {id: 8, name: 'September'}, {id: 9, name: 'October'},
+    //                     {id: 10, name: 'November'}, {id: 11, name:'December'}]
+    const monthArray = ["January","February","March","April","May","June","July",
+            "August","September","October","November","December"]
 
     const weekDays = () => {
     // generates week days -> array of objects [{id: 0, day: 'Monday'}, ...]    
@@ -33,12 +35,12 @@ export default function Goal({navigation, route}) {
     }
 
     const monthsYearsDatesArray = () => {
-    // creates nested array [ {id:0, month: [janyary, 2022], dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
+    // creates nested array [ {id:0, month: 'january', year: 2020, dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
         let dataArray = []
         let count = 0;
         for (let i = 2022; i <= 2024; i ++){      
             monthArray.map(mo => {
-                dataArray.push({id: count, month: [mo.name, i], dates: getDates(mo.id, i)})
+                dataArray.push({id: count, month: mo, year: i, dates: getDates(monthArray.indexOf(mo), i)})
                 count += 1
             })
         }              
@@ -46,12 +48,15 @@ export default function Goal({navigation, route}) {
     }
 
     const getDates = (month, year) => {
-        
+         // function created array in next format :
+        // [{id: 0, date: 1, color: 'white'}, {id: 1, date: 2, color: 'white'},...]
         let daysCount = new Date(year, month, 0).getDate();  
-                // getDate() return 30 or 31 day, third parameter represents date (1-31),
-                // parameter 0 ->  last day of the previos month (will be 30 or 31)
-                // Months start with index 0, so the previous month is the needed month          
-        let firstDay = new Date(year, month, 1).getDay()  
+                // third parameter represents date (1-31), 
+                // if it's 0  ---> output will be the last day of the previos month (30 or 31)
+                // so getDate() return 30 or 31,               
+                // Months start with index 0, so the previous month is the needed month 
+
+        let firstDay = new Date(year, month, 1).getDay()  // (day of the week  --> 0-6)
         let daysArray = [];
         let daysArrayWithKeys = []  
 
@@ -103,10 +108,10 @@ export default function Goal({navigation, route}) {
     const getMonth = () => {
         const currentDate = new Date()
         const currentYear = currentDate.getFullYear()
-        const currentMonth = currentDate.getMonth() 
+        const currentMonth = currentDate.getMonth() // output 0 to 11
         let currentMo = monthsYearsDatesArray().find( 
-                obj => obj.month[0] === monthArray[currentMonth].name
-                && obj.month[1] === currentYear    
+                obj => obj.month === monthArray[currentMonth]
+                && obj.year === currentYear    
         )  
         // console.log("test",currentMo.id) 
         setCurrentMonth(currentMo.id)       
@@ -148,7 +153,7 @@ export default function Goal({navigation, route}) {
                                         }}  >
                                     <Text   // renders "month" - "year"
                                             style={styles.month}>
-                                        {item.month[0]} - {item.month[1]} 
+                                        {item.month} - {item.year} 
                                     </Text> 
                                     <View style = {styles.datesBox}>
                                         {item.dates.map(dateObj => 
