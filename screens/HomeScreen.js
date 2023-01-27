@@ -45,7 +45,7 @@ export default function HomeScreen({navigation, route}) {
   const [buttonText, updateButtonText] = useState("Time Range")
     
   useEffect(() => {getData()}, [])
-  AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  
+  AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  //??
 
   let getData = async () =>  {
     let keys = await AsyncStorage.getAllKeys()

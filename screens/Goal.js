@@ -5,37 +5,31 @@ export default function Goal({navigation, route}) {
 
     const goal = route.params.goalObject.goal;
     
+    const [mainDataArray, updateData] = useState(null)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellInfo, setValue] = useState({cellClicked: false, cellId: null})
     const [coordinate, setCoordinate] = useState(null)
 
     const ref = useRef(0);
 
-    useEffect(() =>  getMonth(), [])
+    useEffect(() => getData(), [])
+    useEffect(() => {mainDataArray? getMonth(): console.log('loading')},[mainDataArray])
+
 
     // useEffect(() => ref.current.scrollTo({y: coordinate  })) work
 
-    // const monthArray = [{id: 0, name:'January'}, {id: 1, name: 'February'},
-    //                     {id: 2, name: 'March'}, {id: 3, name:'April'},
-    //                     {id: 4, name: 'May'}, {id: 5, name:'June'},
-    //                     {id: 6, name: 'July'}, {id: 7, name: 'August'},
-    //                     {id: 8, name: 'September'}, {id: 9, name: 'October'},
-    //                     {id: 10, name: 'November'}, {id: 11, name:'December'}]
     const monthArray = ["January","February","March","April","May","June","July",
             "August","September","October","November","December"]
 
-    const weekDays = () => {
-    // generates week days -> array of objects [{id: 0, day: 'Monday'}, ...]    
-        let days = new Array("Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"); 
-        let daysWithKeys = []
-        for (let i = 0; i < days.length; i++){
-            daysWithKeys.push({id: i, day: days[i]})
-        }
-        return daysWithKeys
-    }
+    const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
 
-    const monthsYearsDatesArray = () => {
-    // creates nested array [ {id:0, month: 'january', year: 2020, dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...] },...]
+    const getData = () => {
+    // creates nested array [ { id: 0, 
+    //                         month: 'january',
+    //                         year: 2020, 
+    //                         dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...]
+   //                          },{...},{...},{...}
+   //                        ]
         let dataArray = []
         let count = 0;
         for (let i = 2022; i <= 2024; i ++){      
@@ -43,8 +37,10 @@ export default function Goal({navigation, route}) {
                 dataArray.push({id: count, month: mo, year: i, dates: getDates(monthArray.indexOf(mo), i)})
                 count += 1
             })
-        }              
-        return dataArray
+        }  
+        updateData(dataArray) 
+        //console.log("inside getData", mainDataArray[1].month)           
+        // return dataArray
     }
 
     const getDates = (month, year) => {
@@ -109,12 +105,12 @@ export default function Goal({navigation, route}) {
         const currentDate = new Date()
         const currentYear = currentDate.getFullYear()
         const currentMonth = currentDate.getMonth() // output 0 to 11
-        let currentMo = monthsYearsDatesArray().find( 
+        let currentMo = mainDataArray.find( 
                 obj => obj.month === monthArray[currentMonth]
                 && obj.year === currentYear    
         )  
-        // console.log("test",currentMo.id) 
-        setCurrentMonth(currentMo.id)       
+        setCurrentMonth(currentMo.id)   
+        //console.log("in getMOnth",mainDataArray[1])     
     }
 
     const getCellColor = (id) => {
@@ -123,26 +119,53 @@ export default function Goal({navigation, route}) {
         return color
     }
 
-    
-    
     return (
         <View style={styles.container}>  
-        {/* {console.log("cu", currentMonth)}
-        {console.log("cu2", monthsYearsDatesArray()[4].month)} */}
             <Text>Goal: {goal.text}  </Text> 
             <Text> Deadline: {goal.deadline.month} / {goal.deadline.date} / {goal.deadline.year} </Text>
             <Text> Pereodicity: {goal.timeRange} </Text>
-
             <View style={styles.calendarBox}>
-                <View style={styles.calendarHeader}>
-                    { weekDays().map(item => {
-                        return  <TouchableOpacity style={styles.weekDayBox} key={item.id}>
-                                    <Text>{item.day}</Text>
-                                </TouchableOpacity> 
-                      })
-                    }     
-                </View>       
-                <ScrollView ref={ref}>
+                {mainDataArray && currentMonth ?
+                    <>
+                    <Text style = {styles.month}>{mainDataArray[currentMonth].month} - {mainDataArray[currentMonth].year}</Text>            
+                    <View style={styles.calendarHeader}>
+                        { weekDays.map((item, index) => {
+                            return  <TouchableOpacity style={styles.weekDayBox} 
+                                                    key={index}>
+                                        <Text>{item}</Text>
+                                    </TouchableOpacity> 
+                        })}   
+                    </View> 
+             
+                    <View style = {styles.datesBox}>
+                        {mainDataArray[currentMonth].dates.map(dateObj => {
+                            return typeof dateObj.date == 'number' ?
+                            <TouchableOpacity   // render date cell
+                                key = {dateObj.id} 
+                                style={[styles.date, {backgroundColor: dateObj.color}]}
+                                onPress={() => { console.log("test")
+                                    setValue(!true)     
+                                }}>
+                                <Text style = {styles.text}>
+                                    {dateObj.date}
+                                </Text>
+                            
+                            </TouchableOpacity>
+                            : 
+                            <TouchableOpacity   // render empty date cell
+                                key = {dateObj.id} 
+                                style={styles.emptyDate}>
+                                <Text style = {styles.text}>
+                                    {dateObj.date}
+                                </Text> 
+                            </TouchableOpacity>
+                        })}
+                    </View> 
+                    </>:
+                    <Text>Loading</Text>
+}
+                   
+                {/* <ScrollView ref={ref}>
                     {monthsYearsDatesArray().map(item => {               
                         return  <View   key = {item.id}                    
                                         onLayout={(event) => {
@@ -180,7 +203,7 @@ export default function Goal({navigation, route}) {
                                     </View> 
                                 </View>
                     })}
-                    </ScrollView>
+                    </ScrollView> */}
                     
                             <Modal 
                                 transparent = {true} 
