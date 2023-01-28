@@ -6,7 +6,8 @@ import SelectDropdown from 'react-native-select-dropdown';
 
 export default function HomeScreen({navigation, route}) {
 
-  const [goalsData, updateGoals] = useState([
+  const [goalsData, updateGoals] = useState(null)
+  const initialGoaldData = [
     {goal: false, id: 1, color: 'rgb(255, 204, 204)'},
     {goal: false, id: 2, color: 'rgb(255, 255, 204)'},
     {goal: false, id: 3, color: 'rgb(204, 255, 204)'},
@@ -19,7 +20,7 @@ export default function HomeScreen({navigation, route}) {
     {goal: false, id: 10, color: 'rgb(255, 160, 122)'},
     {goal: false, id: 11, color: 'rgb(238, 232, 170)'},
     {goal: false, id: 12, color: 'rgb(216, 191, 216)'}
-  ])
+  ]
 
   const rangeData = [
     "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
@@ -45,7 +46,7 @@ export default function HomeScreen({navigation, route}) {
   const [buttonText, updateButtonText] = useState("Time Range")
     
   useEffect(() => {getData()}, [])
-  AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  //??
+ //  AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  //?? should store after changing
 
   let getData = async () =>  {
     let keys = await AsyncStorage.getAllKeys()
@@ -55,6 +56,7 @@ export default function HomeScreen({navigation, route}) {
        .then(data => {updateGoals(data)
        })
     }
+    else {updateGoals(initialGoaldData)}
   }
 
   let addGoal = () => {

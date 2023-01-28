@@ -1,35 +1,43 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Goal({navigation, route}) {
 
     const goal = route.params.goalObject.goal;
     
-    const [mainDataArray, updateData] = useState(null)
+    const [calendarData, updateCalendarData] = useState(null)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellInfo, setValue] = useState({cellClicked: false, cellId: null})
-    const [coordinate, setCoordinate] = useState(null)
-
-    const ref = useRef(0);
 
     useEffect(() => getData(), [])
-    useEffect(() => {mainDataArray? getMonth(): console.log('loading')},[mainDataArray])
-
-
-    // useEffect(() => ref.current.scrollTo({y: coordinate  })) work
-
+    useEffect(() => {calendarData? getCurrentMonth(): console.log('loading')},[calendarData])
+    
     const monthArray = ["January","February","March","April","May","June","July",
-            "August","September","October","November","December"]
-
+                      "August","September","October","November","December"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
 
-    const getData = () => {
+    let getData = async () =>  {
+        let keys = await AsyncStorage.getAllKeys()
+        if(keys.includes('storedCalendar')){
+            await AsyncStorage.getItem('storedCalendar')
+            .then(data => JSON.parse(data))
+            .then(data => {updateCalendarData(data), console.log('from storage')
+            })
+        }
+        else {
+            generateInitialCalendar(), console.log('generated')
+            AsyncStorage.setItem("storedCalendar", JSON.stringify(calendarData)) //?? do I need to store it now or after chenging data
+        }
+    }
+
+    const generateInitialCalendar = () => {
     // creates nested array [ { id: 0, 
     //                         month: 'january',
     //                         year: 2020, 
     //                         dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...]
-   //                          },{...},{...},{...}
-   //                        ]
+    //                         },{...},{...},{...}
+    //                       ]
         let dataArray = []
         let count = 0;
         for (let i = 2022; i <= 2024; i ++){      
@@ -38,9 +46,7 @@ export default function Goal({navigation, route}) {
                 count += 1
             })
         }  
-        updateData(dataArray) 
-        //console.log("inside getData", mainDataArray[1].month)           
-        // return dataArray
+        updateCalendarData(dataArray) 
     }
 
     const getDates = (month, year) => {
@@ -60,6 +66,8 @@ export default function Goal({navigation, route}) {
             daysArray.push(i);
         }
         switch (firstDay) {
+            // If the 1st day of the month starts not on Monday 
+            // push "" to the begining of the daysArray 
             case 0:
                 daysArray.unshift("", "", "", "", "", "");
                 break;
@@ -76,10 +84,7 @@ export default function Goal({navigation, route}) {
                 daysArray.unshift("", "", "", "");
                 break;
             case 6:
-                daysArray.unshift("", "", "", "", "");
-
-                // If the 1st day of the month starts not on Monday 
-                // push "" to the begining of the daysArray 
+                daysArray.unshift("", "", "", "", "");               
             }
             for(var i = 0; i <= daysArray.length-1; i++){
                 daysArrayWithKeys.push({id: i, date: daysArray[i], color: 'white'});
@@ -87,37 +92,21 @@ export default function Goal({navigation, route}) {
       return daysArrayWithKeys
     }
 
-    // const currentMontIndex = () => {
-    //     /// slowing down initial calendar rendering
-    //        // finds in monthsYearsDatesArray an object that holds current month
-    //        //  and returns index of that object
-    //     const currentDate = new Date()
-    //     const currentYear = currentDate.getFullYear()
-    //     const currentMonth = currentDate.getMonth() 
-    //     let currentMo = monthsYearsDatesArray().find( 
-    //             obj => obj.month[0] === monthArray[currentMonth].name
-    //             && obj.month[1] === currentYear    
-    //     )     
-    //     return currentMo.id
-    // }
-
-    const getMonth = () => {
+    const getCurrentMonth = () => {
         const currentDate = new Date()
         const currentYear = currentDate.getFullYear()
         const currentMonth = currentDate.getMonth() // output 0 to 11
-        let currentMo = mainDataArray.find( 
+        let currentMo = calendarData.find( 
                 obj => obj.month === monthArray[currentMonth]
                 && obj.year === currentYear    
         )  
-        setCurrentMonth(currentMo.id)   
-        //console.log("in getMOnth",mainDataArray[1])     
+        setCurrentMonth(currentMo.id)      
     }
 
-    const getCellColor = (id) => {
-        let color = 'white' 
-
-        return color
-    }
+    // const getCellColor = (id) => {
+    //     let color = 'white' 
+    //     return color
+    // }
 
     return (
         <View style={styles.container}>  
@@ -125,9 +114,13 @@ export default function Goal({navigation, route}) {
             <Text> Deadline: {goal.deadline.month} / {goal.deadline.date} / {goal.deadline.year} </Text>
             <Text> Pereodicity: {goal.timeRange} </Text>
             <View style={styles.calendarBox}>
-                {mainDataArray && currentMonth ?
+                {calendarData && currentMonth ?
                     <>
-                    <Text style = {styles.month}>{mainDataArray[currentMonth].month} - {mainDataArray[currentMonth].year}</Text>            
+                    <TouchableOpacity onPress = {()=> setCurrentMonth(currentMonth-1)}>
+                        <Text>previos month</Text>
+                    </TouchableOpacity>
+
+                    <Text style = {styles.month}>{calendarData[currentMonth].month} - {calendarData[currentMonth].year}</Text>            
                     <View style={styles.calendarHeader}>
                         { weekDays.map((item, index) => {
                             return  <TouchableOpacity style={styles.weekDayBox} 
@@ -138,12 +131,12 @@ export default function Goal({navigation, route}) {
                     </View> 
              
                     <View style = {styles.datesBox}>
-                        {mainDataArray[currentMonth].dates.map(dateObj => {
+                        {calendarData[currentMonth].dates.map(dateObj => {
                             return typeof dateObj.date == 'number' ?
                             <TouchableOpacity   // render date cell
                                 key = {dateObj.id} 
                                 style={[styles.date, {backgroundColor: dateObj.color}]}
-                                onPress={() => { console.log("test")
+                                onPress={() => {
                                     setValue(!true)     
                                 }}>
                                 <Text style = {styles.text}>
@@ -161,95 +154,48 @@ export default function Goal({navigation, route}) {
                             </TouchableOpacity>
                         })}
                     </View> 
+                    <TouchableOpacity onPress = {()=> setCurrentMonth(currentMonth+1)}>
+                        <Text>Next Month</Text>
+                    </TouchableOpacity>
                     </>:
                     <Text>Loading</Text>
-}
-                   
-                {/* <ScrollView ref={ref}>
-                    {monthsYearsDatesArray().map(item => {               
-                        return  <View   key = {item.id}                    
-                                        onLayout={(event) => {
-                                            const layout = event.nativeEvent.layout
-                                            item.id === currentMonth ?
-                                                // setCoordinate(layout.y) : null  -> old solution with button <CUREENT MONTH>
-                                                ref.current.scrollTo({y: layout.y }) : null 
-                                        }}  >
-                                    <Text   // renders "month" - "year"
-                                            style={styles.month}>
-                                        {item.month} - {item.year} 
-                                    </Text> 
-                                    <View style = {styles.datesBox}>
-                                        {item.dates.map(dateObj => 
-                                            typeof dateObj.date == 'number' ?
-                                                <TouchableOpacity   // render date cell
-                                                                    key = {dateObj.id} 
-                                                                    style={[styles.date, {backgroundColor: dateObj.color}]}
-                                                                    onPress={() => { console.log("test")
-                                                                        setValue(!true)     
-                                                                    }}>
-                                                    <Text style = {styles.text}>
-                                                        {dateObj.date}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                                : 
-                                                <TouchableOpacity   // render empty date cell
-                                                                    key = {dateObj.id} 
-                                                                    style={styles.emptyDate}>
-                                                    <Text style = {styles.text}>
-                                                        {dateObj.date}
-                                                    </Text>
-                                                </TouchableOpacity>
-                                        )} 
-                                    </View> 
-                                </View>
-                    })}
-                    </ScrollView> */}
-                    
-                            <Modal 
-                                transparent = {true} 
-                                visible = {cellInfo.cellClicked}>
-                                <View style={styles.modal}>
-                                    <View style={styles.modalContent}>
-                                        <Text style={styles.buttonText}>Accomplished?</Text>
-                                        <View style={styles.row}>
-                                            <TouchableOpacity 
-                                                style={styles.button}                            
-                                                onPress = {()=> {
-                                                    setValue({...cellInfo, cellClicked: false})
-                                                    
-                                                 }}>
-                                                <Text style={styles.buttonText}>YES</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity 
-                                                style={styles.button}                                         
-                                                onPress = {()=> {
-                                                    setValue({...cellInfo, cellClicked: false})
+                }                          
+                <Modal 
+                    transparent = {true} 
+                    visible = {cellInfo.cellClicked}>
+                    <View style={styles.modal}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.buttonText}>Accomplished?</Text>
+                            <View style={styles.row}>
+                                <TouchableOpacity 
+                                    style={styles.button}                            
+                                    onPress = {()=> {
+                                        setValue({...cellInfo, cellClicked: false})
+                                        
+                                        }}>
+                                    <Text style={styles.buttonText}>YES</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={styles.button}                                         
+                                    onPress = {()=> {
+                                        setValue({...cellInfo, cellClicked: false})
 
-                                                }}>
-                                                <Text style={styles.buttonText}>NO</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity 
-                                                style={styles.button}                                         
-                                                onPress = {()=> {
-                                                    setValue({...cellInfo, cellClicked: false})
+                                    }}>
+                                    <Text style={styles.buttonText}>NO</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={styles.button}                                         
+                                    onPress = {()=> {
+                                        setValue({...cellInfo, cellClicked: false})
 
-                                                }}>
-                                                <Text style={styles.buttonText}>Cancel</Text>
-                                            </TouchableOpacity>
-                                        </View>   
-                                    </View>
-                                </View>
-                            </Modal>  
-                         
-                   
-                  
-            </View>        
-            {/* <TouchableOpacity   style={styles.button}
-                                onPress={() => ref.current.scrollTo({y: coordinate  })
-                                }> 
-                <Text style={styles.buttonText}>Current month</Text>
-            </TouchableOpacity> */}
-                                      
+                                    }}>
+                                    <Text style={styles.buttonText}>Cancel</Text>
+                                </TouchableOpacity>
+                            </View>   
+                        </View>
+                    </View>
+                </Modal>     
+            </View>                                            
         </View>
     );
 }
