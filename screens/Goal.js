@@ -1,14 +1,15 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Goal({navigation, route}) {
 
-    const goal = route.params.goalObject.goal;
+    const goalObject = route.params.goalObject;
     
     const [calendarData, updateCalendarData] = useState(null)
     const [currentMonth, setCurrentMonth] = useState(null)
-    const [cellInfo, setValue] = useState({cellClicked: false, cellId: null})
+    const [cellModal, showCellModal] = useState(false)
+    const [currentCell, updateCurrentCell] = useState({cellId: null}) // ? do i need more keys here?
 
     useEffect(() => getData(), [])
     useEffect(() => {calendarData? getCurrentMonth(): console.log('loading')},[calendarData])
@@ -35,7 +36,11 @@ export default function Goal({navigation, route}) {
     // creates nested array [ { id: 0, 
     //                         month: 'january',
     //                         year: 2020, 
-    //                         dates: [{id: 0, date: 1}, {id: 1, date: 2}, ...]
+    //                         dates: [{id: 0, date: 1, markedGoals:[{goalId: 2, note: "str"},
+    //                                                              {goalId: 3, note: "str"}                                          
+    //                                                             ] 
+    //                                 {id: 1, date: 2, markedGoals: []}, ...
+    //                                ]
     //                         },{...},{...},{...}
     //                       ]
         let dataArray = []
@@ -87,7 +92,11 @@ export default function Goal({navigation, route}) {
                 daysArray.unshift("", "", "", "", "");               
             }
             for(var i = 0; i <= daysArray.length-1; i++){
-                daysArrayWithKeys.push({id: i, date: daysArray[i], color: 'white'});
+                daysArrayWithKeys.push({
+                    id: i, 
+                    date: daysArray[i],
+                    markedGoals: []
+                    });
             }          
       return daysArrayWithKeys
     }
@@ -103,16 +112,28 @@ export default function Goal({navigation, route}) {
         setCurrentMonth(currentMo.id)      
     }
 
-    // const getCellColor = (id) => {
-    //     let color = 'white' 
-    //     return color
-    // }
+    const markThisCell = () => {
+        let newCalendarData = calendarData
+        let markedGoalsArray = newCalendarData[currentMonth].dates[currentCell.cellId].markedGoals 
+        markedGoalsArray.push({id: goalObject.id})
+        updateCalendarData(newCalendarData)
+        AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData)) 
+    }
+
+    const defineColor = (dateObj) => {
+        //finds if goal's id is in markedArray 
+        let color = 'white'
+        if (dateObj.markedGoals.length > 0){
+           let found = dateObj.markedGoals.find(obj => obj.id === goalObject.id)
+           {found ? color = goalObject.color: color = 'white'}         
+        }
+        return color
+    }
 
     return (
         <View style={styles.container}>  
-            <Text>Goal: {goal.text}  </Text> 
-            <Text> Deadline: {goal.deadline.month} / {goal.deadline.date} / {goal.deadline.year} </Text>
-            <Text> Pereodicity: {goal.timeRange} </Text>
+            <Text> Deadline: {goalObject.goal.deadline.month} / {goalObject.goal.deadline.date} / {goalObject.goal.deadline.year} </Text>
+            <Text> Pereodicity: {goalObject.goal.timeRange} </Text>
             <View style={styles.calendarBox}>
                 {calendarData && currentMonth ?
                     <>
@@ -124,7 +145,7 @@ export default function Goal({navigation, route}) {
                     <View style={styles.calendarHeader}>
                         { weekDays.map((item, index) => {
                             return  <TouchableOpacity style={styles.weekDayBox} 
-                                                    key={index}>
+                                                      key={index}>
                                         <Text>{item}</Text>
                                     </TouchableOpacity> 
                         })}   
@@ -135,9 +156,10 @@ export default function Goal({navigation, route}) {
                             return typeof dateObj.date == 'number' ?
                             <TouchableOpacity   // render date cell
                                 key = {dateObj.id} 
-                                style={[styles.date, {backgroundColor: dateObj.color}]}
+                                style={[styles.date, {backgroundColor: defineColor(dateObj)}]}
                                 onPress={() => {
-                                    setValue(!true)     
+                                    showCellModal(true)
+                                    updateCurrentCell({...currentCell, cellId: dateObj.id})   
                                 }}>
                                 <Text style = {styles.text}>
                                     {dateObj.date}
@@ -159,38 +181,47 @@ export default function Goal({navigation, route}) {
                     </TouchableOpacity>
                     </>:
                     <Text>Loading</Text>
-                }                          
+                }                         
                 <Modal 
                     transparent = {true} 
-                    visible = {cellInfo.cellClicked}>
+                    visible = {cellModal}>
                     <View style={styles.modal}>
                         <View style={styles.modalContent}>
-                            <Text style={styles.buttonText}>Accomplished?</Text>
+                            <TouchableOpacity  
+                                style={{ alignSelf: 'flex-end'}}
+                                onPress={() => { 
+                                    showCellModal(false)
+                                }}>
+                                <Image style={[styles.icon, {width: 40, height: 40}]}
+                                       source = {require('./close_icon.png')}/>
+                            </TouchableOpacity>
+                            <Text style={styles.buttonText}>Is goal acomplished for this day?</Text>
                             <View style={styles.row}>
                                 <TouchableOpacity 
                                     style={styles.button}                            
                                     onPress = {()=> {
-                                        setValue({...cellInfo, cellClicked: false})
-                                        
+                                        showCellModal(false)
+                                        markThisCell()
                                         }}>
                                     <Text style={styles.buttonText}>YES</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity 
                                     style={styles.button}                                         
                                     onPress = {()=> {
-                                        setValue({...cellInfo, cellClicked: false})
+                                        showCellModal(false)
 
                                     }}>
                                     <Text style={styles.buttonText}>NO</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity 
+
+                                {/* <TouchableOpacity 
                                     style={styles.button}                                         
                                     onPress = {()=> {
-                                        setValue({...cellInfo, cellClicked: false})
+                                        showCellModal(false)
 
                                     }}>
                                     <Text style={styles.buttonText}>Cancel</Text>
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>   
                         </View>
                     </View>
