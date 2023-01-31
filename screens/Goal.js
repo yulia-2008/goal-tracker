@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, TextInput, Switch, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DeprecatedEdgeInsetsPropType from 'react-native/Libraries/DeprecatedPropTypes/DeprecatedEdgeInsetsPropType';
 
 //import Switch from '@mui/material/Switch';
 //import { Switch } from '@material-ui/core';
@@ -13,11 +14,12 @@ export default function Goal({navigation, route}) {
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
     const [currentCell, updateCurrentCell] = useState(null) 
-    const [switchValue, updateSwitch] = useState(null);
+    const [switchValue, updateSwitch] = useState(null)
+    const [note, updateNote] = useState("")
    
     useEffect(() => getData(), [])
     useEffect(() => {calendarData? getCurrentMonth(): console.log('loading')},[calendarData])
-    useEffect(() => {currentCell? getSwitchValue(): console.log('no cell')}, [currentCell])
+    useEffect(() => {currentCell? getSwitchValueAndNote(): console.log('no cell')}, [currentCell])
     
     const monthArray = ["January","February","March","April","May","June","July",
                       "August","September","October","November","December"]
@@ -118,47 +120,84 @@ export default function Goal({navigation, route}) {
         setCurrentMonth(currentMo.id)      
     }
 
-    const editCell = () => { // mess here
+    const editCell = (value) => {
+        // find if hasGoals array:[{goalId: 2, done: true, note: "str"}] keeps curent Goal's id.
+        // if found --> change 'done' value
+        // if not --> push new object {goalId: xx, done: 'value'}
         let newCalendarData = calendarData
         let hasGoalsArray = newCalendarData[currentMonth].dates[currentCell.id].hasGoals
         let foundObj = hasGoalsArray.find(obj => obj.goalId == goalObject.id)
         if(foundObj){
-            foundObj.done = !foundObj.done   // if has goal
-            console.log('in edit cell - if found id', switchValue )
+            foundObj.done = value   
         }
-        else{ // if does not have goal or []
-            hasGoalsArray.push({goalId: goalObject.id, done: !switchValue})  
-            console.log('in edit cell - if dont found id', switchValue )
+        else{ 
+            hasGoalsArray.push({goalId: goalObject.id, done: value})  
         }            
         updateCalendarData(newCalendarData)
         AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData))        
     }
 
-    const defineColor = (dateObj) => { // does not work properly!
-        //console.log('define color dateObj',dateObj.hasGoals)
-        //finds if goal's id is in hasGoals array
+    const defineColor = (dateObj) => { 
+        //finds if goal id done on this date 
          let color = 'white'
         if (dateObj.hasGoals.length > 0){
            let found = dateObj.hasGoals.find(obj => obj.goalId === goalObject.id)
            if(found && found.done){ 
-            color = goalObject.color                    
+            color = goalObject.color                     
            }
            else{
-             color = 'white'
-  
-            }                 
+             color = 'white' 
+            }   
+          // tried ternary --> does not work eighter way
+          // found ? found.done ? color = goalObject.color : color = 'white ' : color =  'white'
+          // found && found.done? ocolor = goalObject : color = 'white'       
         }
         return color
     }
+    const isNote = (dateObj) => { 
+        //finds date has a note for current goal
+        let borderStyle = 'sdotted'
+        if (dateObj.hasGoals.length > 0){
+           let found = dateObj.hasGoals.find(obj => obj.goalId === goalObject.id)
+           if(found && found.note){ 
+            borderStyle = 'solid'     // works only with borderRadius                
+           }
+           else{
+            borderStyle = 'dotted'
+            }    
+        }
+        console.log(borderStyle)
+        return borderStyle  
+    }
 
-    const getSwitchValue = () => { // work 
+    const getSwitchValueAndNote = () => { 
+        // invokes when clicking on cell (on currentCell value change, useEffect)
             let found = currentCell.hasGoals.find(obj => obj.goalId == goalObject.id)
+            if(found){
+                updateSwitch(found.done)
+                found.note? updateNote(found.note) : updateNote('')
+            }
+            else{
+                updateSwitch(false)
+                updateNote('')
+            }
+    }
 
-            found? updateSwitch(found.done) : updateSwitch(false)
-            // if did not find - ufound is undefined => false value
-        console.log('found done', Boolean(found))
-        console.log('in get SwitchValue, bul', Boolean(currentCell.hasGoals))
-        console.log('in get SwitchValue, []', currentCell.hasGoals)
+    const editNote = (text) => {
+        // find if hasGoals array:[{goalId: 2, done: true, note: "str"}] keeps curent Goal's id.
+        // if found --> change (or add) 'note' value
+        // if not --> push new object {goalId: xx, note: 'text', done: 'switchValue'}
+        let newCalendarData = calendarData
+        let hasGoalsArray = newCalendarData[currentMonth].dates[currentCell.id].hasGoals
+        let foundObj = hasGoalsArray.find(obj => obj.goalId == goalObject.id)
+        if(foundObj){
+            foundObj.note = text
+        }
+        else{ 
+            hasGoalsArray.push({goalId: goalObject.id, done: switchValue, note: text})  
+        }            
+        updateCalendarData(newCalendarData)
+        AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData))
     }
 
     
@@ -189,12 +228,14 @@ export default function Goal({navigation, route}) {
                             return typeof dateObj.date == 'number' ?
                             <TouchableOpacity   // render date cell
                                 key = {dateObj.id} 
-                                style={[styles.date, {backgroundColor: defineColor(dateObj)}]}
+                                style={[styles.date, {backgroundColor: defineColor(dateObj),
+                                                      borderStyle: isNote(dateObj)
+                                                     }
+                                ]}
                                 onPress={() => {
                                     showCellModal(true)
                                     updateCurrentCell(dateObj) 
                                     console.log("in onPress cell", dateObj.hasGoals)
-                                    //getSwitchValue()  does not work here
                                 }}>
                                 <Text style = {styles.text}>
                                     {dateObj.date}
@@ -230,54 +271,33 @@ export default function Goal({navigation, route}) {
                                 <Image style={{width: 40, height: 40}}
                                        source = {require('./close_icon.png')}/>
                             </TouchableOpacity>
-                            {/* <Text style={styles.buttonText}>Is goal acomplished for this day?</Text> */}
                             
                             <View style = {styles.row}>
                                 <Text >Not Done</Text>
                                 <Switch 
-                                    onValueChange={()=> {
-                                        //getSwitchValue() ??
-                                        updateSwitch(!switchValue) 
-                                        editCell()
+                                    onValueChange={value=> {
+                                        updateSwitch(value), 
+                                        editCell(value)
                                     }}
                                     style = {{transform: [{ scaleX: 2 }, { scaleY: 2 }], margin: 40}}
-                                    value = {switchValue} //??
+                                    value = {switchValue} 
                                     trackColor={{false: 'rgb(224, 224, 224)', true: 'yellow'}}
                                     thumbColor={switchValue ? 'grey' : 'grey'}                                   
                                 />
-                                <Text >Done</Text>
-                                
+                                <Text >Done</Text>                              
                             </View>
-<Text>{console.log('Text',switchValue)}</Text>
+
                             <TextInput  
-                                //style={styles.inputField}
+                                style={styles.inputField}
                                 autoFocus={true} 
-                                placeholder='Notes for this day' 
-                                onPressIn={()=>{console.log("input2")}}
+                                placeholder='enter note'
                                 onChangeText = {enteredText => {
-                                    updateText(enteredText)
+                                    updateNote(enteredText) 
+                                    editNote(enteredText)
                                 }}                   
-                            required
-                            multiline={true} />       
-
-                            {/* <View style={styles.row}>
-                                <TouchableOpacity 
-                                    style={styles.button}                            
-                                    onPress = {()=> {
-                                        showCellModal(false)
-                                        //markThisCell()
-                                        }}>
-                                    <Text style={styles.buttonText}>YES</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity 
-                                    style={styles.button}                                         
-                                    onPress = {()=> {
-                                        showCellModal(false)
-
-                                    }}>
-                                    <Text style={styles.buttonText}>NO</Text>
-                                </TouchableOpacity>                               
-                            </View>    */}
+                                multiline={true}  
+                                value = {note} 
+                            />       
                         </View>
                     </View>
                 </Modal>     
@@ -341,6 +361,7 @@ const styles = StyleSheet.create({
         flexBasis: '13%',    // flexBasis for child,  flexWrap for parent  => grid!!!
         borderWidth: 2,
         borderColor: "grey",
+        borderRadius: 2
     },
     emptyDate:{
         alignItems: 'center',   // gorizontally
@@ -388,6 +409,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center'
     },
-    
+    inputField:{
+        borderWidth: 1,
+        borderColor: 'grey',
+        borderRadius:8,
+        height:100, 
+        padding: 10, 
+        fontSize: 20 
+      }
     
 });

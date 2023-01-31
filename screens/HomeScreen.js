@@ -152,7 +152,7 @@ export default function HomeScreen({navigation, route}) {
                             style={styles.inputField}
                             autoFocus={true} 
                             placeholder='Enter your goal' 
-                            onPressIn={()=>{console.log("input")}}
+                            //onPressIn={()=>{console.log("input")}}
                             onChangeText = {enteredText => {
                               updateText(enteredText)
                             }}                   
@@ -319,7 +319,6 @@ const styles = StyleSheet.create({
   inputField:{
     borderWidth: 1,
     borderColor: 'grey',
-    backgroundColor:"white",
     borderRadius:8,
     height:55, 
     padding: 10, 
