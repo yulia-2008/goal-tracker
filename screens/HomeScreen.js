@@ -106,6 +106,7 @@ export default function HomeScreen({navigation, route}) {
       <View style={styles.container}>
            {/* {AsyncStorage.removeItem('storedData') }    
           {AsyncStorage.removeItem('storedCalendar') } */}
+         
         <View style={styles.itemBox}>
           <FlatList        // render containers with goals OR empty conteiners
               data={goalsData}

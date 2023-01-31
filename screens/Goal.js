@@ -1,6 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Switch, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+//import Switch from '@mui/material/Switch';
+//import { Switch } from '@material-ui/core';
 
 export default function Goal({navigation, route}) {
 
@@ -9,10 +12,12 @@ export default function Goal({navigation, route}) {
     const [calendarData, updateCalendarData] = useState(null)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
-    const [currentCell, updateCurrentCell] = useState({cellId: null}) // ? do i need more keys here?
-
+    const [currentCell, updateCurrentCell] = useState(null) 
+    const [switchValue, updateSwitch] = useState(null);
+   
     useEffect(() => getData(), [])
     useEffect(() => {calendarData? getCurrentMonth(): console.log('loading')},[calendarData])
+    useEffect(() => {currentCell? getSwitchValue(): console.log('no cell')}, [currentCell])
     
     const monthArray = ["January","February","March","April","May","June","July",
                       "August","September","October","November","December"]
@@ -23,12 +28,13 @@ export default function Goal({navigation, route}) {
         if(keys.includes('storedCalendar')){
             await AsyncStorage.getItem('storedCalendar')
             .then(data => JSON.parse(data))
-            .then(data => {updateCalendarData(data), console.log('from storage')
+            .then(data => {updateCalendarData(data), console.log('from storage' )
             })
         }
         else {
             generateInitialCalendar(), console.log('generated')
-            AsyncStorage.setItem("storedCalendar", JSON.stringify(calendarData)) //?? do I need to store it now or after chenging data
+            //AsyncStorage.setItem("storedCalendar", JSON.stringify(calendarData))
+             //?? do I need to store it now or after chenging data
         }
     }
 
@@ -36,10 +42,10 @@ export default function Goal({navigation, route}) {
     // creates nested array [ { id: 0, 
     //                         month: 'january',
     //                         year: 2020, 
-    //                         dates: [{id: 0, date: 1, markedGoals:[{goalId: 2, note: "str"},
-    //                                                              {goalId: 3, note: "str"}                                          
+    //                         dates: [{id: 0, date: 1, hasGoals:[{goalId: 2, done: true, note: "str"},
+    //                                                            {goalId: 3, done: false, note: "str"}                                          
     //                                                             ] 
-    //                                 {id: 1, date: 2, markedGoals: []}, ...
+    //                                 {id: 1, date: 2, hasGoals: []}, ...
     //                                ]
     //                         },{...},{...},{...}
     //                       ]
@@ -95,7 +101,7 @@ export default function Goal({navigation, route}) {
                 daysArrayWithKeys.push({
                     id: i, 
                     date: daysArray[i],
-                    markedGoals: []
+                    hasGoals: []
                     });
             }          
       return daysArrayWithKeys
@@ -112,23 +118,50 @@ export default function Goal({navigation, route}) {
         setCurrentMonth(currentMo.id)      
     }
 
-    const markThisCell = () => {
+    const editCell = () => { // mess here
         let newCalendarData = calendarData
-        let markedGoalsArray = newCalendarData[currentMonth].dates[currentCell.cellId].markedGoals 
-        markedGoalsArray.push({id: goalObject.id})
+        let hasGoalsArray = newCalendarData[currentMonth].dates[currentCell.id].hasGoals
+        let foundObj = hasGoalsArray.find(obj => obj.goalId == goalObject.id)
+        if(foundObj){
+            foundObj.done = !foundObj.done   // if has goal
+            console.log('in edit cell - if found id', switchValue )
+        }
+        else{ // if does not have goal or []
+            hasGoalsArray.push({goalId: goalObject.id, done: !switchValue})  
+            console.log('in edit cell - if dont found id', switchValue )
+        }            
         updateCalendarData(newCalendarData)
-        AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData)) 
+        AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData))        
     }
 
-    const defineColor = (dateObj) => {
-        //finds if goal's id is in markedArray 
-        let color = 'white'
-        if (dateObj.markedGoals.length > 0){
-           let found = dateObj.markedGoals.find(obj => obj.id === goalObject.id)
-           {found ? color = goalObject.color: color = 'white'}         
+    const defineColor = (dateObj) => { // does not work properly!
+        //console.log('define color dateObj',dateObj.hasGoals)
+        //finds if goal's id is in hasGoals array
+         let color = 'white'
+        if (dateObj.hasGoals.length > 0){
+           let found = dateObj.hasGoals.find(obj => obj.goalId === goalObject.id)
+           if(found && found.done){ 
+            color = goalObject.color                    
+           }
+           else{
+             color = 'white'
+  
+            }                 
         }
         return color
     }
+
+    const getSwitchValue = () => { // work 
+            let found = currentCell.hasGoals.find(obj => obj.goalId == goalObject.id)
+
+            found? updateSwitch(found.done) : updateSwitch(false)
+            // if did not find - ufound is undefined => false value
+        console.log('found done', Boolean(found))
+        console.log('in get SwitchValue, bul', Boolean(currentCell.hasGoals))
+        console.log('in get SwitchValue, []', currentCell.hasGoals)
+    }
+
+    
 
     return (
         <View style={styles.container}>  
@@ -159,7 +192,9 @@ export default function Goal({navigation, route}) {
                                 style={[styles.date, {backgroundColor: defineColor(dateObj)}]}
                                 onPress={() => {
                                     showCellModal(true)
-                                    updateCurrentCell({...currentCell, cellId: dateObj.id})   
+                                    updateCurrentCell(dateObj) 
+                                    console.log("in onPress cell", dateObj.hasGoals)
+                                    //getSwitchValue()  does not work here
                                 }}>
                                 <Text style = {styles.text}>
                                     {dateObj.date}
@@ -192,16 +227,45 @@ export default function Goal({navigation, route}) {
                                 onPress={() => { 
                                     showCellModal(false)
                                 }}>
-                                <Image style={[styles.icon, {width: 40, height: 40}]}
+                                <Image style={{width: 40, height: 40}}
                                        source = {require('./close_icon.png')}/>
                             </TouchableOpacity>
-                            <Text style={styles.buttonText}>Is goal acomplished for this day?</Text>
-                            <View style={styles.row}>
+                            {/* <Text style={styles.buttonText}>Is goal acomplished for this day?</Text> */}
+                            
+                            <View style = {styles.row}>
+                                <Text >Not Done</Text>
+                                <Switch 
+                                    onValueChange={()=> {
+                                        //getSwitchValue() ??
+                                        updateSwitch(!switchValue) 
+                                        editCell()
+                                    }}
+                                    style = {{transform: [{ scaleX: 2 }, { scaleY: 2 }], margin: 40}}
+                                    value = {switchValue} //??
+                                    trackColor={{false: 'rgb(224, 224, 224)', true: 'yellow'}}
+                                    thumbColor={switchValue ? 'grey' : 'grey'}                                   
+                                />
+                                <Text >Done</Text>
+                                
+                            </View>
+<Text>{console.log('Text',switchValue)}</Text>
+                            <TextInput  
+                                //style={styles.inputField}
+                                autoFocus={true} 
+                                placeholder='Notes for this day' 
+                                onPressIn={()=>{console.log("input2")}}
+                                onChangeText = {enteredText => {
+                                    updateText(enteredText)
+                                }}                   
+                            required
+                            multiline={true} />       
+
+                            {/* <View style={styles.row}>
                                 <TouchableOpacity 
                                     style={styles.button}                            
                                     onPress = {()=> {
                                         showCellModal(false)
-                                        markThisCell()
+                                        //markThisCell()
                                         }}>
                                     <Text style={styles.buttonText}>YES</Text>
                                 </TouchableOpacity>
@@ -212,17 +276,8 @@ export default function Goal({navigation, route}) {
 
                                     }}>
                                     <Text style={styles.buttonText}>NO</Text>
-                                </TouchableOpacity>
-
-                                {/* <TouchableOpacity 
-                                    style={styles.button}                                         
-                                    onPress = {()=> {
-                                        showCellModal(false)
-
-                                    }}>
-                                    <Text style={styles.buttonText}>Cancel</Text>
-                                </TouchableOpacity> */}
-                            </View>   
+                                </TouchableOpacity>                               
+                            </View>    */}
                         </View>
                     </View>
                 </Modal>     
@@ -322,15 +377,17 @@ const styles = StyleSheet.create({
     modalContent:{
         backgroundColor: 'white',
         alignSelf: 'center',
-        margin: 50,
-        padding: 40,
-        borderRadius: 10
+        margin: 20,
+        padding: 20,
+        
+        //borderRadius: 10
     },
     row: {
-        marginTop: 20,
-        padding: 10,
+        paddingHorizontal: 10,
         flexDirection: 'row', 
-        justifyContent: 'space-around'
-    }
+        justifyContent: 'space-around',
+        alignItems: 'center'
+    },
+    
     
 });
