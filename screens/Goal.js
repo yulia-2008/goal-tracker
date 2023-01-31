@@ -155,11 +155,11 @@ export default function Goal({navigation, route}) {
         return color
     }
     const isNote = (dateObj) => { 
-        //finds date has a note for current goal
-        let borderStyle = 'sdotted'
+        //finds if date has a note for current goal (need for cell border style)
+        let borderStyle = 'dotted'
         if (dateObj.hasGoals.length > 0){
            let found = dateObj.hasGoals.find(obj => obj.goalId === goalObject.id)
-           if(found && found.note){ 
+           if(found && found.note && found.note.trim() != ""){ 
             borderStyle = 'solid'     // works only with borderRadius                
            }
            else{
@@ -175,11 +175,11 @@ export default function Goal({navigation, route}) {
             let found = currentCell.hasGoals.find(obj => obj.goalId == goalObject.id)
             if(found){
                 updateSwitch(found.done)
-                found.note? updateNote(found.note) : updateNote('')
+                found.note? updateNote(found.note) : updateNote("")
             }
             else{
                 updateSwitch(false)
-                updateNote('')
+                updateNote("")
             }
     }
 
