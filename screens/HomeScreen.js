@@ -101,6 +101,19 @@ export default function HomeScreen({navigation, route}) {
     }
     return array
   }
+  // const deleteGoal = (goalObject, calendarData) => {
+  //   // did not work --> need Context Hook
+  //     //update goal in state and AsyncStorage and HomeScreen
+  //   let newGoalsData = goalsData
+  //   let foundGoal = newGoalsData.find(obj => obj.id == goalObject.id)
+  //   foundGoal.goal = false
+  //   foundGoal.color = 'rgb(224, 224, 224)'
+  //   updateGoals(newGoalsData)
+  //   AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
+  //     // delete goalId from calendarData
+  //     // let updatedCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
+  //     // AsyncStorage.setItem("storedCalendar", JSON.stringify(updatedCalendarData)) 
+  // }
 
   return (
       <View style={styles.container}>
@@ -119,6 +132,7 @@ export default function HomeScreen({navigation, route}) {
                       }
                       onPress={() => {
                           item.goal ?
+                          // working here
                             navigation.navigate("Goal", {goalObject: item}):                                       
                             showModal(!modal), setItemId(item.id)                
                       }}>

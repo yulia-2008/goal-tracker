@@ -172,7 +172,7 @@ export default function Goal({navigation, route}) {
     }
 
     // const deleteGoal = () => {
-    //     //need to move function to HomeScreen
+    //     //need to move function to HomeScreen --> did not work --> need Contex Hook
     //     // delete goalId from every hasGoal array from every day-cell, devery month
     //     let newCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
     //     updateCalendarData(newCalendarData)
@@ -213,7 +213,7 @@ export default function Goal({navigation, route}) {
     
 
     return (
-        <View style={styles.container}>  
+        <View style={styles.container}> 
             <Text style={styles.goalInfoText}> Deadline: {goalObject.goal.deadline.month} / {goalObject.goal.deadline.date} / {goalObject.goal.deadline.year} </Text>
             <Text style = {styles.goalInfoText}> Pereodicity: {goalObject.goal.timeRange} </Text>
             <View style={styles.calendarBox}>
@@ -224,7 +224,6 @@ export default function Goal({navigation, route}) {
                         onPress = {()=> setCurrentMonth(currentMonth-1)}>
                         <Feather name="chevrons-up" size={40} color="black" />
                     </TouchableOpacity>
-
                     <View style = {styles.calendarBorder}>
                         <Text style = {[styles.month, 
                                         {backgroundColor: goalObject.color}
@@ -343,8 +342,10 @@ export default function Goal({navigation, route}) {
                             <Text> This action permanetly delete current goal</Text>
                             <TouchableOpacity
                                 onPress={() => { 
-                                    showDeleteModal(false)
-                                    navigation.navigate("HomeScreen", {goalForDeletion: goalObject})
+                                    showDeleteModal(false)           
+                                    navigation.navigate("HomeScreen")
+                                    // route.params.deleteHandler(goalObject, calendarData)
+                                    // does not work this way, need to do it with Contex Hook
                                     }}>
                                 <Image 
                                     style={styles.icon}
