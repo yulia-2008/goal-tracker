@@ -1,10 +1,11 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, TextInput, Switch, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DeprecatedEdgeInsetsPropType from 'react-native/Libraries/DeprecatedPropTypes/DeprecatedEdgeInsetsPropType';
+import { Feather } from '@expo/vector-icons';
 
 //import Switch from '@mui/material/Switch';
 //import { Switch } from '@material-ui/core';
+
 
 export default function Goal({navigation, route}) {
 
@@ -13,13 +14,14 @@ export default function Goal({navigation, route}) {
     const [calendarData, updateCalendarData] = useState(null)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
+    const [deleteModal, showDeleteModal] = useState(false)
     const [currentCell, updateCurrentCell] = useState(null) 
     const [switchValue, updateSwitch] = useState(null)
     const [note, updateNote] = useState("")
    
     useEffect(() => getData(), [])
-    useEffect(() => {calendarData? getCurrentMonth(): console.log('loading')},[calendarData])
-    useEffect(() => {currentCell? getSwitchValueAndNote(): console.log('no cell')}, [currentCell])
+    useEffect(() => {calendarData? getCurrentMonth(): null},[calendarData])
+    useEffect(() => {currentCell? getSwitchValueAndNote(): null}, [currentCell])
     
     const monthArray = ["January","February","March","April","May","June","July",
                       "August","September","October","November","December"]
@@ -30,11 +32,11 @@ export default function Goal({navigation, route}) {
         if(keys.includes('storedCalendar')){
             await AsyncStorage.getItem('storedCalendar')
             .then(data => JSON.parse(data))
-            .then(data => {updateCalendarData(data), console.log('from storage' )
+            .then(data => {updateCalendarData(data)
             })
         }
         else {
-            generateInitialCalendar(), console.log('generated')
+            generateInitialCalendar()
             //AsyncStorage.setItem("storedCalendar", JSON.stringify(calendarData))
              //?? do I need to store it now or after chenging data
         }
@@ -166,9 +168,17 @@ export default function Goal({navigation, route}) {
             borderStyle = 'dotted'
             }    
         }
-        console.log(borderStyle)
         return borderStyle  
     }
+
+    // const deleteGoal = () => {
+    //     //need to move function to HomeScreen
+    //     // delete goalId from every hasGoal array from every day-cell, devery month
+    //     let newCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
+    //     updateCalendarData(newCalendarData)
+    //     AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData)) 
+    //     navigation.navigate("HomeScreen", {goalForDeletion: goalObject}) 
+    // }
 
     const getSwitchValueAndNote = () => { 
         // invokes when clicking on cell (on currentCell value change, useEffect)
@@ -204,57 +214,67 @@ export default function Goal({navigation, route}) {
 
     return (
         <View style={styles.container}>  
-            <Text> Deadline: {goalObject.goal.deadline.month} / {goalObject.goal.deadline.date} / {goalObject.goal.deadline.year} </Text>
-            <Text> Pereodicity: {goalObject.goal.timeRange} </Text>
+            <Text style={styles.goalInfoText}> Deadline: {goalObject.goal.deadline.month} / {goalObject.goal.deadline.date} / {goalObject.goal.deadline.year} </Text>
+            <Text style = {styles.goalInfoText}> Pereodicity: {goalObject.goal.timeRange} </Text>
             <View style={styles.calendarBox}>
                 {calendarData && currentMonth ?
                     <>
-                    <TouchableOpacity onPress = {()=> setCurrentMonth(currentMonth-1)}>
-                        <Text>previos month</Text>
+                    <TouchableOpacity 
+                        style = {[styles.arrow,{backgroundColor: goalObject.color}]}
+                        onPress = {()=> setCurrentMonth(currentMonth-1)}>
+                        <Feather name="chevrons-up" size={40} color="black" />
                     </TouchableOpacity>
 
-                    <Text style = {styles.month}>{calendarData[currentMonth].month} - {calendarData[currentMonth].year}</Text>            
-                    <View style={styles.calendarHeader}>
-                        { weekDays.map((item, index) => {
-                            return  <TouchableOpacity style={styles.weekDayBox} 
-                                                      key={index}>
-                                        <Text>{item}</Text>
-                                    </TouchableOpacity> 
-                        })}   
-                    </View> 
+                    <View style = {styles.calendarBorder}>
+                        <Text style = {[styles.month, 
+                                        {backgroundColor: goalObject.color}
+                                    ]}>
+                            {calendarData[currentMonth].month} - {calendarData[currentMonth].year}
+                        </Text>  
+                                
+                        <View style={styles.calendarHeader}>
+                            { weekDays.map((item, index) => {
+                                return  <TouchableOpacity style={[styles.weekDayBox, {backgroundColor: goalObject.color}]} 
+                                                        key={index}>
+                                            <Text>{item}</Text>
+                                        </TouchableOpacity> 
+                            })}   
+                        </View> 
              
-                    <View style = {styles.datesBox}>
-                        {calendarData[currentMonth].dates.map(dateObj => {
-                            return typeof dateObj.date == 'number' ?
-                            <TouchableOpacity   // render date cell
-                                key = {dateObj.id} 
-                                style={[styles.date, {backgroundColor: defineColor(dateObj),
-                                                      borderStyle: isNote(dateObj)
-                                                     }
-                                ]}
-                                onPress={() => {
-                                    showCellModal(true)
-                                    updateCurrentCell(dateObj) 
-                                    console.log("in onPress cell", dateObj.hasGoals)
-                                }}>
-                                <Text style = {styles.text}>
-                                    {dateObj.date}
-                                </Text>
-                            
-                            </TouchableOpacity>
-                            : 
-                            <TouchableOpacity   // render empty date cell
-                                key = {dateObj.id} 
-                                style={styles.emptyDate}>
-                                <Text style = {styles.text}>
-                                    {dateObj.date}
-                                </Text> 
-                            </TouchableOpacity>
-                        })}
-                    </View> 
-                    <TouchableOpacity onPress = {()=> setCurrentMonth(currentMonth+1)}>
-                        <Text>Next Month</Text>
-                    </TouchableOpacity>
+                        <View style = {styles.datesBox}>
+                            {calendarData[currentMonth].dates.map(dateObj => {
+                                return typeof dateObj.date == 'number' ?
+                                <TouchableOpacity   // render date cell
+                                    key = {dateObj.id} 
+                                    style={[styles.date, {backgroundColor: defineColor(dateObj),
+                                                        borderStyle: isNote(dateObj)
+                                                        }
+                                    ]}
+                                    onPress={() => {
+                                        showCellModal(true)
+                                        updateCurrentCell(dateObj) 
+                                    }}>
+                                    <Text style = {styles.text}>
+                                        {dateObj.date}
+                                    </Text>
+                                
+                                </TouchableOpacity>
+                                : 
+                                <TouchableOpacity   // render empty date cell
+                                    key = {dateObj.id} 
+                                    style={styles.emptyDate}>
+                                    <Text style = {styles.text}>
+                                        {dateObj.date}
+                                    </Text> 
+                                </TouchableOpacity>
+                            })}
+                        </View> 
+                    </View>
+                    <TouchableOpacity 
+                        style = {[styles.arrow,{backgroundColor: goalObject.color}]}
+                        onPress = {()=> setCurrentMonth(currentMonth+1)}>
+                       <Feather name="chevrons-down" size={40} color="black" />
+                    </TouchableOpacity>  
                     </>:
                     <Text>Loading</Text>
                 }                         
@@ -301,7 +321,39 @@ export default function Goal({navigation, route}) {
                         </View>
                     </View>
                 </Modal>     
-            </View>                                            
+            </View> 
+            <View style={{borderWidth:2, borderColor: 'grey'}}> 
+                <Text onPress={()=>
+                    showDeleteModal(!deleteModal)
+                }>
+                        Delete Goal</Text>
+                <Text> Edit goal</Text>
+                <Modal 
+                    transparent = {true} 
+                    visible = {deleteModal}>
+                    <View style={styles.modal}>
+                        <View style={styles.modalContent}>
+                            <TouchableOpacity  
+                                onPress={() => showDeleteModal(false)}
+                                style={{ alignSelf: 'flex-end'}}>
+                                <Image   
+                                    style={{width: 40, height: 40}}
+                                    source = {require('./close_icon.png')}/>
+                            </TouchableOpacity>        
+                            <Text> This action permanetly delete current goal</Text>
+                            <TouchableOpacity
+                                onPress={() => { 
+                                    showDeleteModal(false)
+                                    navigation.navigate("HomeScreen", {goalForDeletion: goalObject})
+                                    }}>
+                                <Image 
+                                    style={styles.icon}
+                                    source = {require('./ok_icon.png')}/>         
+                            </TouchableOpacity>        
+                        </View>
+                    </View>
+                </Modal>
+            </View>                                           
         </View>
     );
 }
@@ -314,43 +366,79 @@ const styles = StyleSheet.create({
         borderColor: 'grey',
         backgroundColor: 'white',
     },
-    calendarBox: {
-        flex:1,
-        width: '90%',
-        margin: '5%',
-        backgroundColor: 'white',
-        borderWidth: 2,
-        borderColor: "grey",
-        borderRadius: 5
+    goalInfoText:{
+        fontSize: 18,
     },
-    calendarHeader:{
-        justifyContent: 'space-around', // gorizontally
+    calendarBox: { // include arrows
+        //flex:1,
+        width: '95%',
+        alignSelf: 'center', //horizontally
+        //margin: '5%',
+        backgroundColor: 'white',
+        marginTop: 30
+        //padding: 3,
+        // borderWidth: 2,
+        // borderColor: "yellow",
+        // borderRadius: 5
+    },
+    calendarBorder: { // include header and dated (without arrows)
+        borderWidth: 1,
+        borderColor: "grey",
+        borderRadius: 25,
+        paddingVertical: 9,
+        marginVertical: 10,
+        backgroundColor: 'rgb(224, 224, 224)',
+        
+    },
+    calendarHeader:{ //weekdays
+        justifyContent: 'space-around', // horizontally
         width: '100%',
         flexDirection: 'row',
-        borderWidth: 2,
-        borderColor: "red",
+        paddingHorizontal: 10,
+        // borderWidth: 2,
+        // borderColor: "red",
         alignItems: 'stretch'
     },
     weekDayBox:{
-        width: '14%',
-        borderWidth: 2,
-        borderColor: "blue",
-        padding: '2%',
-        alignItems: 'center'
+        width: '13%',
+        height: 40,
+        borderWidth: 1,
+        borderRadius: 13,
+        borderColor: "grey",
+        padding: 6,
+        marginTop: 30,
+        alignItems: 'center',
+        justifyContent: 'center', // vertically
+
     },
     month: {
-        width: '100%',
-        padding: '4%',
+        width: '60%',
+        padding: '3%',
+        margin: 5,
         textAlign: 'center',
+        alignSelf: 'center',
         fontWeight: 'bold',
-        borderWidth: 2,
-        borderColor: "blue",
+        fontSize: 18,
+        borderWidth: 1,
+        borderRadius: 13,
+        borderColor: "grey",
+    },
+    arrow: {
+        alignItems: 'center', 
+        alignSelf: 'center', 
+        borderWidth: 1, 
+        borderRadius: 15, 
+        borderColor: 'grey', 
+        width: '13%', 
+        margin: 10
     },
     datesBox: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        borderWidth: 2,
-        borderColor: "pink",
+        paddingHorizontal: 10,
+      
+        // borderWidth: 2,
+        //borderColor: "green",
     }, 
     date: {
         alignItems: 'center',   // gorizontally
@@ -361,11 +449,11 @@ const styles = StyleSheet.create({
         flexBasis: '13%',    // flexBasis for child,  flexWrap for parent  => grid!!!
         borderWidth: 2,
         borderColor: "grey",
-        borderRadius: 2
+        borderRadius: 13
     },
     emptyDate:{
         alignItems: 'center',   // gorizontally
-        padding: 10,         
+        padding: 11,         // it is not 10 because there is no border
         margin: 2,
         marginTop: 8,
         marginBottom: 8,
@@ -416,6 +504,15 @@ const styles = StyleSheet.create({
         height:100, 
         padding: 10, 
         fontSize: 20 
-      }
+    },
+    icon: {
+        width: 70,                                      
+        height: 70,
+        borderWidth: 1,
+        borderRadius: 50, 
+        borderColor: 'silver',
+        alignSelf: 'center',
+        marginTop:10,  
+    }
     
 });

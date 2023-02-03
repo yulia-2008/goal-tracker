@@ -14,10 +14,10 @@ export default function HomeScreen({navigation, route}) {
     {goal: false, id: 4, color: 'rgb(204, 255, 255)'},
     {goal: false, id: 5, color: 'rgb(255, 204, 229)'},
     {goal: false, id: 6, color: 'rgb(229, 255, 204)'},
-    {goal: false, id: 7, color: 'rgb(224, 224, 224)'},
+    {goal: false, id: 7, color: 'rgb(176, 196, 222)'},
     {goal: false, id: 8, color: 'rgb(229, 204, 255)'},
     {goal: false, id: 9, color: 'rgb(172, 252, 252)'},
-    {goal: false, id: 10, color: 'rgb(255, 160, 122)'},
+    {goal: false, id: 10, color: 'rgb(244, 164, 96)'},
     {goal: false, id: 11, color: 'rgb(238, 232, 170)'},
     {goal: false, id: 12, color: 'rgb(216, 191, 216)'}
   ]
@@ -106,7 +106,7 @@ export default function HomeScreen({navigation, route}) {
       <View style={styles.container}>
            {/* {AsyncStorage.removeItem('storedData') }    
           {AsyncStorage.removeItem('storedCalendar') } */}
-         
+        {/* {console.log('h', route.params.goalForeDeletion)}  */}
         <View style={styles.itemBox}>
           <FlatList        // render containers with goals OR empty conteiners
               data={goalsData}
