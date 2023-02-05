@@ -42,6 +42,8 @@ export default function HomeScreen({navigation, route}) {
   const [buttonText, updateButtonText] = useState("Time Range")
     
   useEffect(() => {getData()}, [])
+  //useEffect(() => {getData(),[homeScreen]})
+
  //  AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  //?? should store after changing
 
   let getData = async () =>  {
@@ -101,25 +103,41 @@ export default function HomeScreen({navigation, route}) {
     }
     return array
   }
-  // const deleteGoal = (goalObject, calendarData) => {
-  //   // did not work --> need Context Hook
-  //     //update goal in state and AsyncStorage and HomeScreen
-  //   let newGoalsData = goalsData
-  //   let foundGoal = newGoalsData.find(obj => obj.id == goalObject.id)
-  //   foundGoal.goal = false
-  //   foundGoal.color = 'rgb(224, 224, 224)'
-  //   updateGoals(newGoalsData)
-  //   AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
-  //     // delete goalId from calendarData
-  //     // let updatedCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
-  //     // AsyncStorage.setItem("storedCalendar", JSON.stringify(updatedCalendarData)) 
-  // }
+  const deleteGoal = (goalObject, calendarData) => {
+      //update goals in state and AsyncStorage and HomeScreen
+    let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
+    let foundGoal = newGoalsData.find(obj => obj.id == goalObject.id)
+    foundGoal.goal = false
+    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
+    updateGoals(newGoalsData)
+      // delete goalId from calendarData in AsyncStorage
+      //does not work
+    //console.log("l",filterCalendarData(calendarData))
+    // let updatedCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
+    AsyncStorage.setItem("storedCalendar", JSON.stringify(filterCalendarData(calendarData)))   
+  }
+
+  const filterCalendarData = (data) =>{
+    // does not work
+    let newCalendarData = data
+      for(i=0; i<=newCalendarData; i++){
+        for(d=0; d<=newCalendarData[i].dates.length-1; d++){
+          for(g; g <= newCalendarData[i].dates[d].hasGoals.length-1; g++){
+          let updatedHasGoalsArray =   newCalendarData[i].dates[d].hasGoals[g].filter(ind => ind.goalId != goalObject.id)
+          newCalendarData[i].dates[d].hasGoals =  updatedHasGoalsArray
+          console.log('h', updatedHasGoalsArray)
+        }    
+        }
+      }  
+    return newCalendarData
+  } 
 
   return (
       <View style={styles.container}>
            {/* {AsyncStorage.removeItem('storedData') }    
           {AsyncStorage.removeItem('storedCalendar') } */}
         {/* {console.log('h', route.params.goalForeDeletion)}  */}
+        {console.log('homescreen')}
         <View style={styles.itemBox}>
           <FlatList        // render containers with goals OR empty conteiners
               data={goalsData}
@@ -133,7 +151,7 @@ export default function HomeScreen({navigation, route}) {
                       onPress={() => {
                           item.goal ?
                           // working here
-                            navigation.navigate("Goal", {goalObject: item}):                                       
+                            navigation.navigate("Goal", {goalObject: item, deleteHandler: deleteGoal}):                                       
                             showModal(!modal), setItemId(item.id)                
                       }}>
                       {item.goal?  

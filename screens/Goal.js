@@ -42,7 +42,7 @@ export default function Goal({navigation, route}) {
         }
     }
 
-    const generateInitialCalendar = () => {
+    const generateInitialCalendar = () => { 
     // creates nested array [ { id: 0, 
     //                         month: 'january',
     //                         year: 2020, 
@@ -126,7 +126,7 @@ export default function Goal({navigation, route}) {
         // find if hasGoals array:[{goalId: 2, done: true, note: "str"}] keeps curent Goal's id.
         // if found --> change 'done' value
         // if not --> push new object {goalId: xx, done: 'value'}
-        let newCalendarData = calendarData
+        let newCalendarData = calendarData // change it fo rspread operator
         let hasGoalsArray = newCalendarData[currentMonth].dates[currentCell.id].hasGoals
         let foundObj = hasGoalsArray.find(obj => obj.goalId == goalObject.id)
         if(foundObj){
@@ -197,7 +197,7 @@ export default function Goal({navigation, route}) {
         // find if hasGoals array:[{goalId: 2, done: true, note: "str"}] keeps curent Goal's id.
         // if found --> change (or add) 'note' value
         // if not --> push new object {goalId: xx, note: 'text', done: 'switchValue'}
-        let newCalendarData = calendarData
+        let newCalendarData = calendarData // change is for spread operator
         let hasGoalsArray = newCalendarData[currentMonth].dates[currentCell.id].hasGoals
         let foundObj = hasGoalsArray.find(obj => obj.goalId == goalObject.id)
         if(foundObj){
@@ -214,6 +214,7 @@ export default function Goal({navigation, route}) {
 
     return (
         <View style={styles.container}> 
+        {/* {console.log('goal', calendarData[13].dates[7].hasGoals)} */}
             <Text style={styles.goalInfoText}> Deadline: {goalObject.goal.deadline.month} / {goalObject.goal.deadline.date} / {goalObject.goal.deadline.year} </Text>
             <Text style = {styles.goalInfoText}> Pereodicity: {goalObject.goal.timeRange} </Text>
             <View style={styles.calendarBox}>
@@ -342,9 +343,9 @@ export default function Goal({navigation, route}) {
                             <Text> This action permanetly delete current goal</Text>
                             <TouchableOpacity
                                 onPress={() => { 
-                                    showDeleteModal(false)           
+                                    //showDeleteModal(false)           
                                     navigation.navigate("HomeScreen")
-                                    // route.params.deleteHandler(goalObject, calendarData)
+                                    route.params.deleteHandler(goalObject, calendarData)
                                     // does not work this way, need to do it with Contex Hook
                                     }}>
                                 <Image 
