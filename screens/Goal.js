@@ -3,15 +3,11 @@ import { StyleSheet, Text, View, TextInput, Switch, Image, TouchableOpacity, Fla
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 
-//import Switch from '@mui/material/Switch';
-//import { Switch } from '@material-ui/core';
-
-
 export default function Goal({navigation, route}) {
 
     const goalObject = route.params.goalObject;
     
-    const [calendarData, updateCalendarData] = useState(null)
+    const [calendarData, updateCalendarData] = useState(goalObject.calendar)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
     const [deleteModal, showDeleteModal] = useState(false)
@@ -19,97 +15,13 @@ export default function Goal({navigation, route}) {
     const [switchValue, updateSwitch] = useState(null)
     const [note, updateNote] = useState("")
    
-    useEffect(() => getData(), [])
-    useEffect(() => {calendarData? getCurrentMonth(): null},[calendarData])
-    useEffect(() => {currentCell? getSwitchValueAndNote(): null}, [currentCell])
+    useEffect(() => {getCurrentMonth()},[])
+    //useEffect(() => {calendarData? getCurrentMonth(): console.log('calendarData loading')},[calendarData])
+    // useEffect(() => {currentCell? getSwitchValueAndNote(): null}, [currentCell])
     
     const monthArray = ["January","February","March","April","May","June","July",
                       "August","September","October","November","December"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
-
-    let getData = async () =>  {
-        let keys = await AsyncStorage.getAllKeys()
-        if(keys.includes('storedCalendar')){
-            await AsyncStorage.getItem('storedCalendar')
-            .then(data => JSON.parse(data))
-            .then(data => {updateCalendarData(data)
-            })
-        }
-        else {
-            generateInitialCalendar()
-            //AsyncStorage.setItem("storedCalendar", JSON.stringify(calendarData))
-             //?? do I need to store it now or after chenging data
-        }
-    }
-
-    const generateInitialCalendar = () => { 
-    // creates nested array [ { id: 0, 
-    //                         month: 'january',
-    //                         year: 2020, 
-    //                         dates: [{id: 0, date: 1, hasGoals:[{goalId: 2, done: true, note: "str"},
-    //                                                            {goalId: 3, done: false, note: "str"}                                          
-    //                                                             ] 
-    //                                 {id: 1, date: 2, hasGoals: []}, ...
-    //                                ]
-    //                         },{...},{...},{...}
-    //                       ]
-        let dataArray = []
-        let count = 0;
-        for (let i = 2022; i <= 2024; i ++){      
-            monthArray.map(mo => {
-                dataArray.push({id: count, month: mo, year: i, dates: getDates(monthArray.indexOf(mo), i)})
-                count += 1
-            })
-        }  
-        updateCalendarData(dataArray) 
-    }
-
-    const getDates = (month, year) => {
-         // function created array in next format :
-        // [{id: 0, date: 1, color: 'white'}, {id: 1, date: 2, color: 'white'},...]
-        let daysCount = new Date(year, month, 0).getDate();  
-                // third parameter represents date (1-31), 
-                // if it's 0  ---> output will be the last day of the previos month (30 or 31)
-                // so getDate() return 30 or 31,               
-                // Months start with index 0, so the previous month is the needed month 
-
-        let firstDay = new Date(year, month, 1).getDay()  // (day of the week  --> 0-6)
-        let daysArray = [];
-        let daysArrayWithKeys = []  
-
-        for (let i = 1; i <= daysCount; i++) {
-            daysArray.push(i);
-        }
-        switch (firstDay) {
-            // If the 1st day of the month starts not on Monday 
-            // push "" to the begining of the daysArray 
-            case 0:
-                daysArray.unshift("", "", "", "", "", "");
-                break;
-            case 2:
-                daysArray.unshift("");
-                break;
-            case 3:
-                daysArray.unshift("", "");
-                break;
-            case 4:
-                daysArray.unshift("", "", "");
-                break;
-            case 5:
-                daysArray.unshift("", "", "", "");
-                break;
-            case 6:
-                daysArray.unshift("", "", "", "", "");               
-            }
-            for(var i = 0; i <= daysArray.length-1; i++){
-                daysArrayWithKeys.push({
-                    id: i, 
-                    date: daysArray[i],
-                    hasGoals: []
-                    });
-            }          
-      return daysArrayWithKeys
-    }
 
     const getCurrentMonth = () => {
         const currentDate = new Date()
@@ -123,98 +35,53 @@ export default function Goal({navigation, route}) {
     }
 
     const editCell = (value) => {
-        // find if hasGoals array:[{goalId: 2, done: true, note: "str"}] keeps curent Goal's id.
-        // if found --> change 'done' value
-        // if not --> push new object {goalId: xx, done: 'value'}
-        let newCalendarData = calendarData // change it fo rspread operator
-        let hasGoalsArray = newCalendarData[currentMonth].dates[currentCell.id].hasGoals
-        let foundObj = hasGoalsArray.find(obj => obj.goalId == goalObject.id)
-        if(foundObj){
-            foundObj.done = value   
-        }
-        else{ 
-            hasGoalsArray.push({goalId: goalObject.id, done: value})  
-        }            
+        // after switch value is changed
+        let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
+        let foundMonth = newCalendarData.find(monthObj => monthObj.id == currentMonth) 
+        let foundDate = foundMonth.dates.find(dateObj => dateObj.id == currentCell.id)
+        foundDate.done = value               
         updateCalendarData(newCalendarData)
-        AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData))        
+        // AsyncStorage.setItem("storedData", JSON.stringify(newCalendarData)) 
+        // change it in Async storage in HomeScreen  
+        // for some reasons it is saved in Async Storeage     
     }
 
-    const defineColor = (dateObj) => { 
-        //finds if goal id done on this date 
-         let color = 'white'
-        if (dateObj.hasGoals.length > 0){
-           let found = dateObj.hasGoals.find(obj => obj.goalId === goalObject.id)
-           if(found && found.done){ 
-            color = goalObject.color                     
-           }
-           else{
-             color = 'white' 
-            }   
-          // tried ternary --> does not work eighter way
-          // found ? found.done ? color = goalObject.color : color = 'white ' : color =  'white'
-          // found && found.done? ocolor = goalObject : color = 'white'       
-        }
+    const defineBackgroundColor = (done) => { 
+        //finds if goal marked as done on this date 
+        let color;
+        done ? color = goalObject.color : color = 'white'      
         return color
     }
-    const isNote = (dateObj) => { 
-        //finds if date has a note for current goal (need for cell border style)
-        let borderStyle = 'dotted'
-        if (dateObj.hasGoals.length > 0){
-           let found = dateObj.hasGoals.find(obj => obj.goalId === goalObject.id)
-           if(found && found.note && found.note.trim() != ""){ 
-            borderStyle = 'solid'     // works only with borderRadius                
-           }
-           else{
-            borderStyle = 'dotted'
-            }    
-        }
+
+    const defineBorderStyle = (note) => { 
+        // borderStyle is different if a day has a note 
+        // borderStyle works only with borderRadius  
+        let borderStyle;
+        note.trim() != "" ? borderStyle = 'solid' : borderStyle = 'dotted'
         return borderStyle  
     }
 
-    // const deleteGoal = () => {
-    //     //need to move function to HomeScreen --> did not work --> need Contex Hook
-    //     // delete goalId from every hasGoal array from every day-cell, devery month
-    //     let newCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
-    //     updateCalendarData(newCalendarData)
-    //     AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData)) 
-    //     navigation.navigate("HomeScreen", {goalForDeletion: goalObject}) 
-    // }
-
     const getSwitchValueAndNote = () => { 
-        // invokes when clicking on cell (on currentCell value change, useEffect)
-            let found = currentCell.hasGoals.find(obj => obj.goalId == goalObject.id)
-            if(found){
-                updateSwitch(found.done)
-                found.note? updateNote(found.note) : updateNote("")
-            }
-            else{
-                updateSwitch(false)
-                updateNote("")
-            }
+        //dont need this function? delete useEfferct too
+        // invokes when clicking on cell (useEffect: on currentCell value change )
+            currentCell.done? updateSwitch(true) : updateSwitch(false)
+            currentCell.note.trim() != "" ? updateNote(currentCell.note) : null
     }
 
     const editNote = (text) => {
-        // find if hasGoals array:[{goalId: 2, done: true, note: "str"}] keeps curent Goal's id.
-        // if found --> change (or add) 'note' value
-        // if not --> push new object {goalId: xx, note: 'text', done: 'switchValue'}
-        let newCalendarData = calendarData // change is for spread operator
-        let hasGoalsArray = newCalendarData[currentMonth].dates[currentCell.id].hasGoals
-        let foundObj = hasGoalsArray.find(obj => obj.goalId == goalObject.id)
-        if(foundObj){
-            foundObj.note = text
-        }
-        else{ 
-            hasGoalsArray.push({goalId: goalObject.id, done: switchValue, note: text})  
-        }            
+        // mess here
+        // nedd to save it in Async 
+        let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
+        let foundMonth = newCalendarData.find(monthObj => monthObj.id == currentMonth) 
+        let foundDate = foundMonth.dates.find(dateObj => dateObj.id == currentCell.id)
+        foundDate.note = text               
         updateCalendarData(newCalendarData)
-        AsyncStorage.setItem("storedCalendar", JSON.stringify(newCalendarData))
-    }
 
-    
+    }
 
     return (
         <View style={styles.container}> 
-        {/* {console.log('goal', calendarData[13].dates[7].hasGoals)} */}
+        {/* {console.log('in goal - goal obj', goalObject.calendar)} */}
             <Text style={styles.goalInfoText}> Deadline: {goalObject.goal.deadline.month} / {goalObject.goal.deadline.date} / {goalObject.goal.deadline.year} </Text>
             <Text style = {styles.goalInfoText}> Pereodicity: {goalObject.goal.timeRange} </Text>
             <View style={styles.calendarBox}>
@@ -246,9 +113,9 @@ export default function Goal({navigation, route}) {
                                 return typeof dateObj.date == 'number' ?
                                 <TouchableOpacity   // render date cell
                                     key = {dateObj.id} 
-                                    style={[styles.date, {backgroundColor: defineColor(dateObj),
-                                                        borderStyle: isNote(dateObj)
-                                                        }
+                                    style={[styles.date, {backgroundColor: defineBackgroundColor(dateObj.done),
+                                                          borderStyle: defineBorderStyle(dateObj.note)
+                                                         }
                                     ]}
                                     onPress={() => {
                                         showCellModal(true)
@@ -300,7 +167,8 @@ export default function Goal({navigation, route}) {
                                         editCell(value)
                                     }}
                                     style = {{transform: [{ scaleX: 2 }, { scaleY: 2 }], margin: 40}}
-                                    value = {switchValue} 
+                                    //value = {switchValue} 
+                                    value = {currentCell? currentCell.done : false}
                                     trackColor={{false: 'rgb(224, 224, 224)', true: 'yellow'}}
                                     thumbColor={switchValue ? 'grey' : 'grey'}                                   
                                 />
@@ -316,7 +184,7 @@ export default function Goal({navigation, route}) {
                                     editNote(enteredText)
                                 }}                   
                                 multiline={true}  
-                                value = {note} 
+                                value = {note}
                             />       
                         </View>
                     </View>
@@ -325,8 +193,8 @@ export default function Goal({navigation, route}) {
             <View style={{borderWidth:2, borderColor: 'grey'}}> 
                 <Text onPress={()=>
                     showDeleteModal(!deleteModal)
-                }>
-                        Delete Goal</Text>
+                }> Delete Goal
+                </Text>
                 <Text> Edit goal</Text>
                 <Modal 
                     transparent = {true} 
@@ -345,8 +213,7 @@ export default function Goal({navigation, route}) {
                                 onPress={() => { 
                                     //showDeleteModal(false)           
                                     navigation.navigate("HomeScreen")
-                                    route.params.deleteHandler(goalObject, calendarData)
-                                    // does not work this way, need to do it with Contex Hook
+                                    route.params.deleteHandler(goalObject)
                                     }}>
                                 <Image 
                                     style={styles.icon}

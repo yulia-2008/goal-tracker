@@ -6,46 +6,109 @@ import SelectDropdown from 'react-native-select-dropdown';
 
 export default function HomeScreen({navigation, route}) {
 
-  const [goalsData, updateGoals] = useState(null)
-  const initialGoaldData = [
-    {goal: false, id: 1, color: 'rgb(255, 204, 204)'},
-    {goal: false, id: 2, color: 'rgb(255, 255, 204)'},
-    {goal: false, id: 3, color: 'rgb(204, 255, 204)'},
-    {goal: false, id: 4, color: 'rgb(204, 255, 255)'},
-    {goal: false, id: 5, color: 'rgb(255, 204, 229)'},
-    {goal: false, id: 6, color: 'rgb(229, 255, 204)'},
-    {goal: false, id: 7, color: 'rgb(176, 196, 222)'},
-    {goal: false, id: 8, color: 'rgb(229, 204, 255)'},
-    {goal: false, id: 9, color: 'rgb(172, 252, 252)'},
-    {goal: false, id: 10, color: 'rgb(244, 164, 96)'},
-    {goal: false, id: 11, color: 'rgb(238, 232, 170)'},
-    {goal: false, id: 12, color: 'rgb(216, 191, 216)'}
-  ]
-
   const rangeData = [
-    "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
-    "Every week", "Every 2 weeks", "Every month", "2 times a month"
-  ]
+      "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
+      "Every week", "Every 2 weeks", "Every month", "2 times a month"]
 
   const monthArray = ["January","February","March","April","May","June","July",
                       "August","September","October","November","December"]
-     
+
+  const [goalsData, updateGoals] = useState(null)   
   const [itemId, setItemId] = useState(null) // after clicking on item, state keeps it's id
   const [timeRange, updateTimeRange] = useState(null)
   const [text, updateText] = useState("")
   const [ selectedDate, updateDate] = useState('-')
   const [ selectedMonth, updateMonth] = useState('-')
   const [ selectedYear, updateYear] = useState('-')
-  // const [deadline, setDeadline] = useState({}) // value is undefined
-  // const [datePicker, showDatePicker] = useState(false)
   const [modal, showModal] = useState(false)
   const [buttonText, updateButtonText] = useState("Time Range")
-    
+
   useEffect(() => {getData()}, [])
-  //useEffect(() => {getData(),[homeScreen]})
 
- //  AsyncStorage.setItem("storedData", JSON.stringify(goalsData))  //?? should store after changing
+  const generateInitialCalendar = () => { 
+      // creates nested array [ { id: 0, 
+      //                         month: 'january',
+      //                         year: 2020, 
+      //                         dates: [{id: 0, date: 1, done: true, note: "str"},
+      //                                 {id: 1, date 2, done: false, note: "str"},...                                          
+      //                                ]
+      //                         },
+      //                         {...},{...},{...}
+      //                       ]
+    let dataArray = []
+    let count = 0;
+    for (let i = 2022; i <= 2024; i ++){      
+        monthArray.map(mo => {
+            dataArray.push({id: count, month: mo, year: i, dates: getDates(monthArray.indexOf(mo), i)})
+            count += 1
+        })
+    }  
+    return dataArray
+  }
 
+  const getDates = (month, year) => {
+        // function created array in next format :
+      // [{id: 0, date: 1, done: false, note: ''}, {id: 1, date: 2, done: false, note: ''},...]
+      let daysCount = new Date(year, month, 0).getDate();  
+              // third parameter represents date (1-31), 
+              // if it's 0  ---> output will be the last day of the previos month (30 or 31)
+              // so getDate() return 30 or 31,               
+              // Months start with index 0, so the previous month is the needed month 
+
+      let firstDay = new Date(year, month, 1).getDay()  // (day of the week  --> 0-6)
+      let daysArray = [];
+      let daysArrayWithKeys = []  
+
+      for (let i = 1; i <= daysCount; i++) {
+          daysArray.push(i);
+      }
+      switch (firstDay) {
+          // If the 1st day of the month starts not on Monday 
+          // push "" to the begining of the daysArray 
+          case 0:
+              daysArray.unshift("", "", "", "", "", "");
+              break;
+          case 2:
+              daysArray.unshift("");
+              break;
+          case 3:
+              daysArray.unshift("", "");
+              break;
+          case 4:
+              daysArray.unshift("", "", "");
+              break;
+          case 5:
+              daysArray.unshift("", "", "", "");
+              break;
+          case 6:
+              daysArray.unshift("", "", "", "", "");               
+          }
+          for(var i = 0; i <= daysArray.length-1; i++){
+              daysArrayWithKeys.push({
+                  id: i, 
+                  date: daysArray[i],
+                  done: false,
+                  note: ''
+                  });
+          }         
+    return daysArrayWithKeys
+  }
+
+  const initialGoalData = [
+    {goal: false, id: 1, color: 'rgb(255, 204, 204)', calendar: generateInitialCalendar()},
+    {goal: false, id: 2, color: 'rgb(255, 255, 204)', calendar: generateInitialCalendar()},
+    {goal: false, id: 3, color: 'rgb(204, 255, 204)', calendar: generateInitialCalendar()},
+    {goal: false, id: 4, color: 'rgb(204, 255, 255)', calendar: generateInitialCalendar()},
+    {goal: false, id: 5, color: 'rgb(255, 204, 229)', calendar: generateInitialCalendar()},
+    {goal: false, id: 6, color: 'rgb(229, 255, 204)', calendar: generateInitialCalendar()},
+    {goal: false, id: 7, color: 'rgb(176, 196, 222)', calendar: generateInitialCalendar()},
+    {goal: false, id: 8, color: 'rgb(229, 204, 255)', calendar: generateInitialCalendar()},
+    {goal: false, id: 9, color: 'rgb(172, 252, 252)', calendar: generateInitialCalendar()},
+    {goal: false, id: 10, color: 'rgb(244, 164, 96)', calendar: generateInitialCalendar()},
+    {goal: false, id: 11, color: 'rgb(238, 232, 170)', calendar: generateInitialCalendar()},
+    {goal: false, id: 12, color: 'rgb(216, 191, 216)', calendar: generateInitialCalendar()}
+  ]
+ 
   let getData = async () =>  {
     let keys = await AsyncStorage.getAllKeys()
     if (keys.includes('storedData')){
@@ -54,8 +117,12 @@ export default function HomeScreen({navigation, route}) {
        .then(data => {updateGoals(data)
        })
     }
-    else {updateGoals(initialGoaldData)}
+    else {updateGoals(initialGoalData)}
   }
+
+  
+
+    
 
   let addGoal = () => {
     // chek if input is filled, create newGoalObject
@@ -103,41 +170,28 @@ export default function HomeScreen({navigation, route}) {
     }
     return array
   }
-  const deleteGoal = (goalObject, calendarData) => {
+  const deleteGoal = (goalObject) => {
       //update goals in state and AsyncStorage and HomeScreen
-    let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
-    let foundGoal = newGoalsData.find(obj => obj.id == goalObject.id)
-    foundGoal.goal = false
-    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
-    updateGoals(newGoalsData)
+      console.log('homescreen - deleteGoal function')
+    // let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
+    // let foundGoal = newGoalsData.find(obj => obj.id == goalObject.id)
+    // foundGoal.goal = false
+    // AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
+    // updateGoals(newGoalsData)
       // delete goalId from calendarData in AsyncStorage
       //does not work
     //console.log("l",filterCalendarData(calendarData))
     // let updatedCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
-    AsyncStorage.setItem("storedCalendar", JSON.stringify(filterCalendarData(calendarData)))   
+    //AsyncStorage.setItem("storedCalendar", JSON.stringify(filterCalendarData(calendarData)))   
   }
 
-  const filterCalendarData = (data) =>{
-    // does not work
-    let newCalendarData = data
-      for(i=0; i<=newCalendarData; i++){
-        for(d=0; d<=newCalendarData[i].dates.length-1; d++){
-          for(g; g <= newCalendarData[i].dates[d].hasGoals.length-1; g++){
-          let updatedHasGoalsArray =   newCalendarData[i].dates[d].hasGoals[g].filter(ind => ind.goalId != goalObject.id)
-          newCalendarData[i].dates[d].hasGoals =  updatedHasGoalsArray
-          console.log('h', updatedHasGoalsArray)
-        }    
-        }
-      }  
-    return newCalendarData
-  } 
+  
 
   return (
       <View style={styles.container}>
-           {/* {AsyncStorage.removeItem('storedData') }    
-          {AsyncStorage.removeItem('storedCalendar') } */}
-        {/* {console.log('h', route.params.goalForeDeletion)}  */}
-        {console.log('homescreen')}
+           {/* {AsyncStorage.removeItem('storedData') }     */}
+        
+        {/* {console.log('homescreen', goalsData)} */}
         <View style={styles.itemBox}>
           <FlatList        // render containers with goals OR empty conteiners
               data={goalsData}
@@ -150,9 +204,9 @@ export default function HomeScreen({navigation, route}) {
                       }
                       onPress={() => {
                           item.goal ?
-                          // working here
                             navigation.navigate("Goal", {goalObject: item, deleteHandler: deleteGoal}):                                       
-                            showModal(!modal), setItemId(item.id)                
+                            showModal(!modal), setItemId(item.id) 
+                            // console.log('home, on goal press', item)               
                       }}>
                       {item.goal?  
                         <Text style={{color: 'black'}}>{item.goal.text}</Text>:
