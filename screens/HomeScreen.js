@@ -172,7 +172,7 @@ export default function HomeScreen({navigation, route}) {
   }
   const deleteGoal = (goalObject) => {
       //update goals in state and AsyncStorage and HomeScreen
-      console.log('homescreen - deleteGoal function')
+      //console.log('homescreen - deleteGoal function')
     // let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
     // let foundGoal = newGoalsData.find(obj => obj.id == goalObject.id)
     // foundGoal.goal = false
@@ -185,7 +185,13 @@ export default function HomeScreen({navigation, route}) {
     //AsyncStorage.setItem("storedCalendar", JSON.stringify(filterCalendarData(calendarData)))   
   }
 
-  
+  const editCell = (updatedCalendarData, goalId)  => {
+    // invoke by editCellHandler - a prop for GoalScreen
+    let newGoalsData = [...goalsData]
+    let foundGoal = newGoalsData[goalId-1]
+    foundGoal.calendar = updatedCalendarData
+    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))
+  }
 
   return (
       <View style={styles.container}>
@@ -204,7 +210,7 @@ export default function HomeScreen({navigation, route}) {
                       }
                       onPress={() => {
                           item.goal ?
-                            navigation.navigate("Goal", {goalObject: item, deleteHandler: deleteGoal}):                                       
+                            navigation.navigate("Goal", {goalObject: item, deleteHandler: deleteGoal, editCellHandler: editCell}):                                       
                             showModal(!modal), setItemId(item.id) 
                             // console.log('home, on goal press', item)               
                       }}>

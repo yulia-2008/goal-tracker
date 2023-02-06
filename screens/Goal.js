@@ -34,18 +34,6 @@ export default function Goal({navigation, route}) {
         setCurrentMonth(currentMo.id)      
     }
 
-    const editCell = (value) => {
-        // after switch value is changed
-        let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
-        let foundMonth = newCalendarData.find(monthObj => monthObj.id == currentMonth) 
-        let foundDate = foundMonth.dates.find(dateObj => dateObj.id == currentCell.id)
-        foundDate.done = value               
-        updateCalendarData(newCalendarData)
-        // AsyncStorage.setItem("storedData", JSON.stringify(newCalendarData)) 
-        // change it in Async storage in HomeScreen  
-        // for some reasons it is saved in Async Storeage     
-    }
-
     const defineBackgroundColor = (done) => { 
         //finds if goal marked as done on this date 
         let color;
@@ -61,22 +49,20 @@ export default function Goal({navigation, route}) {
         return borderStyle  
     }
 
-    const getSwitchValueAndNote = () => { 
-        //dont need this function? delete useEfferct too
-        // invokes when clicking on cell (useEffect: on currentCell value change )
-            currentCell.done? updateSwitch(true) : updateSwitch(false)
-            currentCell.note.trim() != "" ? updateNote(currentCell.note) : null
-    }
-
-    const editNote = (text) => {
-        // mess here
-        // nedd to save it in Async 
+    const editNote = (text) => {  
+        // updateting calendarData and go to HomeScreen for updating Async Storage 
         let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
-        let foundMonth = newCalendarData.find(monthObj => monthObj.id == currentMonth) 
-        let foundDate = foundMonth.dates.find(dateObj => dateObj.id == currentCell.id)
-        foundDate.note = text               
+        newCalendarData[currentMonth].dates[currentCell.id].note = text              
         updateCalendarData(newCalendarData)
-
+        route.params.editCellHandler(newCalendarData, goalObject.id)
+    }
+    const isGoalDone = (value) => {
+        // invoking by changing switch 
+        // updateting calendarData and go to HomeScreen for updating Async Storage 
+        let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
+        newCalendarData[currentMonth].dates[currentCell.id].done = value           
+        updateCalendarData(newCalendarData)
+        route.params.editCellHandler(newCalendarData, goalObject.id)     
     }
 
     return (
@@ -162,15 +148,11 @@ export default function Goal({navigation, route}) {
                             <View style = {styles.row}>
                                 <Text >Not Done</Text>
                                 <Switch 
-                                    onValueChange={value=> {
-                                        updateSwitch(value), 
-                                        editCell(value)
-                                    }}
+                                    onValueChange={value=> {isGoalDone(value)}}
                                     style = {{transform: [{ scaleX: 2 }, { scaleY: 2 }], margin: 40}}
-                                    //value = {switchValue} 
                                     value = {currentCell? currentCell.done : false}
                                     trackColor={{false: 'rgb(224, 224, 224)', true: 'yellow'}}
-                                    thumbColor={switchValue ? 'grey' : 'grey'}                                   
+                                    thumbColor='grey'                                  
                                 />
                                 <Text >Done</Text>                              
                             </View>
@@ -179,12 +161,9 @@ export default function Goal({navigation, route}) {
                                 style={styles.inputField}
                                 autoFocus={true} 
                                 placeholder='enter note'
-                                onChangeText = {enteredText => {
-                                    updateNote(enteredText) 
-                                    editNote(enteredText)
-                                }}                   
+                                onChangeText = {enteredText => {editNote(enteredText)}}                   
                                 multiline={true}  
-                                value = {note}
+                                value = {currentCell? currentCell.note : null}
                             />       
                         </View>
                     </View>
@@ -193,7 +172,7 @@ export default function Goal({navigation, route}) {
             <View style={{borderWidth:2, borderColor: 'grey'}}> 
                 <Text onPress={()=>
                     showDeleteModal(!deleteModal)
-                }> Delete Goal
+                }> Delete Goal 
                 </Text>
                 <Text> Edit goal</Text>
                 <Modal 
