@@ -22,6 +22,7 @@ export default function HomeScreen({navigation, route}) {
   const [ selectedYear, updateYear] = useState('-')
   const [modal, showModal] = useState(false)
   const [buttonText, updateButtonText] = useState("Time Range")
+  const [placeholder, updatePlaceholder] = useState('Enter your goal' )
 
   useEffect(() => {getData()}, [])
 
@@ -142,6 +143,7 @@ export default function HomeScreen({navigation, route}) {
       updateMonth(null)
       updateYear(null)
       updateTimeRange(null)
+      updateButtonText('Time range')
     }
     else if(timeRange == null){
       updateButtonText('Select time range !!')
@@ -190,7 +192,7 @@ export default function HomeScreen({navigation, route}) {
   }
 
   const editGoal = (goalObj) =>{
-    showModal(!modal), 
+    
     // setItemId(goalObj.id) 
     updateText(goalObj.goal.text)      
     updateDate(goalObj.goal.deadline.date)
@@ -198,6 +200,8 @@ export default function HomeScreen({navigation, route}) {
     updateYear(goalObj.goal.deadline.year)
     updateTimeRange(goalObj.goal.timeRange)
 
+    updateButtonText(goalObj.goal.timeRange)
+    showModal(!modal)
   }
 
   return (
@@ -244,9 +248,13 @@ export default function HomeScreen({navigation, route}) {
                     <View style={styles.modalContent}> 
                           <TouchableOpacity  style={{ alignSelf: 'flex-end'}}
                                 onPress={() => { 
-                                  showModal(!modal), 
+                                  showModal(!modal) 
                                   updateTimeRange(null)
                                   updateButtonText("Time Range")
+                                  updateDate(null)
+                                  updateMonth(null)
+                                  updateYear(null)
+                                  updateText('')
                                 }}>
                             <Image style={[styles.icon, {width: 40, height: 40}]}
                                source = {require('./close_icon.png')}/>
@@ -254,11 +262,9 @@ export default function HomeScreen({navigation, route}) {
                         <TextInput  
                             style={styles.inputField}
                             autoFocus={true} 
-                            placeholder='Enter your goal' 
-                            //onPressIn={()=>{console.log("input")}}
-                            onChangeText = {enteredText => {
-                              updateText(enteredText)
-                            }}                   
+                            placeholder = 'Enter your goal'
+                            value = {text}
+                            onChangeText = {enteredText => {updateText(enteredText)}}                   
                             required
                             multiline={false} />                                     
                         <SelectDropdown data = {rangeData}
@@ -269,7 +275,6 @@ export default function HomeScreen({navigation, route}) {
                             // onFocus={()=> {updateDatePicker(false)}}
                             onSelect = {(selectedItem) => {
                               updateTimeRange(selectedItem)
-                              updateButtonText('Time Range')
                             }}
                             buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
 
