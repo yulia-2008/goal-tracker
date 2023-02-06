@@ -14,7 +14,7 @@ export default function HomeScreen({navigation, route}) {
                       "August","September","October","November","December"]
 
   const [goalsData, updateGoals] = useState(null)   
-  const [itemId, setItemId] = useState(null) // after clicking on item, state keeps it's id
+  const [currentGoalId, setCurrentGoalId] = useState(null) // after clicking on item, state keeps it's id
   const [timeRange, updateTimeRange] = useState(null)
   const [text, updateText] = useState("")
   const [ selectedDate, updateDate] = useState('-')
@@ -22,8 +22,7 @@ export default function HomeScreen({navigation, route}) {
   const [ selectedYear, updateYear] = useState('-')
   const [modal, showModal] = useState(false)
   const [buttonText, updateButtonText] = useState("Time Range")
-  const [placeholder, updatePlaceholder] = useState('Enter your goal' )
-
+  
   useEffect(() => {getData()}, [])
 
   const generateInitialCalendar = () => { 
@@ -134,7 +133,7 @@ export default function HomeScreen({navigation, route}) {
         deadline: {date: selectedDate, month: selectedMonth , year: selectedYear}      
       }
       let goals = [...goalsData]
-      goals[itemId-1].goal = newGoal  // state itemId-1 == goal's index in goalData array
+      goals[currentGoalId-1].goal = newGoal  // state itemId-1 == goal's index in goalData array
       updateGoals(goals)
       AsyncStorage.setItem("storedData", JSON.stringify(goals)) 
       showModal(!modal)    // closing Modal
@@ -147,7 +146,14 @@ export default function HomeScreen({navigation, route}) {
     }
     else if(timeRange == null){
       updateButtonText('Select time range !!')
-    }    
+    } 
+    
+    navigation.navigate("Goal", {
+      goalObject: goalsData[currentGoalId-1], 
+      deleteHandler: deleteGoal, 
+      editCellHandler: editCell,
+      editGoalHandler: editGoal
+    })   
   }
 
   const datesArray = () => {
@@ -191,17 +197,22 @@ export default function HomeScreen({navigation, route}) {
     AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))
   }
 
-  const editGoal = (goalObj) =>{
-    
-    // setItemId(goalObj.id) 
+  const editGoal = (goalObj) =>{ 
+    console.log('edit')
     updateText(goalObj.goal.text)      
     updateDate(goalObj.goal.deadline.date)
     updateMonth(goalObj.goal.deadline.month)
     updateYear(goalObj.goal.deadline.year)
     updateTimeRange(goalObj.goal.timeRange)
-
     updateButtonText(goalObj.goal.timeRange)
     showModal(!modal)
+    // let updatedGoalObject = goalsData[goalObj.id-1]
+    // navigation.navigate("Goal", {
+    //   goalObject: updatedGoalObject, 
+    //   deleteHandler: deleteGoal, 
+    //   editCellHandler: editCell,
+    //   editGoalHandler: editGoal
+    // })
   }
 
   return (
@@ -227,7 +238,7 @@ export default function HomeScreen({navigation, route}) {
                               editCellHandler: editCell,
                               editGoalHandler: editGoal
                             }):                                       
-                            showModal(!modal), setItemId(item.id)              
+                            showModal(!modal), setCurrentGoalId(item.id)              
                       }}>
                       {item.goal?  
                         <Text style={{color: 'black'}}>{item.goal.text}</Text>:
