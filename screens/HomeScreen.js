@@ -170,27 +170,34 @@ export default function HomeScreen({navigation, route}) {
     }
     return array
   }
-  const deleteGoal = (goalObject) => {
-      //update goals in state and AsyncStorage and HomeScreen
-      //console.log('homescreen - deleteGoal function')
-    // let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
-    // let foundGoal = newGoalsData.find(obj => obj.id == goalObject.id)
-    // foundGoal.goal = false
-    // AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
-    // updateGoals(newGoalsData)
-      // delete goalId from calendarData in AsyncStorage
-      //does not work
-    //console.log("l",filterCalendarData(calendarData))
-    // let updatedCalendarData = calendarData.map(obj => obj.dates.map(day => day.hasGoals.filter(g => g.goalId != goalObject.id))) 
-    //AsyncStorage.setItem("storedCalendar", JSON.stringify(filterCalendarData(calendarData)))   
+  const deleteGoal = (goalId) => {
+      //update goals in state and AsyncStorage 
+    let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
+    let foundGoal = newGoalsData[goalId-1]
+    foundGoal.goal = false
+    foundGoal.calendar = generateInitialCalendar()
+    updateGoals(newGoalsData)
+    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))   
   }
 
   const editCell = (updatedCalendarData, goalId)  => {
     // invoke by editCellHandler - a prop for GoalScreen
+    // edit switch value and note
     let newGoalsData = [...goalsData]
     let foundGoal = newGoalsData[goalId-1]
     foundGoal.calendar = updatedCalendarData
     AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))
+  }
+
+  const editGoal = (goalObj) =>{
+    showModal(!modal), 
+    // setItemId(goalObj.id) 
+    updateText(goalObj.goal.text)      
+    updateDate(goalObj.goal.deadline.date)
+    updateMonth(goalObj.goal.deadline.month)
+    updateYear(goalObj.goal.deadline.year)
+    updateTimeRange(goalObj.goal.timeRange)
+
   }
 
   return (
@@ -210,9 +217,13 @@ export default function HomeScreen({navigation, route}) {
                       }
                       onPress={() => {
                           item.goal ?
-                            navigation.navigate("Goal", {goalObject: item, deleteHandler: deleteGoal, editCellHandler: editCell}):                                       
-                            showModal(!modal), setItemId(item.id) 
-                            // console.log('home, on goal press', item)               
+                            navigation.navigate("Goal", {
+                              goalObject: item, 
+                              deleteHandler: deleteGoal, 
+                              editCellHandler: editCell,
+                              editGoalHandler: editGoal
+                            }):                                       
+                            showModal(!modal), setItemId(item.id)              
                       }}>
                       {item.goal?  
                         <Text style={{color: 'black'}}>{item.goal.text}</Text>:

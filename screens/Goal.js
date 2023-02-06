@@ -1,10 +1,10 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, TextInput, Switch, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { Feather } from '@expo/vector-icons';
 
 export default function Goal({navigation, route}) {
-
+ 
     const goalObject = route.params.goalObject;
     
     const [calendarData, updateCalendarData] = useState(goalObject.calendar)
@@ -12,13 +12,9 @@ export default function Goal({navigation, route}) {
     const [cellModal, showCellModal] = useState(false)
     const [deleteModal, showDeleteModal] = useState(false)
     const [currentCell, updateCurrentCell] = useState(null) 
-    const [switchValue, updateSwitch] = useState(null)
-    const [note, updateNote] = useState("")
    
     useEffect(() => {getCurrentMonth()},[])
-    //useEffect(() => {calendarData? getCurrentMonth(): console.log('calendarData loading')},[calendarData])
-    // useEffect(() => {currentCell? getSwitchValueAndNote(): null}, [currentCell])
-    
+        
     const monthArray = ["January","February","March","April","May","June","July",
                       "August","September","October","November","December"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
@@ -123,13 +119,31 @@ export default function Goal({navigation, route}) {
                             })}
                         </View> 
                     </View>
-                    <TouchableOpacity 
-                        style = {[styles.arrow,{backgroundColor: goalObject.color}]}
-                        onPress = {()=> setCurrentMonth(currentMonth+1)}>
-                       <Feather name="chevrons-down" size={40} color="black" />
-                    </TouchableOpacity>  
-                    </>:
-                    <Text>Loading</Text>
+                    <View style={styles.FooterContainer}>
+                        <TouchableOpacity 
+                            style = {styles.buttonsFooter}
+                            onPress={()=>{
+                                navigation.navigate("HomeScreen")
+                                route.params.editGoalHandler(goalObject)}}>
+                            <Text style={styles.buttonText}> 
+                                Edit goal
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                            style = {[styles.arrow,{backgroundColor: goalObject.color}]}
+                            onPress = {()=> setCurrentMonth(currentMonth+1)}>
+                        <Feather name="chevrons-down" size={40} color="black" />
+                        </TouchableOpacity> 
+                        <TouchableOpacity 
+                            style = {styles.buttonsFooter}
+                            onPress={()=>showDeleteModal(!deleteModal)}> 
+                            <Text style={styles.buttonText}> 
+                                Delete Goal 
+                            </Text>
+                        </TouchableOpacity>                       
+                    </View>   
+                        </>:
+                        <Text>Loading</Text>                    
                 }                         
                 <Modal 
                     transparent = {true} 
@@ -168,40 +182,33 @@ export default function Goal({navigation, route}) {
                         </View>
                     </View>
                 </Modal>     
-            </View> 
-            <View style={{borderWidth:2, borderColor: 'grey'}}> 
-                <Text onPress={()=>
-                    showDeleteModal(!deleteModal)
-                }> Delete Goal 
-                </Text>
-                <Text> Edit goal</Text>
-                <Modal 
-                    transparent = {true} 
-                    visible = {deleteModal}>
-                    <View style={styles.modal}>
-                        <View style={styles.modalContent}>
-                            <TouchableOpacity  
-                                onPress={() => showDeleteModal(false)}
-                                style={{ alignSelf: 'flex-end'}}>
-                                <Image   
-                                    style={{width: 40, height: 40}}
-                                    source = {require('./close_icon.png')}/>
-                            </TouchableOpacity>        
-                            <Text> This action permanetly delete current goal</Text>
-                            <TouchableOpacity
-                                onPress={() => { 
-                                    //showDeleteModal(false)           
-                                    navigation.navigate("HomeScreen")
-                                    route.params.deleteHandler(goalObject)
-                                    }}>
-                                <Image 
-                                    style={styles.icon}
-                                    source = {require('./ok_icon.png')}/>         
-                            </TouchableOpacity>        
-                        </View>
+            </View>                 
+            <Modal 
+                transparent = {true} 
+                visible = {deleteModal}>
+                <View style={styles.modal}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity  
+                            onPress={() => showDeleteModal(false)}
+                            style={{ alignSelf: 'flex-end'}}>
+                            <Image   
+                                style={{width: 40, height: 40}}
+                                source = {require('./close_icon.png')}/>
+                        </TouchableOpacity>        
+                        <Text> This action permanetly delete current goal</Text>
+                        <TouchableOpacity
+                            onPress={() => { 
+                                //showDeleteModal(false)           
+                                navigation.navigate("HomeScreen")
+                                route.params.deleteHandler(goalObject.id)
+                                }}>
+                            <Image 
+                                style={styles.icon}
+                                source = {require('./ok_icon.png')}/>         
+                        </TouchableOpacity>        
                     </View>
-                </Modal>
-            </View>                                           
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -221,13 +228,8 @@ const styles = StyleSheet.create({
         //flex:1,
         width: '95%',
         alignSelf: 'center', //horizontally
-        //margin: '5%',
         backgroundColor: 'white',
-        marginTop: 30
-        //padding: 3,
-        // borderWidth: 2,
-        // borderColor: "yellow",
-        // borderRadius: 5
+        marginTop: 30,
     },
     calendarBorder: { // include header and dated (without arrows)
         borderWidth: 1,
@@ -278,7 +280,19 @@ const styles = StyleSheet.create({
         borderRadius: 15, 
         borderColor: 'grey', 
         width: '13%', 
-        margin: 10
+        
+    },
+    buttonsFooter:{
+        borderWidth: 1, 
+        borderRadius: 15, 
+        borderColor: 'grey', 
+        padding: 10,
+        //alignContent: 'center', 
+    },
+    FooterContainer:{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        height: 50
     },
     datesBox: {
         flexDirection: 'row',
