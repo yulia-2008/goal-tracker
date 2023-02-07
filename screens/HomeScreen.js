@@ -7,11 +7,11 @@ import SelectDropdown from 'react-native-select-dropdown';
 export default function HomeScreen({navigation, route}) {
 
   const rangeData = [
-      "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
+    "---" , "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
       "Every week", "Every 2 weeks", "Every month", "2 times a month"]
 
-  const monthArray = ["January","February","March","April","May","June","July",
-                      "August","September","October","November","December"]
+  const monthArray = ["Jan","Feb","Mar","Apr","May","June","July",
+                      "Aug","Sep","Oct","Nov","Dec"]
 
   const [goalsData, updateGoals] = useState(null)   
   const [currentGoalId, setCurrentGoalId] = useState(null) // after clicking on item, state keeps it's id

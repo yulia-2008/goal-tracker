@@ -67,11 +67,11 @@ export default function Goal({navigation, route}) {
                 {calendarData && currentMonth ?
                     <>
                     <View style = {styles.buttonContainer}>
-                       <Text style={{alignSelf: 'flex-end'}}> &nbsp; &nbsp; Deadline</Text> 
-                        <Text style = {{alignSelf: 'flex-end'}}> Pereodicity &nbsp; &nbsp; &nbsp; </Text>
+                        <Text style={{alignSelf: 'flex-end'}}> &nbsp; &nbsp; Deadline</Text> 
+                        <Text style = {{alignSelf: 'flex-end'}}> Pereodicity &nbsp; &nbsp; </Text>
                     </View>
                     <View style = {styles.buttonContainer}>
-                        <Text style = {styles.buttons}>  ...{goalObject.goal.deadline.month} / ...{goalObject.goal.deadline.date} / ...{goalObject.goal.deadline.year} </Text>
+                        <Text style = {styles.buttons}>{goalObject.goal.deadline.month}/{goalObject.goal.deadline.date}/{goalObject.goal.deadline.year} </Text>
                         <TouchableOpacity 
                             style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
                             onPress = {()=> setCurrentMonth(currentMonth-1)}>
@@ -275,16 +275,14 @@ const styles = StyleSheet.create({
     buttonContainer:{
         flexDirection: 'row',
         justifyContent: 'space-between',
-        height: 50,
-        // borderWidth: 1,
-        // borderColor: "red",
+        height: 50
     },
     buttons:{
         borderWidth: 1, 
         borderRadius: 15, 
         borderColor: 'grey', 
+       // width: '40%',
         padding: 10,
-        alignSelf: 'center', 
         fontSize: 18, // remove it if change for touchableopacity on top
     },
     arrowButton: {
