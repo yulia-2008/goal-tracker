@@ -147,7 +147,6 @@ export default function HomeScreen({navigation, route}) {
     else if(timeRange == null){
       updateButtonText('Select time range !!')
     } 
-    
     navigation.navigate("Goal", {
       goalObject: goalsData[currentGoalId-1], 
       deleteHandler: deleteGoal, 

@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 export default function Goal({navigation, route}) {
  
     const goalObject = route.params.goalObject;
-    
+    styles.text
     const [calendarData, updateCalendarData] = useState(goalObject.calendar)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
@@ -64,17 +64,23 @@ export default function Goal({navigation, route}) {
     return (
         <View style={styles.container}> 
         {/* {console.log('in goal - goal obj', goalObject.calendar)} */}
-            <Text style={styles.goalInfoText}> Deadline: {goalObject.goal.deadline.month} / {goalObject.goal.deadline.date} / {goalObject.goal.deadline.year} </Text>
-            <Text style = {styles.goalInfoText}> Pereodicity: {goalObject.goal.timeRange} </Text>
-            <View style={styles.calendarBox}>
                 {calendarData && currentMonth ?
                     <>
-                    <TouchableOpacity 
-                        style = {[styles.arrow,{backgroundColor: goalObject.color}]}
-                        onPress = {()=> setCurrentMonth(currentMonth-1)}>
-                        <Feather name="chevrons-up" size={40} color="black" />
-                    </TouchableOpacity>
-                    <View style = {styles.calendarBorder}>
+                    <View style = {styles.buttonContainer}>
+                       <Text style={{alignSelf: 'flex-end'}}> &nbsp; &nbsp; Deadline</Text> 
+                        <Text style = {{alignSelf: 'flex-end'}}> Pereodicity &nbsp; &nbsp; &nbsp; </Text>
+                    </View>
+                    <View style = {styles.buttonContainer}>
+                        <Text style = {styles.buttons}>  ...{goalObject.goal.deadline.month} / ...{goalObject.goal.deadline.date} / ...{goalObject.goal.deadline.year} </Text>
+                        <TouchableOpacity 
+                            style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
+                            onPress = {()=> setCurrentMonth(currentMonth-1)}>
+                            <Feather name="chevrons-up" size={40} color="black" />
+                        </TouchableOpacity>
+                        <Text style = {styles.buttons}>  {goalObject.goal.timeRange}</Text>
+                    </View>
+                    
+                    <View style = {styles.calendarContainer}>
                         <Text style = {[styles.month, 
                                         {backgroundColor: goalObject.color}
                                     ]}>
@@ -103,7 +109,7 @@ export default function Goal({navigation, route}) {
                                         showCellModal(true)
                                         updateCurrentCell(dateObj) 
                                     }}>
-                                    <Text style = {styles.text}>
+                                    <Text style = {styles.textCell}>
                                         {dateObj.date}
                                     </Text>
                                 
@@ -112,16 +118,16 @@ export default function Goal({navigation, route}) {
                                 <TouchableOpacity   // render empty date cell
                                     key = {dateObj.id} 
                                     style={styles.emptyDate}>
-                                    <Text style = {styles.text}>
+                                    <Text style = {styles.textCell}>
                                         {dateObj.date}
                                     </Text> 
                                 </TouchableOpacity>
                             })}
                         </View> 
                     </View>
-                    <View style={styles.FooterContainer}>
+                    <View style={styles.buttonContainer}>
                         <TouchableOpacity 
-                            style = {styles.buttonsFooter}
+                            style = {styles.buttons}
                             onPress={()=>{
                                 navigation.navigate("HomeScreen")
                                 route.params.editGoalHandler(goalObject)}}>
@@ -130,20 +136,20 @@ export default function Goal({navigation, route}) {
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity 
-                            style = {[styles.arrow,{backgroundColor: goalObject.color}]}
+                            style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
                             onPress = {()=> setCurrentMonth(currentMonth+1)}>
                         <Feather name="chevrons-down" size={40} color="black" />
                         </TouchableOpacity> 
                         <TouchableOpacity 
-                            style = {styles.buttonsFooter}
+                            style = {styles.buttons}
                             onPress={()=>showDeleteModal(!deleteModal)}> 
                             <Text style={styles.buttonText}> 
                                 Delete Goal 
                             </Text>
                         </TouchableOpacity>                       
                     </View>   
-                        </>:
-                        <Text>Loading</Text>                    
+                    </>:
+                    <Text>Loading</Text>                    
                 }                         
                 <Modal 
                     transparent = {true} 
@@ -182,7 +188,7 @@ export default function Goal({navigation, route}) {
                         </View>
                     </View>
                 </Modal>     
-            </View>                 
+           
             <Modal 
                 transparent = {true} 
                 visible = {deleteModal}>
@@ -217,26 +223,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         borderWidth:3,
-        padding: 10,
+        paddingHorizontal: '5%',
         borderColor: 'grey',
         backgroundColor: 'white',
     },
     goalInfoText:{
         fontSize: 18,
     },
-    calendarBox: { // include arrows
-        //flex:1,
-        width: '95%',
-        alignSelf: 'center', //horizontally
-        backgroundColor: 'white',
-        marginTop: 30,
-    },
-    calendarBorder: { // include header and dated (without arrows)
+    calendarContainer: { // include header and dated (without arrows)
         borderWidth: 1,
         borderColor: "grey",
         borderRadius: 25,
         paddingVertical: 9,
-        marginVertical: 10,
+        marginVertical: 20,
         backgroundColor: 'rgb(224, 224, 224)',
         
     },
@@ -273,34 +272,33 @@ const styles = StyleSheet.create({
         borderRadius: 13,
         borderColor: "grey",
     },
-    arrow: {
+    buttonContainer:{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        height: 50,
+        // borderWidth: 1,
+        // borderColor: "red",
+    },
+    buttons:{
+        borderWidth: 1, 
+        borderRadius: 15, 
+        borderColor: 'grey', 
+        padding: 10,
+        alignSelf: 'center', 
+        fontSize: 18, // remove it if change for touchableopacity on top
+    },
+    arrowButton: {
         alignItems: 'center', 
         alignSelf: 'center', 
         borderWidth: 1, 
         borderRadius: 15, 
         borderColor: 'grey', 
-        width: '13%', 
-        
-    },
-    buttonsFooter:{
-        borderWidth: 1, 
-        borderRadius: 15, 
-        borderColor: 'grey', 
-        padding: 10,
-        //alignContent: 'center', 
-    },
-    FooterContainer:{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        height: 50
+        width: '13%',   
     },
     datesBox: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         paddingHorizontal: 10,
-      
-        // borderWidth: 2,
-        //borderColor: "green",
     }, 
     date: {
         alignItems: 'center',   // gorizontally
@@ -321,7 +319,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
         flexBasis: '13%'
     },
-    text: {
+    textCell: { // does it affect?
         textAlign: 'center',
         textAlignVertical: 'center'
     },
