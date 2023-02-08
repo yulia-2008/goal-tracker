@@ -162,16 +162,23 @@ export default function HomeScreen({navigation, route}) {
 
   const getWidth = (gId) => {
     let width;
-    let dimentions = ['150', '50', '70', '130', '100', '100','150', '50', '70', '130', '100', '100']
+    let dimentions = [0, 200, 150, 100, 240, 130, 200, 250, 90, 110, 230, 200, 150]
     width = dimentions[gId]
     return width
   }
 
   const getHeight = (gId) => {
     let height;
-    let dimentions = ['150', '50', '70', '130', '100', '100','150', '50', '70', '130', '100', '100']
+    let dimentions = [0, 100, 100, 90, 100, 130, 100, 100, 110, 110, 110, 130, 100, 100]
     height = dimentions[gId]
     return height
+  }
+  
+  const getMargin = (id) => {
+    let margin;
+    let number = [0, 5, 5, 10, 5, 5, 15, 5, 5, 1, 10, 5, 5]
+    margin = number[id]
+    return margin
   }
 
   return (
@@ -186,8 +193,10 @@ export default function HomeScreen({navigation, route}) {
               renderItem={({item}) =>
                   <TouchableOpacity   
                       key={item.id}
-                      style={ item.goal? [styles.item, {backgroundColor: item.color}]:
-                                         [styles.item, {backgroundColor: 'rgb(224, 224, 224)'}]
+                      style={ item.goal? [styles.item, {backgroundColor: item.color, margin: getMargin(item.id),
+                                          width: getWidth(item.id), height: getHeight(item.id)}]:
+                                         [styles.item, {backgroundColor: 'rgb(224, 224, 224)', margin: getMargin(item.id),
+                                         width: getWidth(item.id), height: getHeight(item.id) }]
                       }
                       onPress={() => {
                           item.goal ?
@@ -255,22 +264,19 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     backgroundColor: 'white',
     alignItems: 'center',
-    justifyContent: 'space-between', 
+    //justifyContent: 'space-between', 
   },
   item: {
     backgroundColor: 'white',
-    // width: 150,                                      
-    // height: 100,
-    margin: 10,
     padding: 10,
     borderWidth: 1,
-    borderRadius: 30, 
+    borderRadius: 25, 
     borderColor: 'grey',
     justifyContent: 'center',
     alignItems: 'center'
   },
   itemBox:{
-    flex:2,
+    flex: 1, // does it affect?
     width: '100%',
     alignItems: 'center'
   }, 
