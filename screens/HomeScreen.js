@@ -241,9 +241,7 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     backgroundColor: 'white',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 3,
-    borderColor: 'red' 
+    justifyContent: 'space-between', 
   },
   item: {
     backgroundColor: 'white',
@@ -260,8 +258,6 @@ const styles = StyleSheet.create({
   itemBox:{
     flex:2,
     width: '100%',
-    borderWidth: 2,
-    borderColor: 'green', 
     alignItems: 'center'
   }, 
   newGoal:{

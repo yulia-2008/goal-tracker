@@ -9,16 +9,17 @@ export default function App() {
   
   return (
       <NavigationContainer> 
-        <Stack.Navigator>          
+        <Stack.Navigator screenOptions={{headerTitleAlign: 'center'}}>          
           <Stack.Screen
             name="HomeScreen"
             component={ HomeScreen }      
             options={{
-                headerTitle: "Your Goals",
+                headerTitle: "Goal Tracker",
                 headerStyle: {                   
                     backgroundColor: 'rgb(104, 149, 197)',
-                    height: 70,          
-                }            
+                    height: 70 
+                }
+                   
             }}              
           />                     
           <Stack.Screen

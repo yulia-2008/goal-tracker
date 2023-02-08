@@ -283,7 +283,12 @@ export default function Goal({navigation, route}) {
                 <View style={styles.modal}>
                     <View style={styles.modalContent}>
                         <TouchableOpacity  
-                            onPress={() => showDeadlineModal(false)}
+                            onPress={() => {
+                                showDeadlineModal(false), 
+                                updateDate('-'),
+                                updateMonth('-'),
+                                updateYear('-')                      
+                            }}
                             style={{ alignSelf: 'flex-end'}}>
                             <Image   
                                 style={{width: 40, height: 40}}
@@ -302,7 +307,8 @@ export default function Goal({navigation, route}) {
                                             key={item.id}
                                             onPress={() => {updateDate(item.date)}}>
                                             <Text style={
-                                                goalObject.goal.deadline.date == item.date || selectedDate == item.date ?
+                                                goalObject.goal.deadline.date == item.date && selectedDate == '-' // for the first time opening
+                                                || selectedDate == item.date ?
                                                 {fontSize:20, color: 'red'} : 
                                                 {color: 'black'}
                                                 }>
@@ -321,9 +327,10 @@ export default function Goal({navigation, route}) {
                                         renderItem={({item}) =>
                                             <TouchableOpacity   
                                                 style={styles.datePickerItem}
-                                                onPress={() => {updateMonth(item)}}>  
-                                                <Text style={ // some bugs here
-                                                    goalObject.goal.deadline.month == item.month || selectedMonth == item ?
+                                                onPress={() => updateMonth(item)}>  
+                                                <Text style={ 
+                                                    goalObject.goal.deadline.month == item && selectedMonth == '-' // for the first time opening
+                                                    || selectedMonth == item ?
                                                     {fontSize:20, color: 'red'} : 
                                                     {color: 'black'}
                                                 }>
@@ -341,9 +348,10 @@ export default function Goal({navigation, route}) {
                                             <TouchableOpacity   
                                                 style={styles.datePickerItem}
                                                 key={item.id}
-                                                onPress={() => {updateYear(item.year)}}>      
+                                                onPress={() => updateYear(item.year)}>      
                                                     <Text style={
-                                                        goalObject.goal.deadline.year == item.year || selectedYear == item.year ?
+                                                        goalObject.goal.deadline.year == item.year && selectedYear == '-' // for the first time opening
+                                                        || selectedYear == item.year ? 
                                                         {fontSize:20, color: 'red'} : 
                                                         {color: 'black'}
                                                     }>
@@ -433,8 +441,9 @@ const styles = StyleSheet.create({
         borderWidth: 1, 
         borderRadius: 15, 
         borderColor: 'grey', 
-       // width: '40%',
-        padding: 10
+        width: '40%',
+        padding: 10,
+        backgroundColor: 'white'
     },
     arrowButton: {
         alignItems: 'center', 
@@ -445,9 +454,11 @@ const styles = StyleSheet.create({
         width: '13%',   
     },
     dropdown:{
-        flex:1,
+        //flex:1,
         borderRadius:8,
-        alignSelf: 'flex-start'
+        width: 200,
+        alignSelf: 'center',
+        marginLeft: -50
       },
     datesBox: {
         flexDirection: 'row',
@@ -502,6 +513,9 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         margin: 20,
         padding: 20,
+        borderWidth: 1,
+        borderColor: "grey",
+        borderRadius: 20
     },
     row: {
         paddingHorizontal: 10,
@@ -527,24 +541,28 @@ const styles = StyleSheet.create({
         marginTop:10,  
     },
     datePickerContainer:{
-        height: 100
+        height: 100,
+        width: '80%',
+        // borderWidth: 1,
+        // borderColor: "grey",
+        // borderRadius: 5
     },
     flexBox: {
-    flex:1,
-    flexDirection: 'row',
-    width: '80%',
-    alignSelf: 'center',
-    //marginBottom: '10%',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: "grey",
-    borderRadius: 5
+        flex:1,
+        flexDirection: 'row',
+        //width: '80%',
+        alignSelf: 'center',
+        //marginBottom: '10%',
+        backgroundColor: 'white',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: "grey",
+        borderRadius: 20
     },
     datePickerColumn:{
-        padding: 0,
-        width:'33%',
+        padding: 5,
+        width:'33%'
     },  
     datePickerItem:{
         backgroundColor: 'white',
