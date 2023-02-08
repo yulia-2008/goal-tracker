@@ -160,6 +160,20 @@ export default function HomeScreen({navigation, route}) {
     AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))
   }
 
+  const getWidth = (gId) => {
+    let width;
+    let dimentions = ['150', '50', '70', '130', '100', '100','150', '50', '70', '130', '100', '100']
+    width = dimentions[gId]
+    return width
+  }
+
+  const getHeight = (gId) => {
+    let height;
+    let dimentions = ['150', '50', '70', '130', '100', '100','150', '50', '70', '130', '100', '100']
+    height = dimentions[gId]
+    return height
+  }
+
   return (
       <View style={styles.container}>
            {/* {AsyncStorage.removeItem('storedData') }     */}
@@ -245,12 +259,12 @@ const styles = StyleSheet.create({
   },
   item: {
     backgroundColor: 'white',
-    width: 150,                                      
-    height: 100,
+    // width: 150,                                      
+    // height: 100,
     margin: 10,
     padding: 10,
     borderWidth: 1,
-    borderRadius: 20, 
+    borderRadius: 30, 
     borderColor: 'grey',
     justifyContent: 'center',
     alignItems: 'center'
