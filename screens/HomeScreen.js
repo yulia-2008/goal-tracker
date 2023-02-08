@@ -2,26 +2,17 @@ import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleSheet, Text, TextInput, View, TouchableOpacity, 
          Keyboard, FlatList, Modal, Image} from 'react-native';
-import SelectDropdown from 'react-native-select-dropdown';
+
 
 export default function HomeScreen({navigation, route}) {
-
-  const rangeData = [
-    "---" , "One time", "Every day", "Every other day",  "2 times a week", "3 times a week",
-      "Every week", "Every 2 weeks", "Every month", "2 times a month"]
 
   const monthArray = ["Jan","Feb","Mar","Apr","May","June","July",
                       "Aug","Sep","Oct","Nov","Dec"]
 
   const [goalsData, updateGoals] = useState(null)   
   const [currentGoalId, setCurrentGoalId] = useState(null) // after clicking on item, state keeps it's id
-  const [timeRange, updateTimeRange] = useState(null)
   const [text, updateText] = useState("")
-  const [ selectedDate, updateDate] = useState('-')
-  const [ selectedMonth, updateMonth] = useState('-')
-  const [ selectedYear, updateYear] = useState('-')
   const [modal, showModal] = useState(false)
-  const [buttonText, updateButtonText] = useState("Time Range")
   
   useEffect(() => {getData()}, [])
 
@@ -120,17 +111,13 @@ export default function HomeScreen({navigation, route}) {
     else {updateGoals(initialGoalData)}
   }
 
-  
-
-    
-
   let addGoal = () => {
     // chek if input is filled, create newGoalObject
-    if (timeRange != null && text.trim() != "" ) { 
+    if (text.trim() != "" ){ 
       let newGoal = { 
         text: text,
-        timeRange: timeRange,  
-        deadline: {date: selectedDate, month: selectedMonth , year: selectedYear}      
+        timeRange: null,  
+        deadline: {}      
       }
       let goals = [...goalsData]
       goals[currentGoalId-1].goal = newGoal  // state itemId-1 == goal's index in goalData array
@@ -138,45 +125,16 @@ export default function HomeScreen({navigation, route}) {
       AsyncStorage.setItem("storedData", JSON.stringify(goals)) 
       showModal(!modal)    // closing Modal
       updateText("")      // clearing entered data 
-      updateDate(null)
-      updateMonth(null)
-      updateYear(null)
-      updateTimeRange(null)
-      updateButtonText('Time range')
-    }
-    else if(timeRange == null){
-      updateButtonText('Select time range !!')
-    } 
-    navigation.navigate("Goal", {
-      goalObject: goalsData[currentGoalId-1], 
-      deleteHandler: deleteGoal, 
-      editCellHandler: editCell,
-      editGoalHandler: editGoal
-    })   
+    
+      navigation.navigate("Goal", {
+        goalObject: goalsData[currentGoalId-1], 
+        deleteHandler: deleteGoal, 
+        editCellHandler: editCell,
+        editGoalHandler: editGoal
+      }) 
+    }  
   }
 
-  const datesArray = () => {
-    // generates dates for goal deadline container
-    // need to fix: allowed to chose dayte 31 for all months
-    let array = [{id: 0, date: "-"}];
-    for(let i = 1; i <= 31; i++){
-      let newDate = {id: i, date: i}
-      array.push(newDate);
-    }
-    return array
-  }
-
-
-  const yearsArray = () => {
-    // generate years array for deadline container
-    let array = [{id: 0, year: "-"}];
-    let year = new Date().getFullYear()
-    for(let i = year; i <= year+10; i++){
-      let newYear = {id: i, year: i}
-      array.push(newYear);
-    }
-    return array
-  }
   const deleteGoal = (goalId) => {
       //update goals in state and AsyncStorage 
     let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
@@ -196,22 +154,10 @@ export default function HomeScreen({navigation, route}) {
     AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))
   }
 
-  const editGoal = (goalObj) =>{ 
-    console.log('edit')
-    updateText(goalObj.goal.text)      
-    updateDate(goalObj.goal.deadline.date)
-    updateMonth(goalObj.goal.deadline.month)
-    updateYear(goalObj.goal.deadline.year)
-    updateTimeRange(goalObj.goal.timeRange)
-    updateButtonText(goalObj.goal.timeRange)
-    showModal(!modal)
-    // let updatedGoalObject = goalsData[goalObj.id-1]
-    // navigation.navigate("Goal", {
-    //   goalObject: updatedGoalObject, 
-    //   deleteHandler: deleteGoal, 
-    //   editCellHandler: editCell,
-    //   editGoalHandler: editGoal
-    // })
+  const editGoal = (updatedGoalObject) => {
+    let newGoalsData = [...goalsData]
+    newGoalsData[updatedGoalObject.id-1] = updatedGoalObject
+    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))
   }
 
   return (
@@ -235,7 +181,7 @@ export default function HomeScreen({navigation, route}) {
                               goalObject: item, 
                               deleteHandler: deleteGoal, 
                               editCellHandler: editCell,
-                              editGoalHandler: editGoal
+                              editGoalHandler: editGoal,
                             }):                                       
                             showModal(!modal), setCurrentGoalId(item.id)              
                       }}>
@@ -249,8 +195,6 @@ export default function HomeScreen({navigation, route}) {
         </View> 
         <Modal    // Creation of new Goal: 
                   // TextInput -> type goal, 
-                  // SelectDropdown -> set time range for the goal
-                  // DatePicker -> set deadline for the goal
                   // button: add goal
             visible = {modal}
             transparent = {true}>
@@ -259,11 +203,10 @@ export default function HomeScreen({navigation, route}) {
                           <TouchableOpacity  style={{ alignSelf: 'flex-end'}}
                                 onPress={() => { 
                                   showModal(!modal) 
-                                  updateTimeRange(null)
-                                  updateButtonText("Time Range")
-                                  updateDate(null)
-                                  updateMonth(null)
-                                  updateYear(null)
+                                  // updateButtonText("Time Range")
+                                  // updateDate(null)
+                                  // updateMonth(null)
+                                  // updateYear(null)
                                   updateText('')
                                 }}>
                             <Image style={[styles.icon, {width: 40, height: 40}]}
@@ -277,77 +220,7 @@ export default function HomeScreen({navigation, route}) {
                             onChangeText = {enteredText => {updateText(enteredText)}}                   
                             required
                             multiline={false} />                                     
-                        <SelectDropdown data = {rangeData}
-                            defaultButtonText = {buttonText}
-                            buttonStyle = {styles.button}
-                            dropdownStyle = {styles.dropdown}
-                            dropdownIconPosition = "left"
-                            // onFocus={()=> {updateDatePicker(false)}}
-                            onSelect = {(selectedItem) => {
-                              updateTimeRange(selectedItem)
-                            }}
-                            buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
-
-                        <Text style={{fontSize: 18, alignSelf: 'center', margin: 10}}> Deadline</Text>  
-                        <View style={styles.datePickerContainer}> 
-                          <View style={styles.flexBox}>         
-                              <View style={styles.dateBox}>
-                                  <FlatList 
-                                      data={datesArray()}
-                                      numColumns={1}
-                                      renderItem={({item}) =>
-                                        <TouchableOpacity 
-                                            style={ styles.itemCell }
-                                            key={item.id}
-                                            onPress={() => {updateDate(item.date)}}>
-                                            <Text style={selectedDate == item.date ?
-                                                {fontSize:20, color: 'red'} : 
-                                                {color: 'black'}
-                                                }>
-                                              {item.date}
-                                            </Text>                                      
-                                        </TouchableOpacity>   
-                                      }/> 
-                              </View> 
-
-                              <View style={styles.monthBox}>
-                                <FlatList 
-                                    data={monthArray}
-                                    numColumns={1}
-                                    keyExtractor={(index) => index.toString()} // react throw the error if there is no keys
-                                    renderItem={({item}) =>
-                                        <TouchableOpacity   
-                                            style={styles.itemCell}
-                                            onPress={() => {updateMonth(item)}}>  
-                                              <Text style={selectedMonth == item ?
-                                                  {fontSize:20, color: 'red'} : 
-                                                  {color: 'black'}
-                                              }>
-                                            {item}</Text>               
-                                        </TouchableOpacity>   
-                                    }
-                                />         
-                              </View> 
-                
-                              <View style={styles.yearBox}>
-                                  <FlatList 
-                                      data={yearsArray()}
-                                      numColumns={1}
-                                      renderItem={({item}) =>
-                                          <TouchableOpacity   
-                                              style={styles.itemCell}
-                                              key={item.id}
-                                              onPress={() => {updateYear(item.year)}}>      
-                                                <Text style={selectedYear == item.year ?
-                                                    {fontSize:20, color: 'red'} : 
-                                                    {color: 'black'}
-                                                }>
-                                              {item.year}</Text>                      
-                                          </TouchableOpacity>   
-                                      }/>         
-                              </View> 
-                          </View> 
-                        </View>
+                        
                         <TouchableOpacity  onPress={() => {addGoal()}} >
                             <Image 
                                 style={styles.icon}
@@ -394,7 +267,7 @@ const styles = StyleSheet.create({
   newGoal:{
     fontWeight: 'bold',
     color: 'blue', 
-   },
+  },
   modal: {
     flex:1,
     backgroundColor: 'rgba(100, 100, 100, 0.6)', // 0.6 represents opacity(from 0 to 1)
@@ -429,11 +302,6 @@ const styles = StyleSheet.create({
     marginTop: 15,
     alignItems: 'center'                      
   },
-  dropdown:{
-    flex:1,
-    borderRadius:8,
-    alignSelf: 'flex-start'
-  },
   inputField:{
     borderWidth: 1,
     borderColor: 'grey',
@@ -449,40 +317,7 @@ const styles = StyleSheet.create({
     height: 50,
     paddingBottom: '3%',
   },
-  datePickerContainer:{
-    height: 100
-  },
-  flexBox: {
-    flex:1,
-    flexDirection: 'row',
-    width: '100%',
-    alignSelf: 'center',
-    //marginBottom: '10%',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: "grey",
-    borderRadius: 5
-  },
-  
-  dateBox:{
-    padding:0,
-    width:'20%'
-  },
-  yearBox:{
-    padding: 0,
-    width:'20%',
-  },
-  monthBox:{
-    padding: 0,
-    width:'60%',
-  },
-  itemCell:{
-    backgroundColor: 'white',
-    width: '100%',
-    alignItems: "center"
-  },
+
   text: {
      alignSelf: 'center' 
   },
@@ -494,6 +329,6 @@ const styles = StyleSheet.create({
     borderColor: 'silver',
     alignSelf: 'center',
     marginTop:10,  
-}
+  }
 });
 

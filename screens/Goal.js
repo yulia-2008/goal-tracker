@@ -1,23 +1,31 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, TextInput, Switch, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
-
+import SelectDropdown from 'react-native-select-dropdown';
 import { Feather } from '@expo/vector-icons';
 
 export default function Goal({navigation, route}) {
  
     const goalObject = route.params.goalObject;
-    styles.text
+    
     const [calendarData, updateCalendarData] = useState(goalObject.calendar)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
     const [deleteModal, showDeleteModal] = useState(false)
+    const [deadlineModal, showDeadlineModal] = useState(false)
     const [currentCell, updateCurrentCell] = useState(null) 
+    const [selectedDate, updateDate] = useState('-')
+    const [selectedMonth, updateMonth] = useState('-')
+    const [selectedYear, updateYear] = useState('-')
+    //const [timeRange, updateTimeRange] = useState(null)
    
     useEffect(() => {getCurrentMonth()},[])
         
-    const monthArray = ["January","February","March","April","May","June","July",
-                      "August","September","October","November","December"]
+    const monthArray = ["Jan","Feb","Mar","Apr","May","June","July",
+                      "Aug","Sep","Oct","Nov","Dec"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
+    const rangeData = ["---" , "One time", "Every day", "Every other day",  "2 times a week",
+            "3 times a week", "Every week", "Every 2 weeks", "Every month", "2 times a month"]
+     
 
     const getCurrentMonth = () => {
         const currentDate = new Date()
@@ -28,6 +36,28 @@ export default function Goal({navigation, route}) {
                 && obj.year === currentYear    
         )  
         setCurrentMonth(currentMo.id)      
+    }
+
+    const datesArray = () => {
+        // generates dates for goal deadline container
+        // need to fix: allowed to chose dayte 31 for all months
+        let array = [{id: 0, date: "-"}];
+        for(let i = 1; i <= 31; i++){
+          let newDate = {id: i, date: i}
+          array.push(newDate);
+        }
+        return array
+    }
+
+    const yearsArray = () => {
+        // generate years array for deadline container
+        let array = [{id: 0, year: "-"}];
+        let year = new Date().getFullYear()
+        for(let i = year; i <= year+10; i++){
+          let newYear = {id: i, year: i}
+          array.push(newYear);
+        }
+        return array
     }
 
     const defineBackgroundColor = (done) => { 
@@ -60,6 +90,17 @@ export default function Goal({navigation, route}) {
         updateCalendarData(newCalendarData)
         route.params.editCellHandler(newCalendarData, goalObject.id)     
     }
+    
+    const updateGoalInfo = (param) => {
+        let newGoalObject = Object.assign({}, goalObject)
+        if(param){// param == selectedItem // for updating timeRange
+           newGoalObject.goal.timeRange = param
+        }
+        else{ // undefined param  -- false value -> comes from deadlineModal
+            newGoalObject.goal.deadline = {date: selectedDate, month: selectedMonth, year: selectedYear}
+        }
+        route.params.editGoalHandler(newGoalObject)
+    }
 
     return (
         <View style={styles.container}> 
@@ -71,13 +112,32 @@ export default function Goal({navigation, route}) {
                         <Text style = {{alignSelf: 'flex-end'}}> Pereodicity &nbsp; &nbsp; </Text>
                     </View>
                     <View style = {styles.buttonContainer}>
-                        <Text style = {styles.buttons}>{goalObject.goal.deadline.month}/{goalObject.goal.deadline.date}/{goalObject.goal.deadline.year} </Text>
+                        <TouchableOpacity 
+                            style = {styles.buttons}
+                            onPress = {() => showDeadlineModal(true)}>
+                            <Text style={styles.buttonText}>{goalObject.goal.deadline.month}/{goalObject.goal.deadline.date}/{goalObject.goal.deadline.year} </Text>
+                         
+                        </TouchableOpacity>
                         <TouchableOpacity 
                             style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
                             onPress = {()=> setCurrentMonth(currentMonth-1)}>
                             <Feather name="chevrons-up" size={40} color="black" />
                         </TouchableOpacity>
-                        <Text style = {styles.buttons}>  {goalObject.goal.timeRange}</Text>
+                        {/* <TouchableOpacity 
+                            style = {styles.buttons}
+                            onPress = {() =>console.log('edit pereodicity') }>
+                            <Text style={styles.buttonText}>{goalObject.goal.timeRange}</Text>
+                        </TouchableOpacity> */}
+                        <SelectDropdown data = {rangeData}
+                            defaultButtonText = {goalObject.goal.timeRange}
+                            buttonStyle = {styles.buttons}
+                            dropdownStyle = {styles.dropdown}
+                            dropdownIconPosition = "left"
+                            onSelect = {(selectedItem) => {
+                                updateGoalInfo(selectedItem)
+                            }}
+                            buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
+
                     </View>
                     
                     <View style = {styles.calendarContainer}>
@@ -128,11 +188,12 @@ export default function Goal({navigation, route}) {
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity 
                             style = {styles.buttons}
-                            onPress={()=>{
-                                navigation.navigate("HomeScreen")
-                                route.params.editGoalHandler(goalObject)}}>
+                            // onPress={()=>{
+                            //     navigation.navigate("HomeScreen")
+                            //     route.params.editGoalHandler(goalObject)}}
+                            >
                             <Text style={styles.buttonText}> 
-                                Edit goal
+                               will be % 
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity 
@@ -151,7 +212,7 @@ export default function Goal({navigation, route}) {
                     </>:
                     <Text>Loading</Text>                    
                 }                         
-                <Modal 
+                <Modal // cellModal
                     transparent = {true} 
                     visible = {cellModal}>
                     <View style={styles.modal}>
@@ -189,7 +250,7 @@ export default function Goal({navigation, route}) {
                     </View>
                 </Modal>     
            
-            <Modal 
+            <Modal // deleteModal
                 transparent = {true} 
                 visible = {deleteModal}>
                 <View style={styles.modal}>
@@ -215,7 +276,98 @@ export default function Goal({navigation, route}) {
                     </View>
                 </View>
             </Modal>
-        </View>
+            
+            <Modal // deadlineModal
+                transparent = {true} 
+                visible = {deadlineModal}>
+                <View style={styles.modal}>
+                    <View style={styles.modalContent}>
+                        <TouchableOpacity  
+                            onPress={() => showDeadlineModal(false)}
+                            style={{ alignSelf: 'flex-end'}}>
+                            <Image   
+                                style={{width: 40, height: 40}}
+                                source = {require('./close_icon.png')}/>
+                        </TouchableOpacity>  
+
+                        <View style={styles.datePickerContainer}> 
+                            <View style={styles.flexBox}>         
+                                <View style={styles.datePickerColumn}>
+                                    <FlatList 
+                                        data={datesArray()}
+                                        numColumns={1}
+                                        renderItem={({item}) =>
+                                        <TouchableOpacity 
+                                            style={ styles.datePickerItem }
+                                            key={item.id}
+                                            onPress={() => {updateDate(item.date)}}>
+                                            <Text style={
+                                                goalObject.goal.deadline.date == item.date || selectedDate == item.date ?
+                                                {fontSize:20, color: 'red'} : 
+                                                {color: 'black'}
+                                                }>
+                                              {item.date}
+                                            </Text>                                      
+                                        </TouchableOpacity>   
+                                        }
+                                    /> 
+                                </View> 
+
+                                <View style={styles.datePickerColumn}>
+                                    <FlatList 
+                                        data={monthArray}
+                                        numColumns={1}
+                                        keyExtractor={(index) => index.toString()} // react throw the error if there is no keys
+                                        renderItem={({item}) =>
+                                            <TouchableOpacity   
+                                                style={styles.datePickerItem}
+                                                onPress={() => {updateMonth(item)}}>  
+                                                <Text style={ // some bugs here
+                                                    goalObject.goal.deadline.month == item.month || selectedMonth == item ?
+                                                    {fontSize:20, color: 'red'} : 
+                                                    {color: 'black'}
+                                                }>
+                                                {item}</Text>               
+                                            </TouchableOpacity>   
+                                        }
+                                    />         
+                                </View> 
+                
+                                <View style={styles.datePickerColumn}>
+                                    <FlatList 
+                                        data={yearsArray()}
+                                        numColumns={1}
+                                        renderItem={({item}) =>
+                                            <TouchableOpacity   
+                                                style={styles.datePickerItem}
+                                                key={item.id}
+                                                onPress={() => {updateYear(item.year)}}>      
+                                                    <Text style={
+                                                        goalObject.goal.deadline.year == item.year || selectedYear == item.year ?
+                                                        {fontSize:20, color: 'red'} : 
+                                                        {color: 'black'}
+                                                    }>
+                                                {item.year}</Text>                      
+                                            </TouchableOpacity>   
+                                        }
+                                    />         
+                                </View> 
+                            </View> 
+                        </View>      
+                        
+                        <TouchableOpacity
+                            onPress={() => { 
+                                showDeadlineModal(false)           
+                                updateGoalInfo()
+                                }}>
+                            <Image 
+                                style={styles.icon}
+                                source = {require('./ok_icon.png')}/>         
+                        </TouchableOpacity>        
+                    </View>
+                </View>
+            </Modal>
+        </View>       
     );
 }
 
@@ -282,8 +434,7 @@ const styles = StyleSheet.create({
         borderRadius: 15, 
         borderColor: 'grey', 
        // width: '40%',
-        padding: 10,
-        fontSize: 18, // remove it if change for touchableopacity on top
+        padding: 10
     },
     arrowButton: {
         alignItems: 'center', 
@@ -293,6 +444,11 @@ const styles = StyleSheet.create({
         borderColor: 'grey', 
         width: '13%',   
     },
+    dropdown:{
+        flex:1,
+        borderRadius:8,
+        alignSelf: 'flex-start'
+      },
     datesBox: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -338,7 +494,7 @@ const styles = StyleSheet.create({
     },
     modal: {
             flex:1,
-            backgroundColor: 'rgba(100, 100, 100, 0.1)', // 0.1 represents opacity
+            backgroundColor: 'rgba(100, 100, 100, 0.6)', // 0.6 represents opacity(from 0 to 1)
             justifyContent:'center'       
         },
     modalContent:{
@@ -346,8 +502,6 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         margin: 20,
         padding: 20,
-        
-        //borderRadius: 10
     },
     row: {
         paddingHorizontal: 10,
@@ -371,6 +525,30 @@ const styles = StyleSheet.create({
         borderColor: 'silver',
         alignSelf: 'center',
         marginTop:10,  
-    }
-    
+    },
+    datePickerContainer:{
+        height: 100
+    },
+    flexBox: {
+    flex:1,
+    flexDirection: 'row',
+    width: '80%',
+    alignSelf: 'center',
+    //marginBottom: '10%',
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: "grey",
+    borderRadius: 5
+    },
+    datePickerColumn:{
+        padding: 0,
+        width:'33%',
+    },  
+    datePickerItem:{
+        backgroundColor: 'white',
+        width: '100%',
+        alignItems: "center"
+    }, 
 });
