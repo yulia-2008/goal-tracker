@@ -1,7 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, 
-         Keyboard, FlatList, Modal, Image} from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, TouchableWithoutFeedback,
+         Keyboard, FlatList, Modal} from 'react-native';
+import { AntDesign } from '@expo/vector-icons'; 
+
 
 
 export default function HomeScreen({navigation, route}) {
@@ -126,12 +128,12 @@ export default function HomeScreen({navigation, route}) {
       showModal(!modal)    // closing Modal
       updateText("")      // clearing entered data 
     
-      navigation.navigate("Goal", {
-        goalObject: goalsData[currentGoalId-1], 
-        deleteHandler: deleteGoal, 
-        editCellHandler: editCell,
-        editGoalHandler: editGoal
-      }) 
+      // navigation.navigate("Goal", {  // maybe need it later !!!
+      //   goalObject: goalsData[currentGoalId-1], 
+      //   deleteHandler: deleteGoal, 
+      //   editCellHandler: editCell,
+      //   editGoalHandler: editGoal
+      // }) 
     }  
   }
 
@@ -169,7 +171,7 @@ export default function HomeScreen({navigation, route}) {
 
   const getHeight = (gId) => {
     let height;
-    let dimentions = [0, 100, 100, 90, 100, 130, 100, 100, 110, 110, 110, 130, 100, 100]
+    let dimentions = [0, 100, 100, 90, 100, 130, 110, 100, 110, 110, 110, 130, 100, 100]
     height = dimentions[gId]
     return height
   }
@@ -216,25 +218,26 @@ export default function HomeScreen({navigation, route}) {
               }         
           /> 
         </View> 
-        <Modal    // Creation of new Goal: 
-                  // TextInput -> type goal, 
-                  // button: add goal
+        <Modal     
             visible = {modal}
             transparent = {true}>
-                <View style={styles.modal}>
-                    <View style={styles.modalContent}> 
-                          <TouchableOpacity  style={{ alignSelf: 'flex-end'}}
+                <TouchableOpacity 
+                    style={styles.modal} 
+                    onPress={()=>showModal(false)}>
+                      <TouchableOpacity 
+                          activeOpacity={1} // disable highlighting effect
+                          style={styles.modalContent}
+                          onPress={e => {// do not close modal if anything inside modal content is clicked
+                              e.stopPropagation()
+                          }}> 
+                          {/* <TouchableOpacity /////!!!!! MAY BE NEED IT LATER
+                                style={styles.closeIcon}
                                 onPress={() => { 
                                   showModal(!modal) 
-                                  // updateButtonText("Time Range")
-                                  // updateDate(null)
-                                  // updateMonth(null)
-                                  // updateYear(null)
                                   updateText('')
                                 }}>
-                            <Image style={[styles.icon, {width: 40, height: 40}]}
-                               source = {require('./close_icon.png')}/>
-                          </TouchableOpacity>
+                            <AntDesign name="close" size={35} color="black" />
+                          </TouchableOpacity> */}
                         <TextInput  
                             style={styles.inputField}
                             autoFocus={true} 
@@ -242,17 +245,15 @@ export default function HomeScreen({navigation, route}) {
                             value = {text}
                             onChangeText = {enteredText => {updateText(enteredText)}}                   
                             required
-                            multiline={false} />                                     
+                            multiline={true} />                                     
                         
-                        <TouchableOpacity  onPress={() => {addGoal()}} >
-                            <Image 
-                                style={styles.icon}
-                                source = {require('./ok_icon.png')}
-                            /> 
-                            {/* image should be in the same folder, no need to import file at the top */}
+                        <TouchableOpacity 
+                          style = {styles.okIcon} 
+                          onPress={() => {addGoal()}} >
+                          <AntDesign name="check" size={40} color="black" />
                         </TouchableOpacity>
-                    </View>
-                </View> 
+                      </TouchableOpacity>
+              </TouchableOpacity> 
         </Modal>
       </View>
     );
@@ -290,61 +291,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   modalContent:{
+    flexDirection: 'row',
     backgroundColor: 'white',
-    margin: '10%',
-    padding: '5%',
-    paddingTop: '1%',
+    width: '85%',
+    paddingVertical: '4%',
+    paddingHorizontal: '2%',
     borderWidth: 1,
     borderRadius: 15,
-    borderColor: 'grey'
-  }, 
-  closeIcon: {
-    //alignSelf: 'flex-end',
-    padding: 7,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderRadius: 5,
     borderColor: 'grey',
-    color: 'red'
-  },
-  button:{
-    borderWidth: 1,
-    borderColor: 'grey',
-    backgroundColor: "white",
-    borderRadius:8,
-    width: '100%',
-    height:55, 
-    padding: 15, 
-    marginTop: 15,
-    alignItems: 'center'                      
-  },
-  inputField:{
-    borderWidth: 1,
-    borderColor: 'grey',
-    borderRadius:8,
-    height:55, 
-    padding: 10, 
-    fontSize: 20 
-  },
-  flexBoxErrorMessage:{
-    flex:1,
-    flexDirection: 'row',
-    width: '100%',
-    height: 50,
-    paddingBottom: '3%',
-  },
-
-  text: {
-     alignSelf: 'center' 
-  },
-  icon: {
-    width: 70,                                      
-    height: 70,
-    borderWidth: 1,
-    borderRadius: 50, 
-    borderColor: 'silver',
     alignSelf: 'center',
-    marginTop:10,  
+    justifyContent: 'space-around'
+  }, 
+  inputField:{
+    width: '75%',
+    borderWidth: 1,
+    borderColor: 'grey',
+    borderRadius: 10,
+    height: 50, 
+    padding: 10, 
+    fontSize: 20
+  },
+  text: {
+    alignSelf: 'center' 
+  },
+  closeIcon:{
+    alignSelf: 'flex-end', 
+    backgroundColor: 'rgba(255, 57, 57, 0.6)',
+    borderWidth: 3,
+    borderRadius: 13,
+    marginVertical: 10
+  }, 
+  okIcon:{
+    //alignSelf: 'flex-end', 
+    backgroundColor: 'rgb(84, 201, 107)',
+    borderWidth: 3,
+    borderRadius: 13,
+    //marginVertical: 10
   }
 });
 

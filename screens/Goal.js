@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { StyleSheet, Text, View, TextInput, Switch, Image, TouchableOpacity, FlatList, Modal, TouchableWithoutFeedbackBase, ScrollView } from 'react-native';
 import SelectDropdown from 'react-native-select-dropdown';
 import { Feather } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons'; 
 
 export default function Goal({navigation, route}) {
  
@@ -16,7 +17,7 @@ export default function Goal({navigation, route}) {
     const [selectedDate, updateDate] = useState('-')
     const [selectedMonth, updateMonth] = useState('-')
     const [selectedYear, updateYear] = useState('-')
-    //const [timeRange, updateTimeRange] = useState(null)
+    //const [selectedTimeRange, updateTimeRange] = useState(goalObject.goal.timeRange)
    
     useEffect(() => {getCurrentMonth()},[])
         
@@ -123,18 +124,17 @@ export default function Goal({navigation, route}) {
                             onPress = {()=> setCurrentMonth(currentMonth-1)}>
                             <Feather name="chevrons-up" size={40} color="black" />
                         </TouchableOpacity>
-                        {/* <TouchableOpacity 
-                            style = {styles.buttons}
-                            onPress = {() =>console.log('edit pereodicity') }>
-                            <Text style={styles.buttonText}>{goalObject.goal.timeRange}</Text>
-                        </TouchableOpacity> */}
-                        <SelectDropdown data = {rangeData}
-                            defaultButtonText = {goalObject.goal.timeRange}
+                
+                        <SelectDropdown 
+                            data = {rangeData}
+                            defaultButtonText = {rangeData[0]}
                             buttonStyle = {styles.buttons}
                             dropdownStyle = {styles.dropdown}
-                            dropdownIconPosition = "left"
+                            //rowStyle={}
+                            //rowTextStyle={}                              
                             onSelect = {(selectedItem) => {
                                 updateGoalInfo(selectedItem)
+                                //updateTimeRange(selectedItem)
                             }}
                             buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
 
@@ -253,36 +253,41 @@ export default function Goal({navigation, route}) {
             <Modal // deleteModal
                 transparent = {true} 
                 visible = {deleteModal}>
-                <View style={styles.modal}>
-                    <View style={styles.modalContent}>
-                        <TouchableOpacity  
-                            onPress={() => showDeleteModal(false)}
-                            style={{ alignSelf: 'flex-end'}}>
-                            <Image   
-                                style={{width: 40, height: 40}}
-                                source = {require('./close_icon.png')}/>
-                        </TouchableOpacity>        
-                        <Text> This action permanetly delete current goal</Text>
-                        <TouchableOpacity
-                            onPress={() => { 
-                                //showDeleteModal(false)           
+                <TouchableOpacity 
+                    style={styles.modal} 
+                    onPress={()=>showDeleteModal(false)}>
+                    <TouchableOpacity 
+                        activeOpacity={1} // disable highlighting effect
+                        onPress={e => {// do not close modal if anything inside modal content is clicked
+                            e.stopPropagation()
+                        }}
+                        style={styles.modalContent}>
+                        <Text style = {{alignSelf: 'center', fontSize: 18}}> Permanetly delete current goal? </Text>
+                        <TouchableOpacity 
+                            style = {styles.okIcon} 
+                            onPress={() => {           
                                 navigation.navigate("HomeScreen")
                                 route.params.deleteHandler(goalObject.id)
                                 }}>
-                            <Image 
-                                style={styles.icon}
-                                source = {require('./ok_icon.png')}/>         
+                            <AntDesign name="check" size={40} color="black" />
                         </TouchableOpacity>        
-                    </View>
-                </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
             </Modal>
             
             <Modal // deadlineModal
                 transparent = {true} 
                 visible = {deadlineModal}>
-                <View style={styles.modal}>
-                    <View style={styles.modalContent}>
-                        <TouchableOpacity  
+                <TouchableOpacity 
+                    onPress={()=>showDeadlineModal(false)}
+                    style={styles.modal}>
+                    <TouchableOpacity 
+                        activeOpacity={1}
+                        onPress={e => {// do not close modal if anything inside modal content is clicked
+                            e.stopPropagation()
+                        }}
+                        style={[styles.modalContent, {height: '25%'}]}>
+                        {/* <TouchableOpacity  
                             onPress={() => {
                                 showDeadlineModal(false), 
                                 updateDate('-'),
@@ -293,10 +298,9 @@ export default function Goal({navigation, route}) {
                             <Image   
                                 style={{width: 40, height: 40}}
                                 source = {require('./close_icon.png')}/>
-                        </TouchableOpacity>  
+                        </TouchableOpacity>   */}
 
                         <View style={styles.datePickerContainer}> 
-                            <View style={styles.flexBox}>         
                                 <View style={styles.datePickerColumn}>
                                     <FlatList 
                                         data={datesArray()}
@@ -360,20 +364,18 @@ export default function Goal({navigation, route}) {
                                         }
                                     />         
                                 </View> 
-                            </View> 
                         </View>      
                         
                         <TouchableOpacity
+                            style = {[styles.okIcon, {marginVertical: '19%', marginRight: 5}]} 
                             onPress={() => { 
                                 showDeadlineModal(false)           
                                 updateGoalInfo()
                                 }}>
-                            <Image 
-                                style={styles.icon}
-                                source = {require('./ok_icon.png')}/>         
+                            <AntDesign name="check" size={40} color="black" />        
                         </TouchableOpacity>        
-                    </View>
-                </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
             </Modal>
         </View>       
     );
@@ -455,11 +457,14 @@ const styles = StyleSheet.create({
     },
     dropdown:{
         //flex:1,
-        borderRadius:8,
+        borderRadius: 20,
         width: 200,
         alignSelf: 'center',
         marginLeft: -50
       },
+    // dropdownRow:{
+    //     backgroundColor: 'red'
+    // },
     datesBox: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -509,13 +514,17 @@ const styles = StyleSheet.create({
             justifyContent:'center'       
         },
     modalContent:{
+        height: '10%',
+        flexDirection: 'row',
         backgroundColor: 'white',
-        alignSelf: 'center',
-        margin: 20,
-        padding: 20,
+        width: '85%',
+        paddingVertical: '4%',
+        paddingHorizontal: '2%',
         borderWidth: 1,
-        borderColor: "grey",
-        borderRadius: 20
+        borderRadius: 15,
+        borderColor: 'grey',
+        alignSelf: 'center',
+        justifyContent: 'space-around'
     },
     row: {
         paddingHorizontal: 10,
@@ -531,7 +540,7 @@ const styles = StyleSheet.create({
         padding: 10, 
         fontSize: 20 
     },
-    icon: {
+    icon: { //delete this
         width: 70,                                      
         height: 70,
         borderWidth: 1,
@@ -540,33 +549,50 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginTop:10,  
     },
-    datePickerContainer:{
-        height: 100,
-        width: '80%',
-        // borderWidth: 1,
-        // borderColor: "grey",
-        // borderRadius: 5
+    okIcon:{
+        //alignSelf: 'flex-end', 
+        backgroundColor: 'rgb(84, 201, 107)',
+        borderWidth: 3,
+        borderRadius: 13,
+        //marginVertical: 10
     },
-    flexBox: {
+    datePickerContainer:{
+        //height: '100%',
+        width: '80%',
+        borderWidth: 1,
+        borderColor: "grey",
+        borderRadius: 10,
         flex:1,
         flexDirection: 'row',
         //width: '80%',
-        alignSelf: 'center',
+        //alignSelf: 'center',
         //marginBottom: '10%',
         backgroundColor: 'white',
         alignItems: 'center',
         justifyContent: 'space-between',
-        borderWidth: 1,
-        borderColor: "grey",
-        borderRadius: 20
+        marginHorizontal: 15
     },
+    // flexBox: {
+    //     flex:1,
+    //     flexDirection: 'row',
+    //     //width: '80%',
+    //     alignSelf: 'center',
+    //     //marginBottom: '10%',
+    //     backgroundColor: 'white',
+    //     alignItems: 'center',
+    //     justifyContent: 'space-between',
+    //     borderWidth: 1,
+    //     borderColor: "grey",
+    //     borderRadius: 20
+    // },
     datePickerColumn:{
-        padding: 5,
+        paddingVertical: 10,
         width:'33%'
     },  
     datePickerItem:{
-        backgroundColor: 'white',
-        width: '100%',
-        alignItems: "center"
+        //backgroundColor: 'white',
+        //width: '100%',
+        alignItems: "center", 
+        margin: 5
     }, 
 });
