@@ -118,8 +118,8 @@ export default function HomeScreen({navigation, route}) {
     if (text.trim() != "" ){ 
       let newGoal = { 
         text: text,
-        timeRange: null,  
-        deadline: {}      
+        timeRange: '--',  
+        deadline: {month: '--', date: '--', year: '--'}      
       }
       let goals = [...goalsData]
       goals[currentGoalId-1].goal = newGoal  // state itemId-1 == goal's index in goalData array
@@ -147,6 +147,18 @@ export default function HomeScreen({navigation, route}) {
     AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))   
   }
 
+  const moveGoal = (goalObj) => {
+    goalObj.goal.text = `COMPLETED \n${goalObj.goal.text}`
+    let newGoalsData = [...goalsData]
+    newGoalsData.push({goal: goalObj.goal, id: newGoalsData.length, color: 'rgb(170, 170, 170)', calendar: goalObj.calendar})
+   
+    let goalForDeletion = newGoalsData[goalObj.id-1]
+    goalForDeletion.goal = false
+    goalForDeletion.calendar = generateInitialCalendar()
+    updateGoals(newGoalsData)
+    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
+  }
+
   const editCell = (updatedCalendarData, goalId)  => {
     // invoke by editCellHandler - a prop for GoalScreen
     // edit switch value and note
@@ -164,21 +176,21 @@ export default function HomeScreen({navigation, route}) {
 
   const getWidth = (gId) => {
     let width;
-    let dimentions = [0, 200, 150, 100, 240, 130, 200, 250, 90, 110, 230, 200, 150]
+    let dimentions = [0, 200, 150, 100, 240, 130, 200, 250, 90, 110, 230, 200, 150,  200, 150, 100, 240, 130, 200, 250, 90, 110, 230, 200, 150]
     width = dimentions[gId]
     return width
   }
 
   const getHeight = (gId) => {
     let height;
-    let dimentions = [0, 100, 100, 90, 100, 130, 110, 100, 110, 110, 110, 130, 100, 100]
+    let dimentions = [0, 100, 100, 90, 100, 130, 110, 100, 110, 110, 110, 130, 100, 100,  100, 100, 90, 100, 130, 110, 100, 110, 110, 110, 130, 100, 100]
     height = dimentions[gId]
     return height
   }
   
   const getMargin = (id) => {
     let margin;
-    let number = [0, 5, 5, 10, 5, 5, 15, 5, 5, 1, 10, 5, 5]
+    let number = [0, 5, 5, 10, 5, 5, 15, 5, 5, 1, 10, 5, 5,   5, 5, 10, 5, 5, 15, 5, 5, 1, 10, 5, 5]
     margin = number[id]
     return margin
   }
@@ -187,7 +199,7 @@ export default function HomeScreen({navigation, route}) {
       <View style={styles.container}>
            {/* {AsyncStorage.removeItem('storedData') }     */}
         
-        {/* {console.log('homescreen', goalsData)} */}
+        {/* {console.log('homescreen', goalsData[13].goal.deadline)} */}
         <View style={styles.itemBox}>
           <FlatList        // render containers with goals OR empty conteiners
               data={goalsData}
@@ -207,6 +219,7 @@ export default function HomeScreen({navigation, route}) {
                               deleteHandler: deleteGoal, 
                               editCellHandler: editCell,
                               editGoalHandler: editGoal,
+                              moveGoalHandler: moveGoal
                             }):                                       
                             showModal(!modal), setCurrentGoalId(item.id)              
                       }}>
@@ -230,14 +243,6 @@ export default function HomeScreen({navigation, route}) {
                           onPress={e => {// do not close modal if anything inside modal content is clicked
                               e.stopPropagation()
                           }}> 
-                          {/* <TouchableOpacity /////!!!!! MAY BE NEED IT LATER
-                                style={styles.closeIcon}
-                                onPress={() => { 
-                                  showModal(!modal) 
-                                  updateText('')
-                                }}>
-                            <AntDesign name="close" size={35} color="black" />
-                          </TouchableOpacity> */}
                         <TextInput  
                             style={styles.inputField}
                             autoFocus={true} 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen.js';
@@ -31,7 +32,7 @@ export default function App() {
                     // goalObject is a prop comes from HomeScreen.js onPress 
                   headerStyle: {
                       backgroundColor: 'rgb(104, 149, 197)', 
-                      height: 70
+                      height: 70,
                   }
               })
           }       

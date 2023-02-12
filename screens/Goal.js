@@ -7,21 +7,23 @@ import { AntDesign } from '@expo/vector-icons';
 export default function Goal({navigation, route}) {
  
     const goalObject = route.params.goalObject;
+    const goalCompleted = goalObject.goal.text.includes('COMPLETED')
     
     const [calendarData, updateCalendarData] = useState(goalObject.calendar)
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
     const [deleteModal, showDeleteModal] = useState(false)
     const [deadlineModal, showDeadlineModal] = useState(false)
+    const [deadlineReachedModal, showDeadlineReachedModal] = useState(false)
     const [currentCell, updateCurrentCell] = useState(null) 
-    const [selectedDate, updateDate] = useState('-')
-    const [selectedMonth, updateMonth] = useState('-')
-    const [selectedYear, updateYear] = useState('-')
-    //const [selectedTimeRange, updateTimeRange] = useState(goalObject.goal.timeRange)
+    const [selectedDate, updateDate] = useState(goalObject.goal.deadline.date)
+    const [selectedMonth, updateMonth] = useState(goalObject.goal.deadline.month)
+    const [selectedYear, updateYear] = useState(goalObject.goal.deadline.year)
    
-    useEffect(() => {getCurrentMonth()},[])
+    useEffect(() => {getCurrentMonth(), isDeadlineReached()},[])
+    useEffect(() => {console.log('change')},[goalObject])
         
-    const monthArray = ["Jan","Feb","Mar","Apr","May","June","July",
+    const monthArray = ["--", "Jan","Feb","Mar","Apr","May","June","July",
                       "Aug","Sep","Oct","Nov","Dec"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
     const rangeData = ["---" , "One time", "Every day", "Every other day",  "2 times a week",
@@ -29,20 +31,41 @@ export default function Goal({navigation, route}) {
      
 
     const getCurrentMonth = () => {
-        const currentDate = new Date()
-        const currentYear = currentDate.getFullYear()
-        const currentMonth = currentDate.getMonth() // output 0 to 11
+        const date = new Date()
+        const currentYear = date.getFullYear()
+        const currentMonth = date.getMonth() // output 0 to 11
         let currentMo = calendarData.find( 
-                obj => obj.month === monthArray[currentMonth]
+                obj => obj.month === monthArray[currentMonth+1]
                 && obj.year === currentYear    
         )  
-        setCurrentMonth(currentMo.id)      
+        setCurrentMonth(currentMo.id)  
+    }   
+    
+    const isDeadlineReached = () => {
+        if(!goalObject.goal.text.includes('COMPLETED')){
+            const date = new Date()
+            const currentYear = date.getFullYear()
+            const currentMonth = date.getMonth() // output 0 to 11
+            const currentDate = date.getDate() 
+
+            if((goalObject.goal.deadline.year < currentYear) || 
+                (goalObject.goal.deadline.year == currentYear &&
+                monthArray.indexOf(goalObject.goal.deadline.month) < monthArray[currentMonth+1]
+                ) ||
+                (goalObject.goal.deadline.year == currentYear &&
+                goalObject.goal.deadline.month == monthArray[currentMonth]&&
+                goalObject.goal.deadline.date <= currentDate
+                )
+            ){ 
+                showDeadlineReachedModal(true)
+            }
+        } 
     }
 
     const datesArray = () => {
         // generates dates for goal deadline container
         // need to fix: allowed to chose dayte 31 for all months
-        let array = [{id: 0, date: "-"}];
+        let array = [{id: 0, date: "--"}];
         for(let i = 1; i <= 31; i++){
           let newDate = {id: i, date: i}
           array.push(newDate);
@@ -52,7 +75,7 @@ export default function Goal({navigation, route}) {
 
     const yearsArray = () => {
         // generate years array for deadline container
-        let array = [{id: 0, year: "-"}];
+        let array = [{id: 0, year: "--"}];
         let year = new Date().getFullYear()
         for(let i = year; i <= year+10; i++){
           let newYear = {id: i, year: i}
@@ -105,7 +128,7 @@ export default function Goal({navigation, route}) {
 
     return (
         <View style={styles.container}> 
-        {/* {console.log('in goal - goal obj', goalObject.calendar)} */}
+        {/* {console.log('in goal - goal obj')} */}
                 {calendarData && currentMonth ?
                     <>
                     <View style = {styles.buttonContainer}>
@@ -126,8 +149,11 @@ export default function Goal({navigation, route}) {
                         </TouchableOpacity>
                 
                         <SelectDropdown 
-                            data = {rangeData}
-                            defaultButtonText = {rangeData[0]}
+                            data = {goalCompleted?
+                                ['Can not change it',  'Goal is completed']:
+                                rangeData
+                            }
+                            defaultButtonText = {goalObject.goal.timeRange} 
                             buttonStyle = {styles.buttons}
                             dropdownStyle = {styles.dropdown}
                             //rowStyle={}
@@ -215,39 +241,53 @@ export default function Goal({navigation, route}) {
                 <Modal // cellModal
                     transparent = {true} 
                     visible = {cellModal}>
-                    <View style={styles.modal}>
-                        <View style={styles.modalContent}>
-                            <TouchableOpacity  
-                                style={{ alignSelf: 'flex-end'}}
-                                onPress={() => { 
-                                    showCellModal(false)
-                                }}>
-                                <Image style={{width: 40, height: 40}}
-                                       source = {require('./close_icon.png')}/>
-                            </TouchableOpacity>
-                            
-                            <View style = {styles.row}>
-                                <Text >Not Done</Text>
-                                <Switch 
-                                    onValueChange={value=> {isGoalDone(value)}}
-                                    style = {{transform: [{ scaleX: 2 }, { scaleY: 2 }], margin: 40}}
-                                    value = {currentCell? currentCell.done : false}
-                                    trackColor={{false: 'rgb(224, 224, 224)', true: 'yellow'}}
-                                    thumbColor='grey'                                  
-                                />
-                                <Text >Done</Text>                              
-                            </View>
+                    <TouchableOpacity 
+                        onPress={()=>showCellModal(false)}
+                        style={styles.modal}>
+                        {goalCompleted?
+                            <>
+                            <Text style={[styles.modalContent, {height: '10%', fontSize: 18, textAlign: 'center'}]}>
+                                Can not change it. Goal is completed
+                            </Text>
+                            </>:
+                            <TouchableOpacity 
+                                activeOpacity={1} // disable highlighting effect
+                                onPress={e => {// do not close modal if anything inside modal content is clicked
+                                    e.stopPropagation()
+                                }}
+                                style={[styles.modalContent, {flexDirection: 'column', height: '40%', paddingHorizontal: '4%'}]}>
+                                
+                                <View style = {styles.row}>
+                                    <Text >Not Done</Text>
+                                    <Switch 
+                                        onValueChange={value=> {isGoalDone(value)}}
+                                        style = {{transform: [{ scaleX: 2 }, { scaleY: 2 }]}}
+                                        value = {currentCell? currentCell.done : false}
+                                        trackColor={{false: 'rgb(224, 224, 224)', true: 'yellow'}}
+                                        thumbColor='grey'                                  
+                                    />
+                                    <Text >Done</Text>                              
+                                </View>
 
-                            <TextInput  
-                                style={styles.inputField}
-                                autoFocus={true} 
-                                placeholder='enter note'
-                                onChangeText = {enteredText => {editNote(enteredText)}}                   
-                                multiline={true}  
-                                value = {currentCell? currentCell.note : null}
-                            />       
-                        </View>
-                    </View>
+                                <TextInput  
+                                    style={styles.inputField}
+                                    autoFocus={true} 
+                                    placeholder='enter note'
+                                    onChangeText = {enteredText => {editNote(enteredText)}}                   
+                                    multiline={true}  
+                                    value = {currentCell? currentCell.note : null}
+                                /> 
+
+                                <TouchableOpacity  // Do i need this?
+                                    style = {[styles.okIcon, {marginHorizontal: '43%'}]} 
+                                    onPress={() => {           
+                                        console.log('edit')
+                                        }}>
+                                    <AntDesign name="check" size={40} color="black" />
+                                </TouchableOpacity>           
+                            </TouchableOpacity>
+                        }
+                    </TouchableOpacity>
                 </Modal>     
            
             <Modal // deleteModal
@@ -279,101 +319,146 @@ export default function Goal({navigation, route}) {
                 transparent = {true} 
                 visible = {deadlineModal}>
                 <TouchableOpacity 
-                    onPress={()=>showDeadlineModal(false)}
+                    onPress={()=>{showDeadlineModal(false)}}
                     style={styles.modal}>
-                    <TouchableOpacity 
+                    {goalCompleted?
+                        <Text 
+                            style={[styles.modalContent, {height: '10%', fontSize: 18, textAlign: 'center'}]}>
+                                Can not change it. Goal is completed
+                        </Text>   
+                        :   
+                        <TouchableOpacity 
+                            activeOpacity={1}
+                            onPress={e => {// do not close modal if anything inside modal content is clicked
+                                e.stopPropagation()
+                            }}
+                            style={[styles.modalContent, {height: '25%'}]}>
+
+                            <View style={styles.datePickerContainer}> 
+                                    <View style={styles.datePickerColumn}>
+                                        <FlatList 
+                                            data={datesArray()}
+                                            numColumns={1}
+                                            renderItem={({item}) =>
+                                            <TouchableOpacity 
+                                                style={ styles.datePickerItem }
+                                                key={item.id}
+                                                onPress={() => {updateDate(item.date)}}>
+                                                <Text style={
+                                                    goalObject.goal.deadline.date == item.date && selectedDate == '-' // for the first time opening
+                                                    || selectedDate == item.date ?
+                                                    {fontSize:20, color: 'red'} : 
+                                                    {color: 'black'}
+                                                    }>
+                                                {item.date}
+                                                </Text>                                      
+                                            </TouchableOpacity>   
+                                            }
+                                        /> 
+                                    </View> 
+
+                                    <View style={styles.datePickerColumn}>
+                                        <FlatList 
+                                            data={monthArray}
+                                            numColumns={1}
+                                            keyExtractor={(index) => index.toString()} // react throw the error if there is no keys
+                                            renderItem={({item}) =>
+                                                <TouchableOpacity   
+                                                    style={styles.datePickerItem}
+                                                    onPress={() => updateMonth(item)}>  
+                                                    <Text style={ 
+                                                        goalObject.goal.deadline.month == item && selectedMonth == '-' // for the first time opening
+                                                        || selectedMonth == item ?
+                                                        {fontSize:20, color: 'red'} : 
+                                                        {color: 'black'}
+                                                    }>
+                                                    {item}</Text>               
+                                                </TouchableOpacity>   
+                                            }
+                                        />         
+                                    </View> 
+                    
+                                    <View style={styles.datePickerColumn}>
+                                        <FlatList 
+                                            data={yearsArray()}
+                                            numColumns={1}
+                                            renderItem={({item}) =>
+                                                <TouchableOpacity   
+                                                    style={styles.datePickerItem}
+                                                    key={item.id}
+                                                    onPress={() => updateYear(item.year)}>      
+                                                        <Text style={
+                                                            goalObject.goal.deadline.year == item.year && selectedYear == '-' // for the first time opening
+                                                            || selectedYear == item.year ? 
+                                                            {fontSize:20, color: 'red'} : 
+                                                            {color: 'black'}
+                                                        }>
+                                                    {item.year}</Text>                      
+                                                </TouchableOpacity>   
+                                            }
+                                        />         
+                                    </View> 
+                            </View>      
+                            
+                            <TouchableOpacity
+                                style = {[styles.okIcon, {marginVertical: '16%', marginRight: 5}]} 
+                                onPress={() => { 
+                                    showDeadlineModal(false)           
+                                    updateGoalInfo()
+                                    isDeadlineReached()
+                                    }}>
+                                <AntDesign name="check" size={40} color="black" />        
+                            </TouchableOpacity>        
+                        </TouchableOpacity>
+                    }
+                </TouchableOpacity>
+            </Modal>
+
+            <Modal // deadlineReached modal
+                transparent = {true} 
+                visible = {deadlineReachedModal}>
+                <TouchableOpacity
+                    onPress={()=>{showDeadlineReachedModal(false)}}
+                    style={styles.modal}>
+                    <TouchableOpacity
                         activeOpacity={1}
                         onPress={e => {// do not close modal if anything inside modal content is clicked
                             e.stopPropagation()
                         }}
-                        style={[styles.modalContent, {height: '25%'}]}>
-                        {/* <TouchableOpacity  
-                            onPress={() => {
-                                showDeadlineModal(false), 
-                                updateDate('-'),
-                                updateMonth('-'),
-                                updateYear('-')                      
-                            }}
-                            style={{ alignSelf: 'flex-end'}}>
-                            <Image   
-                                style={{width: 40, height: 40}}
-                                source = {require('./close_icon.png')}/>
-                        </TouchableOpacity>   */}
+                        style={[styles.modalContent, {height: '25%', flexDirection: 'column'}]}>
+                        <View style = {{flexDirection: 'row', justifyContent: 'space-around'}}>
+                            <Text style = {styles.buttonText}>Goal reached a deadline</Text>       
+                        </View>
+                        <View style={{flexDirection:'row', justifyContent: 'space-around'}}>
+                            <TouchableOpacity 
+                                onPress={()=> {
+                                    navigation.navigate("HomeScreen"),
+                                    route.params.moveGoalHandler(goalObject)
+                                }}
+                                style = {[styles.button, {width: '40%'}]}>
+                                <Text>Move goal to completed folder</Text>
+                            </TouchableOpacity>
+                            <View style = {{width: '40%'}}>
+                                <TouchableOpacity 
+                                        onPress={() =>{
+                                            showDeadlineReachedModal(false) 
+                                            showDeadlineModal(true)
+                                        }}
+                                        style = {[styles.button, {width: '95%', marginBottom: 5}]}>
+                                        <Text>Extend deadline</Text>
+                                </TouchableOpacity>
 
-                        <View style={styles.datePickerContainer}> 
-                                <View style={styles.datePickerColumn}>
-                                    <FlatList 
-                                        data={datesArray()}
-                                        numColumns={1}
-                                        renderItem={({item}) =>
-                                        <TouchableOpacity 
-                                            style={ styles.datePickerItem }
-                                            key={item.id}
-                                            onPress={() => {updateDate(item.date)}}>
-                                            <Text style={
-                                                goalObject.goal.deadline.date == item.date && selectedDate == '-' // for the first time opening
-                                                || selectedDate == item.date ?
-                                                {fontSize:20, color: 'red'} : 
-                                                {color: 'black'}
-                                                }>
-                                              {item.date}
-                                            </Text>                                      
-                                        </TouchableOpacity>   
-                                        }
-                                    /> 
-                                </View> 
-
-                                <View style={styles.datePickerColumn}>
-                                    <FlatList 
-                                        data={monthArray}
-                                        numColumns={1}
-                                        keyExtractor={(index) => index.toString()} // react throw the error if there is no keys
-                                        renderItem={({item}) =>
-                                            <TouchableOpacity   
-                                                style={styles.datePickerItem}
-                                                onPress={() => updateMonth(item)}>  
-                                                <Text style={ 
-                                                    goalObject.goal.deadline.month == item && selectedMonth == '-' // for the first time opening
-                                                    || selectedMonth == item ?
-                                                    {fontSize:20, color: 'red'} : 
-                                                    {color: 'black'}
-                                                }>
-                                                {item}</Text>               
-                                            </TouchableOpacity>   
-                                        }
-                                    />         
-                                </View> 
-                
-                                <View style={styles.datePickerColumn}>
-                                    <FlatList 
-                                        data={yearsArray()}
-                                        numColumns={1}
-                                        renderItem={({item}) =>
-                                            <TouchableOpacity   
-                                                style={styles.datePickerItem}
-                                                key={item.id}
-                                                onPress={() => updateYear(item.year)}>      
-                                                    <Text style={
-                                                        goalObject.goal.deadline.year == item.year && selectedYear == '-' // for the first time opening
-                                                        || selectedYear == item.year ? 
-                                                        {fontSize:20, color: 'red'} : 
-                                                        {color: 'black'}
-                                                    }>
-                                                {item.year}</Text>                      
-                                            </TouchableOpacity>   
-                                        }
-                                    />         
-                                </View> 
-                        </View>      
-                        
-                        <TouchableOpacity
-                            style = {[styles.okIcon, {marginVertical: '19%', marginRight: 5}]} 
-                            onPress={() => { 
-                                showDeadlineModal(false)           
-                                updateGoalInfo()
-                                }}>
-                            <AntDesign name="check" size={40} color="black" />        
-                        </TouchableOpacity>        
+                                <TouchableOpacity 
+                                    onPress={()=> {
+                                        navigation.navigate("HomeScreen"),
+                                        route.params.deleteHandler(goalObject)
+                                    }}
+                                    style = {[styles.button, {width: '95%', marginTop: 5}]}>
+                                    <Text>Delete goal</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>                   
+                       
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
@@ -494,15 +579,16 @@ const styles = StyleSheet.create({
         textAlignVertical: 'center'
     },
     button:{
-        width: "40%",
+        //width: "40%",
         borderWidth: 2,
         borderBottomWidth: 4,
         borderRightWidth: 4, 
         borderColor: 'rgb(104, 149, 197)',
-        backgroundColor:"yellow",
-        borderRadius:8,
+        //backgroundColor:"yellow",
+        borderRadius: 10,
         padding: 10,
-        alignSelf: 'center'
+        alignSelf: 'center',
+        fontSize: 18,
         },
     buttonText: {
         fontSize: 18,
@@ -527,18 +613,21 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around'
     },
     row: {
-        paddingHorizontal: 10,
+        paddingHorizontal: 15,
         flexDirection: 'row', 
         justifyContent: 'space-around',
         alignItems: 'center'
     },
-    inputField:{
+    inputField:{ // need to fix
         borderWidth: 1,
         borderColor: 'grey',
-        borderRadius:8,
-        height:100, 
-        padding: 10, 
-        fontSize: 20 
+        borderRadius: 13,
+        height: '40%', 
+        paddingTop: 3,
+        paddingLeft: 10, 
+        paddingBottom: 5,
+        fontSize: 20 ,
+        
     },
     icon: { //delete this
         width: 70,                                      
