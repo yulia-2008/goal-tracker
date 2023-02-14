@@ -21,7 +21,7 @@ export default function Goal({navigation, route}) {
     const [selectedYear, updateYear] = useState(goalObject.goal.deadline.year)
    
     useEffect(() => {getCurrentMonth(), isDeadlineReached()},[])
-    useEffect(() => {console.log('change')},[goalObject])
+    useEffect(() => {console.log('cur-mo', currentMonth)},[goalObject])
         
     const monthArray = ["--", "Jan","Feb","Mar","Apr","May","June","July",
                       "Aug","Sep","Oct","Nov","Dec"]
@@ -60,6 +60,9 @@ export default function Goal({navigation, route}) {
                 showDeadlineReachedModal(true)
             }
         } 
+        // working here
+        // console.log('1', monthArray.indexOf(goalObject.goal.deadline.month)) - output 0
+        // console.log('2', monthArray[currentMonth+1]) -output undefined
     }
 
     const datesArray = () => {
@@ -451,7 +454,7 @@ export default function Goal({navigation, route}) {
                                 <TouchableOpacity 
                                     onPress={()=> {
                                         navigation.navigate("HomeScreen"),
-                                        route.params.deleteHandler(goalObject)
+                                        route.params.deleteHandler(goalObject.id)
                                     }}
                                     style = {[styles.button, {width: '95%', marginTop: 5}]}>
                                     <Text>Delete goal</Text>

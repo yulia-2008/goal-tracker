@@ -142,16 +142,15 @@ export default function HomeScreen({navigation, route}) {
     let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
     let foundGoal = newGoalsData[goalId-1]
 
-    if(foundGoal.goal.text.includes('COMPLETED')){
+    if(foundGoal.goal.text.includes('COMPLETED')){ // deleted completed goal
       newGoalsData = newGoalsData.filter(obj => obj.id !== goalId)     
     }
-    else{
+    else{ // clear info in goal 
       foundGoal.goal = false
       foundGoal.calendar = generateInitialCalendar()
     }  
     updateGoals(newGoalsData)
-    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
-    
+    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))    
   }
 
   const moveGoal = (goalObj) => {
