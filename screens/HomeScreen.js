@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { StyleSheet, Text, TextInput, View, TouchableOpacity, TouchableWithoutFeedback,
-         Keyboard, FlatList, Modal} from 'react-native';
+import { StyleSheet, Text, TextInput, View, TouchableOpacity, 
+         FlatList, Modal} from 'react-native';
 import { AntDesign } from '@expo/vector-icons'; 
 
 
@@ -141,17 +141,25 @@ export default function HomeScreen({navigation, route}) {
       //update goals in state and AsyncStorage 
     let newGoalsData = [...goalsData] //spread operator need for React recognized that array has been changed
     let foundGoal = newGoalsData[goalId-1]
-    foundGoal.goal = false
-    foundGoal.calendar = generateInitialCalendar()
+
+    if(foundGoal.goal.text.includes('COMPLETED')){
+      newGoalsData = newGoalsData.filter(obj => obj.id !== goalId)     
+    }
+    else{
+      foundGoal.goal = false
+      foundGoal.calendar = generateInitialCalendar()
+    }  
     updateGoals(newGoalsData)
-    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))   
+    AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData)) 
+    
   }
 
   const moveGoal = (goalObj) => {
+      // creates new item in the end of list - completed goal
     goalObj.goal.text = `COMPLETED \n${goalObj.goal.text}`
     let newGoalsData = [...goalsData]
-    newGoalsData.push({goal: goalObj.goal, id: newGoalsData.length, color: 'rgb(170, 170, 170)', calendar: goalObj.calendar})
-   
+    newGoalsData.push({goal: goalObj.goal, id: newGoalsData.length+1, color: 'rgb(170, 170, 170)', calendar: goalObj.calendar})
+      // clear goal info
     let goalForDeletion = newGoalsData[goalObj.id-1]
     goalForDeletion.goal = false
     goalForDeletion.calendar = generateInitialCalendar()
@@ -224,8 +232,8 @@ export default function HomeScreen({navigation, route}) {
                             showModal(!modal), setCurrentGoalId(item.id)              
                       }}>
                       {item.goal?  
-                        <Text style={{color: 'black'}}>{item.goal.text}</Text>:
-                        <Text style={{color: 'rgb(160, 160, 160)'}}>New Goal</Text>               
+                        <Text style={{color: 'black'}}>{item.goal.text}{item.id}</Text>:
+                        <Text style={{color: 'rgb(160, 160, 160)'}}>New Goal {item.id}</Text>               
                       }  
                   </TouchableOpacity>   
               }         

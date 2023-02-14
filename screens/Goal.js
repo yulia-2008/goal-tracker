@@ -278,7 +278,7 @@ export default function Goal({navigation, route}) {
                                     value = {currentCell? currentCell.note : null}
                                 /> 
 
-                                <TouchableOpacity  // Do i need this?
+                                <TouchableOpacity  // Do i need this? saves automaticly
                                     style = {[styles.okIcon, {marginHorizontal: '43%'}]} 
                                     onPress={() => {           
                                         console.log('edit')
