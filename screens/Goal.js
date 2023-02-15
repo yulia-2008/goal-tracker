@@ -28,41 +28,36 @@ export default function Goal({navigation, route}) {
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
     const rangeData = ["---" , "One time", "Every day", "Every other day",  "2 times a week",
             "3 times a week", "Every week", "Every 2 weeks", "Every month", "2 times a month"]
-     
+
+    const date = new Date()
+    const currYear = date.getFullYear()
+    const currMonth = date.getMonth() // output 0 to 11 
+    const currDate = date.getDate() 
 
     const getCurrentMonth = () => {
-        const date = new Date()
-        const currentYear = date.getFullYear()
-        const currentMonth = date.getMonth() // output 0 to 11
+        // find object id in calendarData array
         let currentMo = calendarData.find( 
-                obj => obj.month === monthArray[currentMonth+1]
-                && obj.year === currentYear    
+                obj => obj.month === monthArray[currMonth+1]
+                && obj.year === currYear    
         )  
         setCurrentMonth(currentMo.id)  
     }   
     
     const isDeadlineReached = () => {
-        if(!goalObject.goal.text.includes('COMPLETED')){
-            const date = new Date()
-            const currentYear = date.getFullYear()
-            const currentMonth = date.getMonth() // output 0 to 11
-            const currentDate = date.getDate() 
+        if(!goalObject.goal.text.includes('COMPLETED')){ 
 
-            if((goalObject.goal.deadline.year < currentYear) || 
-                (goalObject.goal.deadline.year == currentYear &&
-                monthArray.indexOf(goalObject.goal.deadline.month) < monthArray[currentMonth+1]
+            if((goalObject.goal.deadline.year < currYear) || 
+                (goalObject.goal.deadline.year == currYear &&
+                monthArray.indexOf(goalObject.goal.deadline.month) < monthArray.indexOf(monthArray[currMonth+1])
                 ) ||
-                (goalObject.goal.deadline.year == currentYear &&
-                goalObject.goal.deadline.month == monthArray[currentMonth]&&
-                goalObject.goal.deadline.date <= currentDate
+                (goalObject.goal.deadline.year == currYear &&
+                goalObject.goal.deadline.month == monthArray[currMonth+1]&&
+                goalObject.goal.deadline.date <= currDate
                 )
             ){ 
                 showDeadlineReachedModal(true)
             }
         } 
-        // working here
-        // console.log('1', monthArray.indexOf(goalObject.goal.deadline.month)) - output 0
-        // console.log('2', monthArray[currentMonth+1]) -output undefined
     }
 
     const datesArray = () => {
@@ -119,6 +114,7 @@ export default function Goal({navigation, route}) {
     }
     
     const updateGoalInfo = (param) => {
+         // updating timeRange and deadline
         let newGoalObject = Object.assign({}, goalObject)
         if(param){// param == selectedItem // for updating timeRange
            newGoalObject.goal.timeRange = param

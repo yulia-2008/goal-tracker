@@ -181,32 +181,52 @@ export default function HomeScreen({navigation, route}) {
     AsyncStorage.setItem("storedData", JSON.stringify(newGoalsData))
   }
 
-  const getWidth = (gId) => {
+  const getWidth = (id) => {
     let width;
-    let dimentions = [0, 200, 150, 100, 240, 130, 200, 250, 90, 110, 230, 200, 150,  200, 150, 100, 240, 130, 200, 250, 90, 110, 230, 200, 150]
-    width = dimentions[gId]
+    let dimentions = [0, 200, 150, 100, 240, 130, 200, 250, 90, 110, 230]
+    if (id <= 10){
+      width = dimentions[id]
+    } 
+    else{
+      let str  = String(id)
+      let num = Number(str[str.length-1])
+      width = dimentions[num]
+    }
     return width
   }
 
-  const getHeight = (gId) => {
+  const getHeight = (id) => {
     let height;
-    let dimentions = [0, 100, 100, 90, 100, 130, 110, 100, 110, 110, 110, 130, 100, 100,  100, 100, 90, 100, 130, 110, 100, 110, 110, 110, 130, 100, 100]
-    height = dimentions[gId]
+    let dimentions = [0, 100, 100, 90, 100, 130, 110, 100, 110, 110, 110]
+    if (id <= 10){
+      height = dimentions[id]
+    } 
+    else{
+      let str  = String(id)
+      let num = Number(str[str.length-1])
+      height = dimentions[num]
+    }
     return height
   }
   
   const getMargin = (id) => {
     let margin;
-    let number = [0, 5, 5, 10, 5, 5, 15, 5, 5, 1, 10, 5, 5,   5, 5, 10, 5, 5, 15, 5, 5, 1, 10, 5, 5]
-    margin = number[id]
+    let dimentions = [0, 5, 5, 10, 5, 5, 15, 5, 5, 1, 10]
+    if (id <= 10){
+      margin = dimentions[id]
+    } 
+    else{
+      let str  = String(id)
+      let num = Number(str[str.length-1])
+      margin = dimentions[num]
+    }
     return margin
   }
 
   return (
       <View style={styles.container}>
            {/* {AsyncStorage.removeItem('storedData') }     */}
-        
-        {/* {console.log('homescreen', goalsData[13].goal.deadline)} */}
+     
         <View style={styles.itemBox}>
           <FlatList        // render containers with goals OR empty conteiners
               data={goalsData}
