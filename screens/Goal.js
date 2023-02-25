@@ -13,12 +13,16 @@ export default function Goal({navigation, route}) {
     const [currentMonth, setCurrentMonth] = useState(null)
     const [cellModal, showCellModal] = useState(false)
     const [deleteModal, showDeleteModal] = useState(false)
-    const [deadlineModal, showDeadlineModal] = useState(false)
+    const [datePickerModal, showDatePickerModal] = useState(false)
     const [deadlineReachedModal, showDeadlineReachedModal] = useState(false)
+    const [timeRangeModal, showTimeRangeModal] = useState(goalObject.goal.timeRange)
     const [currentCell, updateCurrentCell] = useState(null) 
     const [selectedDate, updateDate] = useState(goalObject.goal.deadline.date)
     const [selectedMonth, updateMonth] = useState(goalObject.goal.deadline.month)
     const [selectedYear, updateYear] = useState(goalObject.goal.deadline.year)
+    const [buttonClicked, updateValue] = useState(false)
+    const [switchValue, updateSwitch] = useState(false)
+    const [note, updateNote] = useState('')
    
     useEffect(() => {getCurrentMonth(), isDeadlineReached()},[])
     useEffect(() => {console.log('cur-mo', currentMonth)},[goalObject])
@@ -26,7 +30,7 @@ export default function Goal({navigation, route}) {
     const monthArray = ["--", "Jan","Feb","Mar","Apr","May","June","July",
                       "Aug","Sep","Oct","Nov","Dec"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
-    const rangeData = ["---" , "One time", "Every day", "Every other day",  "2 times a week",
+    const rangeData = ['- -' , "One time", "Every day", "Every other day",  "2 times a week",
             "3 times a week", "Every week", "Every 2 weeks", "Every month", "2 times a month"]
 
     const date = new Date()
@@ -89,40 +93,90 @@ export default function Goal({navigation, route}) {
         return color
     }
 
-    const defineBorderStyle = (note) => { 
-        // borderStyle is different if a day has a note 
-        // borderStyle works only with borderRadius  
-        let borderStyle;
-        note.trim() != "" ? borderStyle = 'solid' : borderStyle = 'dotted'
-        return borderStyle  
+    const defineNoteValue = () => {
+        console.log('het')
     }
 
-    const editNote = (text) => {  
-        // updateting calendarData and go to HomeScreen for updating Async Storage 
-        let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
-        newCalendarData[currentMonth].dates[currentCell.id].note = text              
-        updateCalendarData(newCalendarData)
-        route.params.editCellHandler(newCalendarData, goalObject.id)
+    const defineSwitchValue = () => {
+        //console.log('currentCell', currentCell)
+       // state switchValue should initiate from object
+       // on switch changining that state should change
+        let value;
+        currentCell.done ?  value = true : value = false
+        // mess here
+        return value
+        
     }
-    const isGoalDone = (value) => {
-        // invoking by changing switch 
+
+    // const defineBorderStyle = (note) => {    old solution
+    //     // borderStyle is different if a day has a note 
+    //     // borderStyle works only with borderRadius  
+    //     let borderStyle;
+    //     note.trim() != "" ? borderStyle = 'solid' : borderStyle = 'dotted'
+    //     return borderStyle  
+    // }
+
+    const definePadding = (note) => { 
+        // need to insert '!' if the date has a note => need more space and less padding  
+        let padding;
+        note.trim() != "" ? padding = 2 : padding = 10
+        return padding  
+    }
+
+    // const editNote = (text) => {  old solution
+    //     // updateting calendarData and go to HomeScreen for updating Async Storage 
+    //     let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
+    //     newCalendarData[currentMonth].dates[currentCell.id].note = text              
+    //     updateCalendarData(newCalendarData)
+    //     route.params.editCellHandler(newCalendarData, goalObject.id)
+    // }
+    // const isGoalDone = (value) => { old solution
+    //     // invoking by changing switch 
+    //     // updateting calendarData and go to HomeScreen for updating Async Storage 
+    //     let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
+    //     newCalendarData[currentMonth].dates[currentCell.id].done = value           
+    //     updateCalendarData(newCalendarData)
+    //     route.params.editCellHandler(newCalendarData, goalObject.id)     
+    // }
+
+    const editDate = () =>{
         // updateting calendarData and go to HomeScreen for updating Async Storage 
-        let newCalendarData = [...calendarData] // spread operator makes React see that variable has been changed
-        newCalendarData[currentMonth].dates[currentCell.id].done = value           
+        let newCalendarData = [...calendarData] 
+        newCalendarData[currentMonth].dates[currentCell.id].done = switchValue
+        newCalendarData[currentMonth].dates[currentCell.id].note = note
         updateCalendarData(newCalendarData)
-        route.params.editCellHandler(newCalendarData, goalObject.id)     
+        route.params.editCellHandler(newCalendarData, goalObject.id) 
     }
     
     const updateGoalInfo = (param) => {
          // updating timeRange and deadline
         let newGoalObject = Object.assign({}, goalObject)
-        if(param){// param == selectedItem // for updating timeRange
+        if(param){
+            // param comes from updating timeRange
+            // undefined param  -- false value -> comes from datePickerModal  
            newGoalObject.goal.timeRange = param
         }
-        else{ // undefined param  -- false value -> comes from deadlineModal
-            newGoalObject.goal.deadline = {date: selectedDate, month: selectedMonth, year: selectedYear}
+        else if(buttonClicked == 'deadline'){         
+            newGoalObject.goal.deadline = {
+                date: selectedDate, 
+                month: selectedMonth, 
+                year: selectedYear
+            }
+            updateValue(false)  // updating buttonClicked 
+        }
+        else if(buttonClicked == 'start date'){
+            newGoalObject.goal.startDate = {
+                date: selectedDate, 
+                month: selectedMonth, 
+                year: selectedYear
+            }
+            updateValue(false)   
         }
         route.params.editGoalHandler(newGoalObject)
+    }
+
+    const getPerCent = () => {
+        return 5
     }
 
     return (
@@ -130,47 +184,29 @@ export default function Goal({navigation, route}) {
         {/* {console.log('in goal - goal obj')} */}
                 {calendarData && currentMonth ?
                     <>
-                    <View style = {styles.buttonContainer}>
-                        <Text style={{alignSelf: 'flex-end'}}> &nbsp; &nbsp; Deadline</Text> 
-                        <Text style = {{alignSelf: 'flex-end'}}> Pereodicity &nbsp; &nbsp; </Text>
-                    </View>
-                    <View style = {styles.buttonContainer}>
-                        <TouchableOpacity 
-                            style = {styles.buttons}
-                            onPress = {() => showDeadlineModal(true)}>
-                            <Text style={styles.buttonText}>{goalObject.goal.deadline.month}/{goalObject.goal.deadline.date}/{goalObject.goal.deadline.year} </Text>
-                         
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
-                            onPress = {()=> setCurrentMonth(currentMonth-1)}>
-                            <Feather name="chevrons-up" size={40} color="black" />
-                        </TouchableOpacity>
-                
-                        <SelectDropdown 
-                            data = {goalCompleted?
-                                ['Can not change it',  'Goal is completed']:
-                                rangeData
-                            }
-                            defaultButtonText = {goalObject.goal.timeRange} 
-                            buttonStyle = {styles.buttons}
-                            dropdownStyle = {styles.dropdown}
-                            //rowStyle={}
-                            //rowTextStyle={}                              
-                            onSelect = {(selectedItem) => {
-                                updateGoalInfo(selectedItem)
-                                //updateTimeRange(selectedItem)
-                            }}
-                            buttonTextAfterSelection = {(selectedItem) => {return selectedItem}} />
-
-                    </View>
+                    {/* <View style = {[styles.buttonContainer, {paddingTop: 10}]}>
+                        <Text style={{alignSelf: 'flex-end'}}> &nbsp; &nbsp; Start Date</Text> 
+                        <Text style = {{alignSelf: 'flex-end'}}> Deadline &nbsp; &nbsp; </Text>
+                    </View> */}
                     
                     <View style = {styles.calendarContainer}>
-                        <Text style = {[styles.month, 
-                                        {backgroundColor: goalObject.color}
-                                    ]}>
-                            {calendarData[currentMonth].month} - {calendarData[currentMonth].year}
-                        </Text>  
+                        <View style={styles.buttonContainer}>
+                            <TouchableOpacity 
+                                style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
+                                onPress = {()=> setCurrentMonth(currentMonth-1)}>
+                                <Feather name="chevrons-left" size={45} color="black" />
+                            </TouchableOpacity>
+                            <Text style = {[styles.month, 
+                                            {backgroundColor: goalObject.color}
+                                        ]}>
+                                {calendarData[currentMonth].month} - {calendarData[currentMonth].year}
+                            </Text>  
+                            <TouchableOpacity 
+                                style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
+                                onPress = {()=> setCurrentMonth(currentMonth+1)}>
+                                <Feather name="chevrons-right" size={45} color="black" />
+                            </TouchableOpacity> 
+                        </View>
                                 
                         <View style={styles.calendarHeader}>
                             { weekDays.map((item, index) => {
@@ -187,17 +223,25 @@ export default function Goal({navigation, route}) {
                                 <TouchableOpacity   // render date cell
                                     key = {dateObj.id} 
                                     style={[styles.date, {backgroundColor: defineBackgroundColor(dateObj.done),
-                                                          borderStyle: defineBorderStyle(dateObj.note)
+                                                          //borderStyle: defineBorderStyle(dateObj.note) old solution
+                                                           paddingHorizontal: definePadding(dateObj.note)
                                                          }
                                     ]}
                                     onPress={() => {
                                         showCellModal(true)
                                         updateCurrentCell(dateObj) 
+                                        updateSwitch(dateObj.done)
+                                        updateNote(dateObj.note)
                                     }}>
-                                    <Text style = {styles.textCell}>
-                                        {dateObj.date}
-                                    </Text>
-                                
+                                    <View style = {styles.textCell}>
+                                        {dateObj.note.trim() != "" ?
+                                            <View style={{flexDirection: 'row'}}>
+                                                <Text>{dateObj.date}</Text>
+                                                <Text style= {{color: 'rgb(100,100,100)', fontSize: 10}}>{' \u2731'}</Text>
+                                            </View>:
+                                            <Text>{dateObj.date}</Text>    // '\u2731' - unicode for ✱ ; ' \u2B24' - unicode for 'dot'
+                                        }                                                                              
+                                    </View>                               
                                 </TouchableOpacity>
                                 : 
                                 <TouchableOpacity   // render empty date cell
@@ -210,22 +254,60 @@ export default function Goal({navigation, route}) {
                             })}
                         </View> 
                     </View>
-                    <View style={styles.buttonContainer}>
+
+                    <View style = {styles.buttonContainer}>
                         <TouchableOpacity 
-                            style = {styles.buttons}
-                            // onPress={()=>{
-                            //     navigation.navigate("HomeScreen")
-                            //     route.params.editGoalHandler(goalObject)}}
-                            >
-                            <Text style={styles.buttonText}> 
-                               will be % 
-                            </Text>
+                            style = {[styles.buttons,{paddingVertical: 3}]}
+                            onPress = {() => {
+                                updateValue('start date')
+                                showDatePickerModal(true)
+                            }}>
+                            <Text style = {styles.buttonText}>Start Date</Text>
+                            <Text style={styles.buttonText}>{goalObject.goal.startDate.month}/{goalObject.goal.startDate.date}/{goalObject.goal.startDate.year} </Text>             
                         </TouchableOpacity>
+
                         <TouchableOpacity 
-                            style = {[styles.arrowButton,{backgroundColor: goalObject.color}]}
-                            onPress = {()=> setCurrentMonth(currentMonth+1)}>
-                        <Feather name="chevrons-down" size={40} color="black" />
-                        </TouchableOpacity> 
+                            style = {[styles.buttons,{paddingVertical: 3}]}
+                            onPress = {() => {
+                                updateValue('deadline')
+                                showDatePickerModal(true)
+                            }}>
+                            <Text style = {styles.buttonText}>Deadline</Text>
+                            <Text style={styles.buttonText}>{goalObject.goal.deadline.month}/{goalObject.goal.deadline.date}/{goalObject.goal.deadline.year} </Text>             
+                        </TouchableOpacity>             
+                    </View>
+
+                    <View style={styles.buttonContainer}>
+                    {goalCompleted? 
+                            <TouchableOpacity 
+                                style = {[styles.buttons, {paddingVertical:3}]}
+                                onPress = {() => showDatePickerModal(true)}> 
+                                <Text style = {styles.buttonText}>Pereodicity</Text>
+                                <Text style={styles.buttonText}>{goalObject.goal.timeRange} </Text>             
+                            </TouchableOpacity>
+                            :
+                            <TouchableOpacity 
+                                onPress={()=> showTimeRangeModal(true)} 
+                                style = {[styles.buttons, {paddingVertical: 3}]}>
+                                <Text style = {styles.buttonText}>Pereodicity</Text>  
+                                <Text style={styles.buttonText}>{goalObject.goal.timeRange} </Text> 
+                                {/* <SelectDropdown 
+                                data = {rangeData}
+                                defaultButtonText = {goalObject.goal.timeRange}
+                                buttonStyle = {{backgroundColor: 'white', width: '100%', height: 50}}
+                                buttonTextStyle={{alignSelf: 'flex-start'}}
+                                dropdownStyle = {styles.dropdown}
+                                //rowStyle={}
+                                //rowTextStyle={{}}                              
+                                onSelect = {(selectedItem) => {
+                                    updateGoalInfo(selectedItem)
+                                    //updateTimeRange(selectedItem)
+                                }}
+                                buttonTextAfterSelection = {selectedItem => {return selectedItem}} /> */}
+                            </TouchableOpacity>
+                            
+                        }
+                        
                         <TouchableOpacity 
                             style = {styles.buttons}
                             onPress={()=>showDeleteModal(!deleteModal)}> 
@@ -236,7 +318,31 @@ export default function Goal({navigation, route}) {
                     </View>   
                     </>:
                     <Text>Loading</Text>                    
-                }                         
+                }  
+
+                <Modal // timeRangeModal
+                    transparent = {true} 
+                    visible = {timeRangeModal}>
+                    <TouchableOpacity 
+                        onPress={()=>showTimeRangeModal(false)}
+                        style={styles.modal}>
+                        <TouchableOpacity 
+                            style={[styles.modalContent, {flexDirection: 'column', paddingHorizontal: '4%', width: '50%'}]}> 
+                            {rangeData.map((elem, ind) =>{ 
+                                return  <TouchableOpacity
+                                            key={ind} 
+                                            onPress={() => {
+                                                showTimeRangeModal(false)
+                                                updateGoalInfo(elem)                                             
+                                            }}
+                                            style={{padding: 10}}>
+                                            <Text style={styles.buttonText}>{elem}</Text>
+                                        </TouchableOpacity>
+                            })}                   
+                        </TouchableOpacity>
+                    </TouchableOpacity>
+                </Modal>
+
                 <Modal // cellModal
                     transparent = {true} 
                     visible = {cellModal}>
@@ -254,36 +360,39 @@ export default function Goal({navigation, route}) {
                                 onPress={e => {// do not close modal if anything inside modal content is clicked
                                     e.stopPropagation()
                                 }}
-                                style={[styles.modalContent, {flexDirection: 'column', height: '40%', paddingHorizontal: '4%'}]}>
+                                style={[styles.modalContent, {flexDirection: 'column', height: '30%', paddingHorizontal: '4%'}]}>
                                 
                                 <View style = {styles.row}>
-                                    <Text >Not Done</Text>
+                                    <Text style = {styles.buttonText} >Not Done</Text>
                                     <Switch 
-                                        onValueChange={value=> {isGoalDone(value)}}
+                                        onValueChange={value=> {updateSwitch(value)}}
                                         style = {{transform: [{ scaleX: 2 }, { scaleY: 2 }]}}
-                                        value = {currentCell? currentCell.done : false}
+                                        //value = {currentCell? currentCell.done : false}
+                                        value = {switchValue}
                                         trackColor={{false: 'rgb(224, 224, 224)', true: 'yellow'}}
                                         thumbColor='grey'                                  
                                     />
-                                    <Text >Done</Text>                              
+                                    <Text style= {styles.buttonText}>Done</Text>                              
                                 </View>
 
                                 <TextInput  
                                     style={styles.inputField}
                                     autoFocus={true} 
                                     placeholder='enter note'
-                                    onChangeText = {enteredText => {editNote(enteredText)}}                   
+                                    onChangeText = {enteredText => {updateNote(enteredText)}}                   
                                     multiline={true}  
-                                    value = {currentCell? currentCell.note : null}
+                                    //value = {currentCell? currentCell.note : null}
+                                    value = {note}
                                 /> 
 
-                                <TouchableOpacity  // Do i need this? saves automaticly
+                                <TouchableOpacity  
                                     style = {[styles.okIcon, {marginHorizontal: '43%'}]} 
-                                    onPress={() => {           
-                                        console.log('edit')
-                                        }}>
+                                    onPress={() => {
+                                    editDate()
+                                    showCellModal(false)
+                                    }}>
                                     <AntDesign name="check" size={40} color="black" />
-                                </TouchableOpacity>           
+                                </TouchableOpacity>            
                             </TouchableOpacity>
                         }
                     </TouchableOpacity>
@@ -314,11 +423,11 @@ export default function Goal({navigation, route}) {
                 </TouchableOpacity>
             </Modal>
             
-            <Modal // deadlineModal
+            <Modal // datePickerModal
                 transparent = {true} 
-                visible = {deadlineModal}>
+                visible = {datePickerModal}>
                 <TouchableOpacity 
-                    onPress={()=>{showDeadlineModal(false)}}
+                    onPress={()=>{showDatePickerModal(false)}}
                     style={styles.modal}>
                     {goalCompleted?
                         <Text 
@@ -402,7 +511,7 @@ export default function Goal({navigation, route}) {
                             <TouchableOpacity
                                 style = {[styles.okIcon, {marginVertical: '16%', marginRight: 5}]} 
                                 onPress={() => { 
-                                    showDeadlineModal(false)           
+                                    showDatePickerModal(false)        
                                     updateGoalInfo()
                                     isDeadlineReached()
                                     }}>
@@ -424,18 +533,20 @@ export default function Goal({navigation, route}) {
                         onPress={e => {// do not close modal if anything inside modal content is clicked
                             e.stopPropagation()
                         }}
-                        style={[styles.modalContent, {height: '25%', flexDirection: 'column'}]}>
-                        <View style = {{flexDirection: 'row', justifyContent: 'space-around'}}>
-                            <Text style = {styles.buttonText}>Goal reached a deadline</Text>       
+                        style={[styles.modalContent, { flexDirection: 'column'}]}>
+                        <View style = {{ justifyContent: 'space-around', padding: 10}}>
+                            <Text style = {styles.buttonText}>Goal reached it's deadline.</Text>  
+                            <Text style = {styles.buttonText}>Action needed.</Text>     
                         </View>
-                        <View style={{flexDirection:'row', justifyContent: 'space-around'}}>
+                        <View style={{flexDirection:'row', justifyContent: 'space-around', paddingTop: 10}}>
                             <TouchableOpacity 
                                 onPress={()=> {
                                     navigation.navigate("HomeScreen"),
                                     route.params.moveGoalHandler(goalObject)
                                 }}
-                                style = {[styles.button, {width: '40%'}]}>
-                                <Text>Move goal to completed folder</Text>
+                                style = {[styles.buttons, {width: '40%', backgroundColor: goalObject.color, borderColor: 'rgb(80, 80, 80)'}]}>
+                                <Text style = {styles.buttonText}>Move goal </Text>
+                                <Text style = {styles.buttonText}>to archive</Text>
                             </TouchableOpacity>
                             <View style = {{width: '40%'}}>
                                 <TouchableOpacity 
@@ -443,8 +554,8 @@ export default function Goal({navigation, route}) {
                                             showDeadlineReachedModal(false) 
                                             showDeadlineModal(true)
                                         }}
-                                        style = {[styles.button, {width: '95%', marginBottom: 5}]}>
-                                        <Text>Extend deadline</Text>
+                                        style = {[styles.buttons, {width: '95%', marginBottom: 5, backgroundColor: goalObject.color, borderColor: 'rgb(80, 80, 80)'}]}>
+                                        <Text style = {styles.buttonText}>Extend deadline</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity 
@@ -452,8 +563,8 @@ export default function Goal({navigation, route}) {
                                         navigation.navigate("HomeScreen"),
                                         route.params.deleteHandler(goalObject.id)
                                     }}
-                                    style = {[styles.button, {width: '95%', marginTop: 5}]}>
-                                    <Text>Delete goal</Text>
+                                    style = {[styles.buttons, {width: '95%', marginTop: 5, backgroundColor: goalObject.color, borderColor: 'rgb(80, 80, 80)'}]}>
+                                    <Text style = {styles.buttonText}>Delete goal</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>                   
@@ -469,27 +580,26 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         borderWidth:3,
-        paddingHorizontal: '5%',
+        paddingHorizontal: '2%',
         borderColor: 'grey',
         backgroundColor: 'white',
     },
     goalInfoText:{
         fontSize: 18,
     },
-    calendarContainer: { // include header and dated (without arrows)
-        borderWidth: 1,
-        borderColor: "grey",
-        borderRadius: 25,
+    calendarContainer: { // include header and dates 
+        // borderWidth: 1,
+        // borderColor: "grey",
+        // borderRadius: 25,
         paddingVertical: 9,
-        marginVertical: 20,
-        backgroundColor: 'rgb(224, 224, 224)',
-        
+        // marginBottom: 10
+        //backgroundColor: 'rgb(224, 224, 224)',       
     },
     calendarHeader:{ //weekdays
-        justifyContent: 'space-around', // horizontally
+        justifyContent: 'space-between', // horizontally
         width: '100%',
         flexDirection: 'row',
-        paddingHorizontal: 10,
+        //paddingHorizontal: 10,
         // borderWidth: 2,
         // borderColor: "red",
         alignItems: 'stretch'
@@ -501,15 +611,14 @@ const styles = StyleSheet.create({
         borderRadius: 13,
         borderColor: "grey",
         padding: 6,
-        marginTop: 30,
+        marginTop: 10,
         alignItems: 'center',
         justifyContent: 'center', // vertically
 
     },
     month: {
-        width: '60%',
+        width: '70%',
         padding: '3%',
-        margin: 5,
         textAlign: 'center',
         alignSelf: 'center',
         fontWeight: 'bold',
@@ -519,24 +628,34 @@ const styles = StyleSheet.create({
         borderColor: "grey",
     },
     buttonContainer:{
+        marginVertical: 8,
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        height: 50
+        justifyContent: 'space-between'
+        // height: 50
     },
     buttons:{
         borderWidth: 1, 
+        // borderBottomWidth: 4,
+        // borderRightWidth: 4, 
         borderRadius: 15, 
-        borderColor: 'grey', 
-        width: '40%',
+        borderColor: 'rgb(160,160,160)', 
+        width: '48%',
         padding: 10,
-        backgroundColor: 'white'
+        backgroundColor: 'white',
+        justifyContent: 'center'
+    },
+    buttonText: {
+        fontSize: 18,
+        alignSelf: 'center'
     },
     arrowButton: {
         alignItems: 'center', 
         alignSelf: 'center', 
         borderWidth: 1, 
+        // borderBottomWidth: 4,
+        // borderRightWidth: 4, 
         borderRadius: 15, 
-        borderColor: 'grey', 
+        borderColor: 'rgb(160,160,160)', 
         width: '13%',   
     },
     dropdown:{
@@ -544,7 +663,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         width: 200,
         alignSelf: 'center',
-        marginLeft: -50
+        //marginLeft: -50
       },
     // dropdownRow:{
     //     backgroundColor: 'red'
@@ -552,22 +671,27 @@ const styles = StyleSheet.create({
     datesBox: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        paddingHorizontal: 10,
+        //justifyContent: 'space-between'
+        //paddingHorizontal: 10,
+        //borderWidth: 1,
+        // borderColor: 'red'
     }, 
     date: {
         alignItems: 'center',   // gorizontally
-        padding: 10,         
+        //padding: 10, 
+        paddingVertical: 15,        
         margin: 2,
-        marginTop: 8,
-        marginBottom: 8,
-        flexBasis: '13%',    // flexBasis for child,  flexWrap for parent  => grid!!!
-        borderWidth: 2,
-        borderColor: "grey",
+        marginVertical: 10,
+        flexBasis: '13.2%',    // flexBasis for child,  flexWrap for parent  => grid!!!
+        borderWidth: 1, 
+        // borderBottomWidth: 4,
+        // borderRightWidth: 4, 
+        borderColor: 'rgb(160, 160, 160)',
         borderRadius: 13
     },
     emptyDate:{
         alignItems: 'center',   // gorizontally
-        padding: 11,         // it is not 10 because there is no border
+        padding: 13,         // it is not 10 because there is no border
         margin: 2,
         marginTop: 8,
         marginBottom: 8,
@@ -577,29 +701,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         textAlignVertical: 'center'
     },
-    button:{
-        //width: "40%",
-        borderWidth: 2,
-        borderBottomWidth: 4,
-        borderRightWidth: 4, 
-        borderColor: 'rgb(104, 149, 197)',
-        //backgroundColor:"yellow",
-        borderRadius: 10,
-        padding: 10,
-        alignSelf: 'center',
-        fontSize: 18,
-        },
-    buttonText: {
-        fontSize: 18,
-        alignSelf: 'center'
-    },
     modal: {
             flex:1,
-            backgroundColor: 'rgba(100, 100, 100, 0.6)', // 0.6 represents opacity(from 0 to 1)
+            backgroundColor: 'rgba(100, 100, 100, 0.8)', // 0.6 represents opacity(from 0 to 1)
             justifyContent:'center'       
         },
     modalContent:{
-        height: '10%',
+        //height: '10%',
         flexDirection: 'row',
         backgroundColor: 'white',
         width: '85%',

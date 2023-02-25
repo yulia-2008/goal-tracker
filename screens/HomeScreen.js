@@ -118,8 +118,9 @@ export default function HomeScreen({navigation, route}) {
     if (text.trim() != "" ){ 
       let newGoal = { 
         text: text,
-        timeRange: '--',  
-        deadline: {month: '--', date: '--', year: '--'}      
+        timeRange: '- -',  
+        deadline: {month: '--', date: '--', year: '--'},
+        startDate: {month: '--', date: '--', year: '--'}     
       }
       let goals = [...goalsData]
       goals[currentGoalId-1].goal = newGoal  // state itemId-1 == goal's index in goalData array
@@ -251,7 +252,10 @@ export default function HomeScreen({navigation, route}) {
                             showModal(!modal), setCurrentGoalId(item.id)              
                       }}>
                       {item.goal?  
-                        <Text style={{color: 'black'}}>{item.goal.text}{item.id}</Text>:
+                        <>
+                          <Text style={{color: 'black'}}>{item.goal.text}{item.id}</Text>
+                          <Text>50%</Text>  
+                        </>:
                         <Text style={{color: 'rgb(160, 160, 160)'}}>New Goal {item.id}</Text>               
                       }  
                   </TouchableOpacity>   
@@ -302,9 +306,11 @@ const styles = StyleSheet.create({
   item: {
     backgroundColor: 'white',
     padding: 10,
-    borderWidth: 1,
+    borderBottomWidth: 4,
+    borderRightWidth: 4, 
     borderRadius: 25, 
-    borderColor: 'grey',
+    borderColor:'rgb(160, 160, 160)',
+    //borderColor: 'grey',
     justifyContent: 'center',
     alignItems: 'center'
   },
