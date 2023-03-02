@@ -24,14 +24,14 @@ export default function HomeScreen({navigation, route}) {
       //                         month: 'january',
       //                         year: 2020, 
       //                         dates: [{id: 1, date: 1, done: true, note: "str"},
-      //                                 {id: 2, date 2, done: false, note: "str"},...                                          
+      //                                 {id: 2, date: 2, done: false, note: "str"},...                                          
       //                                ]
       //                         },
       //                         {...},{...},{...}
       //                       ]
     let dataArray = []
     let count = 0;
-    for (let i = 2023; i <= 2034; i ++){      
+    for (let i = 2023; i <= 2027; i ++){      
         monthArray.map(mo => {
             dataArray.push({id: count, month: mo, year: i, dates: getDates(monthArray.indexOf(mo), i)})
             count += 1
@@ -282,10 +282,8 @@ export default function HomeScreen({navigation, route}) {
                             showModal(!modal), setCurrentGoalId(item.id)              
                       }}>
                       {item.goal?  
-                        <>
-                          <Text style={{color: 'black'}}>{item.goal.text}{item.id}</Text>
-                          <Text>50%</Text>  
-                        </>:
+                          <Text style={{color: 'black'}}>{item.goal.text}</Text>  
+                        :
                         <Text style={{color: 'rgb(160, 160, 160)'}}>New Goal {item.id}</Text>               
                       }  
                   </TouchableOpacity>   

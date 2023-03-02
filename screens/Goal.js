@@ -32,8 +32,8 @@ export default function Goal({navigation, route}) {
     const [note, updateNote] = useState('')
     const [stats, updateStats] = useState({})
    
-    useEffect(() => {getCurrentMonthDate(), console.log('1', currentMonth)},[]) // currentDate.id is not loaded yet
-    //useEffect(() => {console.log('4'), console.log('curDay', currentDate), getStatistic()},[currentMonth]) // do i need this?
+    useEffect(() => {getCurrentMonthDate()},[]) // currentDate.id is not loaded yet
+    //useEffect(() => {console.log('curDay - in effect', currentDate)},[currentDate, currentMonth]) 
         
     const monthArray = ["--", "Jan","Feb","Mar","Apr","May","June","July",
                       "Aug","Sep","Oct","Nov","Dec"]
@@ -61,12 +61,13 @@ export default function Goal({navigation, route}) {
 
         !goalCompleted && goalObject.goal.deadline.dateId && 
         goalObject.goal.deadline.dateId <= currentDateObject.id ? 
-            showDeadlineReachedModal(true) : null
-            // can not just call isDeadlineReached() because currentDate is unfefined that way           
-    }   
+             showDeadlineReachedModal(true) : null
+            // can not just call isDeadlineReached() because currentDate is undefined that way           
+    }
     
     const isDeadlineReached = () => {
-        // fix: code repetition in getCurrentMonthDate
+        
+        // fix: code repetition in getCurrentMonthDate     
         !goalCompleted && goalObject.goal.deadline.dateId && 
         goalObject.goal.deadline.dateId <= currentDate.id ? 
             showDeadlineReachedModal(true) : null
@@ -87,7 +88,7 @@ export default function Goal({navigation, route}) {
         // generate years array for deadline container
         let array = [{id: 0, year: "--"}];
         let year = new Date().getFullYear()
-        for(let i = year; i <= year+10; i++){
+        for(let i = year; i <= 2027; i++){
           let newYear = {id: i, year: i}
           array.push(newYear);
         }
@@ -122,6 +123,7 @@ export default function Goal({navigation, route}) {
         return style
     }
     const datePickerHandler = () => {
+        // check if all (day, month, year) are selected
         (buttonClicked =='start date' &&
         selectedDateStart != "--" &&
         selectedMonthStart != "--" &&
@@ -131,7 +133,7 @@ export default function Goal({navigation, route}) {
         selectedDateDeadline != "--" && 
         selectedMonthDeadline != "--" &&
         selectedYearDeadline != "--") ?                                  
-        (showDatePickerModal(false), updateGoalInfo(), isDeadlineReached())
+        (showDatePickerModal(false), updateGoalInfo(), isDeadlineReached(), getStatistic())
         :
         console.log('DATEPICKER: did not selecte all')
         
@@ -191,42 +193,37 @@ export default function Goal({navigation, route}) {
     const getStatistic = () => {
             // if date is marked 'done' before the start date or after deadline
             // it is not gonna be count
-            
-            // fix: empty days counted
-            // fix : where ever getStats is located currentDate is undefined 
+            // function call by cellModal ok button (when mark date as done)
 
-        let perCent = 'check if the start date is chosen';
-        let startDateId = goalObject.goal.startDate.dateId 
-            let deadlineId = goalObject.goal.deadline.dateId
-            let allDaysCount;
-            let completedDaysCount = 0;
+            // fix: if chose deadline in the past does not re-calcilate completion
+            // timeRange should count.
+                
+        let perCent = '  Can not calculate %. The start date is not selected!';
+        let startDateId = goalObject.goal.startDate.dateId
+        let deadlineId = goalObject.goal.deadline.dateId
+        let lastDayCount;
+        deadlineId ? lastDayCount = deadlineId : currentDate.id
 
-        if(startDateId && deadlineId){
-            deadlineId >= currentDate.id ?
-                allDaysCount = currentDate.id - startDateId +1 : 
-                allDaysCount = deadlineId - startDateId +1
-             //   console.log('currr date id', currentDate)
-            //    console.log('start date id', startDateId)
-            calendarData.map(obj => {obj.dates.map(dateObj => {
-                dateObj.done == true && dateObj.id >= startDateId && dateObj.id <= deadlineId ?
-                    completedDaysCount +=1 : null
-            })})        
-        }
-        else if(startDateId){
-            allDaysCount = currentDate.id - startDateId +1
-            calendarData.map(obj => {obj.dates.map(dateObj => {
-                dateObj.done == true && dateObj.id >= startDateId 
-                    completedDaysCount +=1 
-            })}) 
-        }
-        
-        perCent =  Math.round(completedDaysCount * 100 / allDaysCount) 
+        let allDaysCount = 0
+        let completedDaysCount = 0
+        if(startDateId != null){
+            calendarData.map (obj => obj.dates.filter(dateObj =>  
+                {   if(dateObj.id >= startDateId &&
+                        dateObj.id <= currentDate.id &&
+                        typeof dateObj.date == 'number'){// some dates are string (days of next and prev month on calendar)
+                    allDaysCount += 1  
+                    dateObj.done == true ?  completedDaysCount += 1 : null
+                    }            
+                }
+            ))
+            perCent = Math.round(completedDaysCount * 100 / allDaysCount)
+        }       
         updateStats({allDays: allDaysCount, completed: completedDaysCount, perCent: perCent})
        }
 
     return (
         <View style={styles.container}>  
-         {console.log('%')} 
+         {/* {console.log('%')}  */}
                 {calendarData && currentMonth != null ?  // if currentMonth == 0 is false --> loading
                     <>                    
                     <View style = {styles.calendarContainer}>
@@ -317,37 +314,13 @@ export default function Goal({navigation, route}) {
                         </TouchableOpacity>             
                     </View>
 
-                    <View style={styles.buttonContainer}>
-                    {goalCompleted? 
-                            <TouchableOpacity 
-                                style = {[styles.buttons, {paddingVertical:3}]}
-                                onPress = {() => showDatePickerModal(true)}> 
-                                <Text style = {styles.buttonText}>Pereodicity</Text>
-                                <Text style={styles.buttonText}>{goalObject.goal.timeRange} </Text>             
-                            </TouchableOpacity>
-                            :
-                            <TouchableOpacity 
-                                onPress={()=> showTimeRangeModal(true)} 
-                                style = {[styles.buttons, {paddingVertical: 3}]}>
-                                <Text style = {styles.buttonText}>Pereodicity</Text>  
-                                <Text style={styles.buttonText}>{goalObject.goal.timeRange} </Text> 
-                                {/* <SelectDropdown 
-                                data = {rangeData}
-                                defaultButtonText = {goalObject.goal.timeRange}
-                                buttonStyle = {{backgroundColor: 'white', width: '100%', height: 50}}
-                                buttonTextStyle={{alignSelf: 'flex-start'}}
-                                dropdownStyle = {styles.dropdown}
-                                //rowStyle={}
-                                //rowTextStyle={{}}                              
-                                onSelect = {(selectedItem) => {
-                                    updateGoalInfo(selectedItem)
-                                    //updateTimeRange(selectedItem)
-                                }}
-                                buttonTextAfterSelection = {selectedItem => {return selectedItem}} /> */}
-                            </TouchableOpacity>
-                            
-                        }
-                        
+                    <View style={styles.buttonContainer}>                       
+                        <TouchableOpacity 
+                            onPress={()=> showTimeRangeModal(true)} 
+                            style = {[styles.buttons, {paddingVertical: 3}]}>
+                            <Text style = {styles.buttonText}>Pereodicity</Text>  
+                            <Text style={styles.buttonText}>{goalObject.goal.timeRange} </Text> 
+                        </TouchableOpacity>                                                                      
                         <TouchableOpacity 
                             style = {styles.buttons}
                             onPress={()=>showDeleteModal(!deleteModal)}> 
@@ -355,14 +328,14 @@ export default function Goal({navigation, route}) {
                                 Delete Goal 
                             </Text>
                         </TouchableOpacity> 
-                                            
-                    </View>  
-                    <Text style={styles.buttonText}>Statistic</Text>
+                    </View>                          
+                    {/* <Text style={styles.buttonText}>Statistic</Text>  */}
                     <Text>Days since the Start Day: {stats.allDays}</Text>
                     <Text>Completed days: {stats.completed}</Text>
-                    <Text>Completion is {stats.perCent} %</Text>
-                    </>:
-                    <Text>Loading</Text>                    
+                    <Text>Completion, %: {stats.perCent}</Text> 
+                    </>
+                    :
+                    <Text>Loading</Text>                                       
                 }  
  
                 <Modal // timeRangeModal
@@ -371,20 +344,26 @@ export default function Goal({navigation, route}) {
                     <TouchableOpacity 
                         onPress={()=>showTimeRangeModal(false)}
                         style={styles.modal}>
-                        <TouchableOpacity 
-                            style={[styles.modalContent, {flexDirection: 'column', paddingHorizontal: '4%', width: '50%'}]}> 
-                            {rangeData.map((elem, ind) =>{ 
-                                return  <TouchableOpacity
-                                            key={ind} 
-                                            onPress={() => {
-                                                showTimeRangeModal(false)
-                                                updateGoalInfo(elem)                                             
-                                            }}
-                                            style={{padding: 10}}>
-                                            <Text style={styles.buttonText}>{elem}</Text>
-                                        </TouchableOpacity>
-                            })}                   
-                        </TouchableOpacity>
+                        {goalCompleted?
+                            <Text style={[styles.modalContent, {height: '10%', fontSize: 18, textAlign: 'center'}]}>
+                                Can not change it. Goal is completed
+                            </Text>
+                            :
+                            <TouchableOpacity 
+                                style={[styles.modalContent, {flexDirection: 'column', paddingHorizontal: '4%', width: '50%'}]}> 
+                                {rangeData.map((elem, ind) =>{ 
+                                    return  <TouchableOpacity
+                                                key={ind} 
+                                                onPress={() => {
+                                                    showTimeRangeModal(false)
+                                                    updateGoalInfo(elem)                                             
+                                                }}
+                                                style={{padding: 10}}>
+                                                <Text style={styles.buttonText}>{elem}</Text>
+                                            </TouchableOpacity>
+                                })}                   
+                            </TouchableOpacity>
+                        }
                     </TouchableOpacity>
                 </Modal>
 
@@ -395,11 +374,9 @@ export default function Goal({navigation, route}) {
                         onPress={()=>showCellModal(false)}
                         style={styles.modal}>
                         {goalCompleted?
-                            <>
                             <Text style={[styles.modalContent, {height: '10%', fontSize: 18, textAlign: 'center'}]}>
-                                Can not change it. Goal is completed
-                            </Text>
-                            </>:
+                                Can not change it. Goal is completed </Text>
+                            :
                             <TouchableOpacity 
                                 activeOpacity={1} // disable highlighting effect
                                 onPress={e => {// do not close modal if anything inside modal content is clicked
@@ -435,6 +412,7 @@ export default function Goal({navigation, route}) {
                                     onPress={() => {
                                     editDate()
                                     showCellModal(false)
+                                    getStatistic()
                                     }}>
                                     <AntDesign name="check" size={40} color="black" />
                                 </TouchableOpacity>  
@@ -557,16 +535,7 @@ export default function Goal({navigation, route}) {
                             
                             <TouchableOpacity
                                 style = {[styles.okIcon, {marginVertical: '16%', marginRight: 5}]} 
-                                onPress={() => datePickerHandler()}
-                                    // buttonClicked == 'deadline' &&
-                                    // selectedDateDeadline != "--" && 
-                                    // selectedMonthDeadline != "--" &&
-                                    // selectedYearDeadline != "--" ?                                  
-                                    // showDatePickerModal(false) updateGoalInfo() isDeadlineReached()
-                                    // :
-                                    // console.log('did not selecte all')
-                                    // }
-                                    >
+                                onPress={() => datePickerHandler()}>
                                 <AntDesign name="check" size={40} color="black" />        
                             </TouchableOpacity>        
                         </TouchableOpacity>
@@ -604,7 +573,8 @@ export default function Goal({navigation, route}) {
                                 <TouchableOpacity 
                                         onPress={() =>{
                                             showDeadlineReachedModal(false) 
-                                            showDeadlineModal(true)
+                                            updateValue('deadline')  // buttonClicked
+                                            showDatePickerModal(true)
                                         }}
                                         style = {[styles.buttons, {width: '95%', marginBottom: 5, backgroundColor: goalObject.color, borderColor: 'rgb(80, 80, 80)'}]}>
                                         <Text style = {styles.buttonText}>Extend deadline</Text>
