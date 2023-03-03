@@ -18,7 +18,7 @@ export default function Goal({navigation, route}) {
     const [deleteModal, showDeleteModal] = useState(false)
     const [datePickerModal, showDatePickerModal] = useState(false)
     const [deadlineReachedModal, showDeadlineReachedModal] = useState(false)
-    const [timeRangeModal, showTimeRangeModal] = useState(goalObject.goal.timeRange)
+    const [timeRangeModal, showTimeRangeModal] = useState(false)
     
     const [selectedDateDeadline, updateDateDeadline] = useState(goalObject.goal.deadline.date)
     const [selectedMonthDeadline, updateMonthDeadline] = useState(goalObject.goal.deadline.month)
@@ -32,14 +32,14 @@ export default function Goal({navigation, route}) {
     const [note, updateNote] = useState('')
     const [stats, updateStats] = useState({})
    
-    useEffect(() => {getCurrentMonthDate()},[]) // currentDate.id is not loaded yet
+    useEffect(() => {getCurrentMonthDate()},[]) 
     //useEffect(() => {console.log('curDay - in effect', currentDate)},[currentDate, currentMonth]) 
         
     const monthArray = ["--", "Jan","Feb","Mar","Apr","May","June","July",
                       "Aug","Sep","Oct","Nov","Dec"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
-    const rangeData = ['- -' , "One time", "Every day", "Every other day",  "2 times a week",
-            "3 times a week", "Every week", "Every 2 weeks", "Every month", "2 times a month"]
+    const rangeData = ['- -' , "One time", "Every day /1", "Every other day /2", "3 times a week /2.33",
+                   "2 times a week /3.5", "Every week /7", "Every 2 weeks /14", "Every month /30"]
 
     const date = new Date()
     const currYear = date.getFullYear()
@@ -66,7 +66,7 @@ export default function Goal({navigation, route}) {
     }
     
     const isDeadlineReached = () => {
-        
+        // called by datePicker / !!! need to add calling it on currentDay change
         // fix: code repetition in getCurrentMonthDate     
         !goalCompleted && goalObject.goal.deadline.dateId && 
         goalObject.goal.deadline.dateId <= currentDate.id ? 
@@ -193,20 +193,34 @@ export default function Goal({navigation, route}) {
     const getStatistic = () => {
             // if date is marked 'done' before the start date or after deadline
             // it is not gonna be count
-            // function call by cellModal ok button (when mark date as done)
-
-            // fix: if chose deadline in the past does not re-calcilate completion
-            // timeRange should count.
+            // function call by cellModal (when date marked as done); timeRange Modal; datePickerHandler
+            // need to add calling it on currentDay changed and on initial rendering!!!!
                 
         let perCent = '  Can not calculate %. The start date is not selected!';
         let startDateId = goalObject.goal.startDate.dateId
         let deadlineId = goalObject.goal.deadline.dateId
-        let lastDayCount;
-        deadlineId ? lastDayCount = deadlineId : currentDate.id
+        let timeRange = goalObject.goal.timeRange
+        let pereodicity;  // if timeRange did not chose, counting as due every day.
+        timeRange == '- -' ? pereodicity = 1 : pereodicity = Number(goalObject.goal.timeRange.split('/')[1])
 
         let allDaysCount = 0
+        let requiredDaysToComplete = 0
         let completedDaysCount = 0
-        if(startDateId != null){
+        if(startDateId && deadlineId){
+            let lastDayCount;  //  it does not count days after deadline (if deadline before current day --> completed) 
+            deadlineId > currentDate.id ? lastDayCount = currentDate.id : lastDayCount = deadlineId
+
+            calendarData.map (obj => obj.dates.filter(dateObj =>  
+                {   if(dateObj.id >= startDateId &&
+                        dateObj.id <= lastDayCount &&
+                        typeof dateObj.date == 'number'){// some dates are string (days of next and prev month on calendar)
+                    allDaysCount += 1  
+                    dateObj.done == true ?  completedDaysCount += 1 : null
+                    }            
+                }
+            ))
+        }  
+        else if(startDateId){
             calendarData.map (obj => obj.dates.filter(dateObj =>  
                 {   if(dateObj.id >= startDateId &&
                         dateObj.id <= currentDate.id &&
@@ -215,9 +229,11 @@ export default function Goal({navigation, route}) {
                     dateObj.done == true ?  completedDaysCount += 1 : null
                     }            
                 }
-            ))
-            perCent = Math.round(completedDaysCount * 100 / allDaysCount)
-        }       
+            ))          
+        } 
+        requiredDaysToComplete = Math.floor(allDaysCount / pereodicity)
+        requiredDaysToComplete !=0 ?
+        perCent = Math.round(completedDaysCount * 100 / requiredDaysToComplete) : perCent = ""
         updateStats({allDays: allDaysCount, completed: completedDaysCount, perCent: perCent})
        }
 
@@ -260,9 +276,9 @@ export default function Goal({navigation, route}) {
                                 <TouchableOpacity   // render date cell
                                     key = {dateObj.id} 
                                     style={[styles.date, {backgroundColor: defineBackgroundColor(dateObj.done),
-                                                          //borderStyle: defineBorderStyle(dateObj.note) old solution
-                                                           paddingHorizontal: definePadding(dateObj.note)
-                                                         }
+                                                           paddingHorizontal: definePadding(dateObj.note)},
+                                            dateObj.id == currentDate.id ? {borderWidth: 1, borderColor: 'red'}: null
+                                                         
                                     ]}
                                     onPress={() => {
                                         showCellModal(true)
@@ -319,7 +335,7 @@ export default function Goal({navigation, route}) {
                             onPress={()=> showTimeRangeModal(true)} 
                             style = {[styles.buttons, {paddingVertical: 3}]}>
                             <Text style = {styles.buttonText}>Pereodicity</Text>  
-                            <Text style={styles.buttonText}>{goalObject.goal.timeRange} </Text> 
+                            <Text style={styles.buttonText}>{goalObject.goal.timeRange.split('/')[0]} </Text> 
                         </TouchableOpacity>                                                                      
                         <TouchableOpacity 
                             style = {styles.buttons}
@@ -356,10 +372,11 @@ export default function Goal({navigation, route}) {
                                                 key={ind} 
                                                 onPress={() => {
                                                     showTimeRangeModal(false)
-                                                    updateGoalInfo(elem)                                             
+                                                    updateGoalInfo(elem)
+                                                    getStatistic()                                             
                                                 }}
                                                 style={{padding: 10}}>
-                                                <Text style={styles.buttonText}>{elem}</Text>
+                                                <Text style={styles.buttonText}>{elem.split('/')[0]}</Text>
                                             </TouchableOpacity>
                                 })}                   
                             </TouchableOpacity>
