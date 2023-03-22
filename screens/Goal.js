@@ -36,7 +36,7 @@ export default function Goal({navigation, route}) {
     useEffect(() => {getCurrentMonthDate()},[]) 
     //useEffect(() => {console.log('curDay - in effect', currentDate)},[currentDate, currentMonth]) 
         
-    const monthArray = ["--", "Jan","Feb","Mar","Apr","May","June","July",
+    const monthArray = ["Jan","Feb","Mar","Apr","May","June","July",
                       "Aug","Sep","Oct","Nov","Dec"]
     const weekDays = ["Mon", "Tue", "Wed", "Thur", "Fri", "Sat", "Sun"]
     const rangeData = ['- -' , "One time", "Every day /1", "Every other day /2", "3 times a week /2.33",
@@ -51,7 +51,7 @@ export default function Goal({navigation, route}) {
         // finds currentMonth.id, currentDate objects in calendarData array, 
         // check if deadline reached
         let currentMonthObject = calendarData.find(obj =>
-                obj.month === monthArray[currMonth+1]
+                obj.month === monthArray[currMonth]
                 && obj.year === currYear    
         ) 
         let currentDateObject = currentMonthObject.dates.find(obj => 
@@ -76,8 +76,7 @@ export default function Goal({navigation, route}) {
 
     const datesArray = () => {
         // generates dates for goal deadline container
-        // need to fix: allowed to chose 31 for all months
-        let array = [{id: 0, date: "--"}];
+        let array = [];
         for(let i = 1; i <= 31; i++){
           let newDate = {id: i, date: i}
           array.push(newDate);
@@ -87,7 +86,7 @@ export default function Goal({navigation, route}) {
 
     const yearsArray = () => {
         // generate years array for deadline container
-        let array = [{id: 0, year: "--"}];
+        let array = [];
         let year = new Date().getFullYear()
         for(let i = year; i <= 2027; i++){
           let newYear = {id: i, year: i}
@@ -110,30 +109,27 @@ export default function Goal({navigation, route}) {
         return padding  
     }
 
-    const defineTextStyle = (selectedItem, goalObjectItem , item) => { 
+    const defineTextStyle = (selectedItem, item) => { 
         // selectedItem --> from state
-        // goalObjectItem --> goalObject.goal.deadline/startDate.date/month/year
         // item --> date/month/year (variable, comes from datePicker renderItem)
-        let style;
-        
-        goalObjectItem == item && selectedItem == '-' // for the first time opening
-        || selectedItem == item ?
-         style = {fontSize:20, color: 'red'} : 
-         style = {color: 'black'}
+        let style;      
+        selectedItem == item ?
+        style = {fontSize:20, color: 'red'} : 
+        style = {color: 'black'}
 
         return style
     }
     const datePickerHandler = () => {
         // check if all (day, month, year) are selected
         (buttonClicked =='start date' &&
-        selectedDateStart != "--" &&
-        selectedMonthStart != "--" &&
-        selectedYearStart !== "--")
+        selectedDateStart != false &&
+        selectedMonthStart != false &&
+        selectedYearStart !== false)
         ||
         (buttonClicked == 'deadline' &&
-        selectedDateDeadline != "--" && 
-        selectedMonthDeadline != "--" &&
-        selectedYearDeadline != "--") ?                                  
+        selectedDateDeadline != false && 
+        selectedMonthDeadline != false &&
+        selectedYearDeadline != false) ?                                  
         (showDatePickerModal(false), updateGoalInfo(),
          isDeadlineReached(), getStatistic(), 
          updateErrorMessage(''))
@@ -163,7 +159,7 @@ export default function Goal({navigation, route}) {
         else if(buttonClicked == 'deadline'){ 
                 // checks if selected date is exists on selected month (if month has 31/30/29 ?)
                 // if month does not have 31/30/29 goal deadline date will be the last day of the month
-            let lastDay = new Date(selectedYearDeadline, monthArray.indexOf(selectedMonthDeadline), 0).getDate()
+            let lastDay = new Date(selectedYearDeadline, monthArray.indexOf(selectedMonthDeadline)+1, 0).getDate()
             let updatedDate;
             selectedDateDeadline > lastDay ? updatedDate = lastDay : updatedDate = selectedDateDeadline
             
@@ -184,7 +180,7 @@ export default function Goal({navigation, route}) {
         else if(buttonClicked == 'start date'){
                 // checks if selected date is exists on selected month (if month has 31/30/29 ?)
                 // if month does not have 31/30/29 goal start date will be the last day of the month
-                let lastDay = new Date(selectedYearDeadline, monthArray.indexOf(selectedMonthDeadline), 0).getDate()
+                let lastDay = new Date(selectedYearDeadline, monthArray.indexOf(selectedMonthDeadline)+1, 0).getDate()
                 let updatedDate;
                 selectedDateStart > lastDay ? updatedDate = lastDay : updatedDate = selectedDateStart
 
@@ -331,7 +327,7 @@ export default function Goal({navigation, route}) {
                                 showDatePickerModal(true)
                             }}>
                             <Text style = {styles.buttonText}>Start Date</Text>
-                            <Text style={styles.buttonText}>{goalObject.goal.startDate.month} {goalObject.goal.startDate.date} {goalObject.goal.startDate.year} </Text>             
+                            <Text style={styles.buttonText}>{goalObject.goal.startDate.month} - {goalObject.goal.startDate.date} - {goalObject.goal.startDate.year} </Text>             
                         </TouchableOpacity>
 
                         <TouchableOpacity 
@@ -341,7 +337,7 @@ export default function Goal({navigation, route}) {
                                 showDatePickerModal(true)
                             }}>
                             <Text style = {styles.buttonText}>Deadline</Text>
-                            <Text style={styles.buttonText}>{goalObject.goal.deadline.month} {goalObject.goal.deadline.date} {goalObject.goal.deadline.year} </Text>             
+                            <Text style={styles.buttonText}>{goalObject.goal.deadline.month} - {goalObject.goal.deadline.date} - {goalObject.goal.deadline.year} </Text>             
                         </TouchableOpacity>             
                     </View>
 
@@ -515,8 +511,8 @@ export default function Goal({navigation, route}) {
                                                     >
                                                     <Text 
                                                     style={ buttonClicked === 'deadline' ?
-                                                        defineTextStyle(selectedDateDeadline, goalObject.goal.deadline.date, item.date):
-                                                        defineTextStyle(selectedDateStart, goalObject.goal.startDate.date, item.date )
+                                                        defineTextStyle(selectedDateDeadline,  item.date):
+                                                        defineTextStyle(selectedDateStart, item.date )
                                                     }>                                                
                                                     {item.date}
                                                     </Text>                                      
@@ -537,8 +533,8 @@ export default function Goal({navigation, route}) {
                                                             updateMonthDeadline(item): updateMonthStart(item)
                                                         }>  
                                                         <Text style = {buttonClicked === 'deadline' ?
-                                                            defineTextStyle(selectedMonthDeadline,goalObject.goal.deadline.month , item):
-                                                            defineTextStyle(selectedMonthStart, goalObject.goal.startDate.month, item)
+                                                            defineTextStyle(selectedMonthDeadline, item):
+                                                            defineTextStyle(selectedMonthStart, item)
                                                         }>                                          
                                                         {item}</Text>               
                                                     </TouchableOpacity>   
@@ -558,8 +554,8 @@ export default function Goal({navigation, route}) {
                                                             updateYearDeadline(item.year): updateYearStart(item.year)
                                                         }>      
                                                             <Text style = {buttonClicked === 'deadline' ?
-                                                                defineTextStyle(selectedYearDeadline, goalObject.goal.deadline.year, item.year):
-                                                                defineTextStyle(selectedYearStart, goalObject.goal.startDate.year, item.year )
+                                                                defineTextStyle(selectedYearDeadline, item.year):
+                                                                defineTextStyle(selectedYearStart, item.year )
                                                             }>
                                                         {item.year}</Text>                      
                                                     </TouchableOpacity>   
@@ -629,21 +625,6 @@ export default function Goal({navigation, route}) {
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
-
-            {/* <Modal  // errorMoal
-                transparent = {true} 
-                visible = {deadlineReachedModal}>
-                <TouchableOpacity
-                    style={styles.modal}>
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        style={styles.modalContent}>
-                        <View style = {{ justifyContent: 'space-around', padding: 10}}>
-                            <Text style = {styles.buttonText}>Month, Date, Year should be selected.</Text>     
-                        </View>
-                    </TouchableOpacity>
-                </TouchableOpacity>
-            </Modal> */}
 
         </View>       
     );

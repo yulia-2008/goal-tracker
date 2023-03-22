@@ -149,8 +149,8 @@ export default function HomeScreen({navigation, route}) {
       let newGoal = { 
         text: text,
         timeRange: '- -',  
-        deadline: {month: '--', date: '--', year: '--', dateId: null},
-        startDate: {month: '--', date: '--', year: '--', dateId: null}     
+        deadline: {month: false, date: false, year: false, dateId: null},
+        startDate: {month: false, date: false, year: false, dateId: null}     
       }
       let goals = [...goalsData]
       goals[currentGoalId-1].goal = newGoal  // state itemId-1 == goal's index in goalData array
