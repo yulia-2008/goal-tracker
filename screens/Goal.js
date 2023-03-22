@@ -19,6 +19,7 @@ export default function Goal({navigation, route}) {
     const [datePickerModal, showDatePickerModal] = useState(false)
     const [deadlineReachedModal, showDeadlineReachedModal] = useState(false)
     const [timeRangeModal, showTimeRangeModal] = useState(false)
+    const [errorMessage, updateErrorMessage] = useState('')
     
     const [selectedDateDeadline, updateDateDeadline] = useState(goalObject.goal.deadline.date)
     const [selectedMonthDeadline, updateMonthDeadline] = useState(goalObject.goal.deadline.month)
@@ -133,10 +134,11 @@ export default function Goal({navigation, route}) {
         selectedDateDeadline != "--" && 
         selectedMonthDeadline != "--" &&
         selectedYearDeadline != "--") ?                                  
-        (showDatePickerModal(false), updateGoalInfo(), isDeadlineReached(), getStatistic())
-        :
-        console.log('DATEPICKER: did not selecte all')
-        
+        (showDatePickerModal(false), updateGoalInfo(),
+         isDeadlineReached(), getStatistic(), 
+         updateErrorMessage(''))
+        :  
+        updateErrorMessage('Select month, date and year')
     }
 
     const editDate = () =>{     
@@ -190,7 +192,7 @@ export default function Goal({navigation, route}) {
                 obj.year == selectedYearStart && obj.month == selectedMonthStart
                 )  
             let foundDateObject  = foundMonthObject.dates.find(obj => 
-                obj.date === updatedDate
+                obj.date === updatedDate // should match type too
                 ) 
             newGoalObject.goal.startDate = {
                 date: updatedDate, 
@@ -495,77 +497,79 @@ export default function Goal({navigation, route}) {
                                 e.stopPropagation()
                             }}
                             style={[styles.modalContent, {height: '25%'}]}>
-
-                            <View style={styles.datePickerContainer}> 
-                                    <View style={styles.datePickerColumn}>
-                                        <FlatList 
-                                            data={datesArray()}   // array of object --> keys: id, date
-                                            numColumns={1}
-                                            renderItem={({item}) =>
-                                            <TouchableOpacity 
-                                                style={ styles.datePickerItem }
-                                                key={item.id}
-                                                onPress={() => buttonClicked === 'deadline' ?
-                                                    updateDateDeadline(item.date): updateDateStart(item.date)
-                                                }
-                                                >
-                                                <Text 
-                                                 style={ buttonClicked === 'deadline' ?
-                                                    defineTextStyle(selectedDateDeadline, goalObject.goal.deadline.date, item.date):
-                                                    defineTextStyle(selectedDateStart, goalObject.goal.startDate.date, item.date )
-                                                }>                                                
-                                                {item.date}
-                                                </Text>                                      
-                                            </TouchableOpacity>   
-                                            }
-                                        /> 
-                                    </View> 
-
-                                    <View style={styles.datePickerColumn}>
-                                        <FlatList 
-                                            data={monthArray}
-                                            numColumns={1}
-                                            keyExtractor={(index) => index.toString()} // react throw the error if there is no keys
-                                            renderItem={({item}) =>
-                                                <TouchableOpacity   
-                                                    style={styles.datePickerItem}
-                                                    onPress={() => buttonClicked === 'deadline' ?
-                                                        updateMonthDeadline(item): updateMonthStart(item)
-                                                    }>  
-                                                    <Text style = {buttonClicked === 'deadline' ?
-                                                        defineTextStyle(selectedMonthDeadline,goalObject.goal.deadline.month , item):
-                                                        defineTextStyle(selectedMonthStart, goalObject.goal.startDate.month, item)
-                                                    }>                                          
-                                                    {item}</Text>               
-                                                </TouchableOpacity>   
-                                            }
-                                        />         
-                                    </View> 
-                    
-                                    <View style={styles.datePickerColumn}>
-                                        <FlatList 
-                                            data={yearsArray()}   //array of objects, keys are : id, year
-                                            numColumns={1}
-                                            renderItem={({item}) =>
-                                                <TouchableOpacity   
-                                                    style={styles.datePickerItem}
+                            <View>
+                                <Text style={{alignSelf: 'center', color: 'red', paddingBottom: 5}}>
+                                    {errorMessage}</Text>
+                                <View style={styles.datePickerContainer}> 
+                                        <View style={styles.datePickerColumn}>
+                                            <FlatList 
+                                                data={datesArray()}   // array of object --> keys: id, date
+                                                numColumns={1}
+                                                renderItem={({item}) =>
+                                                <TouchableOpacity 
+                                                    style={ styles.datePickerItem }
                                                     key={item.id}
                                                     onPress={() => buttonClicked === 'deadline' ?
-                                                        updateYearDeadline(item.year): updateYearStart(item.year)
-                                                    }>      
-                                                        <Text style = {buttonClicked === 'deadline' ?
-                                                            defineTextStyle(selectedYearDeadline, goalObject.goal.deadline.year, item.year):
-                                                            defineTextStyle(selectedYearStart, goalObject.goal.startDate.year, item.year )
-                                                        }>
-                                                    {item.year}</Text>                      
+                                                        updateDateDeadline(item.date): updateDateStart(item.date)
+                                                    }
+                                                    >
+                                                    <Text 
+                                                    style={ buttonClicked === 'deadline' ?
+                                                        defineTextStyle(selectedDateDeadline, goalObject.goal.deadline.date, item.date):
+                                                        defineTextStyle(selectedDateStart, goalObject.goal.startDate.date, item.date )
+                                                    }>                                                
+                                                    {item.date}
+                                                    </Text>                                      
                                                 </TouchableOpacity>   
-                                            }
-                                        />         
-                                    </View> 
-                            </View>      
-                            
+                                                }
+                                            /> 
+                                        </View> 
+
+                                        <View style={styles.datePickerColumn}>
+                                            <FlatList 
+                                                data={monthArray}
+                                                numColumns={1}
+                                                keyExtractor={(index) => index.toString()} // react throw the error if there is no keys
+                                                renderItem={({item}) =>
+                                                    <TouchableOpacity   
+                                                        style={styles.datePickerItem}
+                                                        onPress={() => buttonClicked === 'deadline' ?
+                                                            updateMonthDeadline(item): updateMonthStart(item)
+                                                        }>  
+                                                        <Text style = {buttonClicked === 'deadline' ?
+                                                            defineTextStyle(selectedMonthDeadline,goalObject.goal.deadline.month , item):
+                                                            defineTextStyle(selectedMonthStart, goalObject.goal.startDate.month, item)
+                                                        }>                                          
+                                                        {item}</Text>               
+                                                    </TouchableOpacity>   
+                                                }
+                                            />         
+                                        </View> 
+                        
+                                        <View style={styles.datePickerColumn}>
+                                            <FlatList 
+                                                data={yearsArray()}   //array of objects, keys are : id, year
+                                                numColumns={1}
+                                                renderItem={({item}) =>
+                                                    <TouchableOpacity   
+                                                        style={styles.datePickerItem}
+                                                        key={item.id}
+                                                        onPress={() => buttonClicked === 'deadline' ?
+                                                            updateYearDeadline(item.year): updateYearStart(item.year)
+                                                        }>      
+                                                            <Text style = {buttonClicked === 'deadline' ?
+                                                                defineTextStyle(selectedYearDeadline, goalObject.goal.deadline.year, item.year):
+                                                                defineTextStyle(selectedYearStart, goalObject.goal.startDate.year, item.year )
+                                                            }>
+                                                        {item.year}</Text>                      
+                                                    </TouchableOpacity>   
+                                                }
+                                            />         
+                                        </View> 
+                                </View>      
+                            </View>
                             <TouchableOpacity
-                                style = {[styles.okIcon, {marginVertical: '16%', marginRight: 5}]} 
+                                style = {[styles.okIcon, {marginVertical: '16%', marginRight: 15}]} 
                                 onPress={() => datePickerHandler()}>
                                 <AntDesign name="check" size={40} color="black" />        
                             </TouchableOpacity>        
@@ -625,6 +629,22 @@ export default function Goal({navigation, route}) {
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
+
+            {/* <Modal  // errorMoal
+                transparent = {true} 
+                visible = {deadlineReachedModal}>
+                <TouchableOpacity
+                    style={styles.modal}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        style={styles.modalContent}>
+                        <View style = {{ justifyContent: 'space-around', padding: 10}}>
+                            <Text style = {styles.buttonText}>Month, Date, Year should be selected.</Text>     
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal> */}
+
         </View>       
     );
 }
@@ -808,10 +828,10 @@ const styles = StyleSheet.create({
     },
     datePickerContainer:{
         //height: '100%',
-        width: '80%',
+        width: '83%',
         borderWidth: 1,
         borderColor: "grey",
-        borderRadius: 10,
+        borderRadius: 15,
         flex:1,
         flexDirection: 'row',
         //width: '80%',
