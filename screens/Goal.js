@@ -157,35 +157,48 @@ export default function Goal({navigation, route}) {
             // undefined param  --> false value --> comes from datePickerModal  
            newGoalObject.goal.timeRange = param
         }
+        
         else if(buttonClicked == 'deadline'){ 
+                // checks if selected date is exists on selected month (if month has 31/30/29 ?)
+                // if month does not have 31/30/29 goal deadline date will be the last day of the month
+            let lastDay = new Date(selectedYearDeadline, monthArray.indexOf(selectedMonthDeadline), 0).getDate()
+            let updatedDate;
+            selectedDateDeadline > lastDay ? updatedDate = lastDay : updatedDate = selectedDateDeadline
+            
             let foundMonthObject = calendarData.find(obj=> 
                 obj.year == selectedYearDeadline && obj.month == selectedMonthDeadline
-                )  
-            let foundDateObject  = foundMonthObject.dates.find(obj => 
-                obj.date == selectedDateDeadline
+                )    
+            let foundDateObject  = foundMonthObject.dates.find(obj =>             
+                obj.date === updatedDate  // should match type too
                 ) 
             newGoalObject.goal.deadline = {
-                date: selectedDateDeadline, 
+                date: updatedDate, 
                 month: selectedMonthDeadline, 
                 year: selectedYearDeadline,
                 dateId: foundDateObject.id
-            }
+            }           
             updateValue(false)  // updating buttonClicked 
         }
         else if(buttonClicked == 'start date'){
+                // checks if selected date is exists on selected month (if month has 31/30/29 ?)
+                // if month does not have 31/30/29 goal start date will be the last day of the month
+                let lastDay = new Date(selectedYearDeadline, monthArray.indexOf(selectedMonthDeadline), 0).getDate()
+                let updatedDate;
+                selectedDateStart > lastDay ? updatedDate = lastDay : updatedDate = selectedDateStart
+
             let foundMonthObject = calendarData.find(obj=> 
                 obj.year == selectedYearStart && obj.month == selectedMonthStart
                 )  
             let foundDateObject  = foundMonthObject.dates.find(obj => 
-                obj.date == selectedDateStart
+                obj.date === updatedDate
                 ) 
             newGoalObject.goal.startDate = {
-                date: selectedDateStart, 
+                date: updatedDate, 
                 month: selectedMonthStart, 
                 year: selectedYearStart,
                 dateId: foundDateObject.id
             }
-            updateValue(false)   
+            updateValue(false)  
         }
         route.params.editGoalHandler(newGoalObject)
     }
@@ -494,7 +507,8 @@ export default function Goal({navigation, route}) {
                                                 key={item.id}
                                                 onPress={() => buttonClicked === 'deadline' ?
                                                     updateDateDeadline(item.date): updateDateStart(item.date)
-                                                }>
+                                                }
+                                                >
                                                 <Text 
                                                  style={ buttonClicked === 'deadline' ?
                                                     defineTextStyle(selectedDateDeadline, goalObject.goal.deadline.date, item.date):
